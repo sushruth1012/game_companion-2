@@ -1,0 +1,373 @@
+.riddle-3d-scene {
+  width: 100%;
+  max-width: 255px;
+  height: 410px;
+  perspective: 1200px;
+  user-select: none;
+  z-index: 10;
+}
+
+.riddle-flipper-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.riddle-3d-scene--flipped .riddle-flipper-card {
+  transform: rotateY(180deg);
+}
+
+/* Base Card Face */
+.riddle-card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
+  padding: 14px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* =========================================
+   FRONT FACE STYLING
+   ========================================= */
+.riddle-face--front {
+  background: radial-gradient(circle at 50% 15%, #24160E 0%, #150C07 80%, #0D0603 100%);
+  border: 1.8px solid #9C702E;
+  box-shadow: 
+    0 10px 28px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(217, 164, 65, 0.25),
+    inset 0 0 12px rgba(217, 164, 65, 0.1);
+}
+
+/* Top Floating Medallion */
+.riddle-top-medallion {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #3D2616 0%, #1A0F08 100%);
+  border: 1.5px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+.riddle-top-medallion--unlocked {
+  border-color: #2ECC71;
+  background: radial-gradient(circle, #1E3B29 0%, #0F241A 100%);
+}
+
+/* Header Text */
+.riddle-header-text {
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.riddle-category-tag {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #D9A441;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.riddle-category-tag--gold {
+  color: #2ECC71;
+}
+
+.riddle-title {
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #FAF5E8;
+  letter-spacing: 0.02em;
+  margin-top: 1px;
+}
+
+/* Artwork Wrap */
+.riddle-artwork-wrap {
+  width: 100%;
+  height: 110px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.2px solid #5C3D22;
+  position: relative;
+  margin-bottom: 8px;
+  background-color: #0A0502;
+  flex-shrink: 0;
+}
+
+.riddle-artwork-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  filter: contrast(1.05) brightness(1.02);
+}
+
+.riddle-artwork-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(13, 6, 3, 0.6) 100%);
+  pointer-events: none;
+}
+
+.riddle-mystery-badge {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  background: rgba(26, 15, 8, 0.85);
+  border: 1px solid #D9A441;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-family: var(--font-heading);
+  font-size: 0.58rem;
+  color: #FAF5E8;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Front Body */
+.riddle-front-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.riddle-lore-text {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: #C8B9A6;
+  line-height: 1.32;
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+/* Hidden Prompt Box */
+.riddle-hidden-prompt-box {
+  width: 100%;
+  background: rgba(36, 22, 14, 0.7);
+  border: 1px dashed rgba(217, 164, 65, 0.4);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.lock-icon-faint {
+  color: #D9A441;
+  flex-shrink: 0;
+}
+
+.hidden-prompt-hint {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  color: #D6C2A5;
+  text-align: left;
+  line-height: 1.25;
+}
+
+/* Unlock Button */
+.riddle-buy-action-wrap {
+  width: 100%;
+  margin-top: auto;
+}
+
+.riddle-unlock-buy-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #A87522 0%, #7A4E12 100%);
+  border: 1px solid #F5D37E;
+  color: #FFFDF8;
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 
+    0 4px 12px rgba(122, 78, 18, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.riddle-unlock-buy-btn:hover {
+  background: linear-gradient(180deg, #C28B2F 0%, #915F19 100%);
+  transform: translateY(-1px);
+}
+
+.riddle-unlock-buy-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* =========================================
+   BACK FACE STYLING (REVEALED QUESTION)
+   ========================================= */
+.riddle-face--back {
+  background: radial-gradient(circle at 50% 15%, #1F2E23 0%, #122016 80%, #0A140D 100%);
+  border: 1.8px solid #2ECC71;
+  box-shadow: 
+    0 10px 28px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(46, 204, 113, 0.3),
+    inset 0 0 12px rgba(46, 204, 113, 0.1);
+  transform: rotateY(180deg);
+}
+
+.riddle-back-body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  justify-content: space-between;
+}
+
+/* Revealed Question Box */
+.riddle-revealed-question-box {
+  width: 100%;
+  background: rgba(18, 32, 22, 0.9);
+  border: 1px solid #3F6F4C;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.riddle-question-text {
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #FAF5E8;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+/* Options List */
+.riddle-options-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.riddle-back-option-btn {
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid #4D7F5C;
+  color: #FAF5E8;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.riddle-back-option-btn:hover {
+  background: rgba(46, 204, 113, 0.2);
+  border-color: #2ECC71;
+  transform: translateY(-1px);
+}
+
+.opt-letter {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2ECC71;
+  color: #0A140D;
+  font-weight: 800;
+  font-size: 0.62rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Outcome View */
+.riddle-outcome-display {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.outcome-box {
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.outcome-box--success {
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid #2ECC71;
+  color: #2ECC71;
+}
+
+.outcome-box--fail {
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid #E74C3C;
+  color: #E74C3C;
+}
+
+.outcome-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+}
+
+.outcome-adv {
+  font-size: 0.65rem;
+  color: #EFE4D4;
+}
+
+.riddle-flip-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #D9A441;
+  color: #2D1C13;
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.riddle-flip-back-btn:hover {
+  background: #F2C766;
+}

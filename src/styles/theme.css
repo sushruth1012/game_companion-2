@@ -1,0 +1,126 @@
+:root {
+  /* Design Tokens from Developer Guide */
+  --color-primary: #6B4F3A;        /* Earth Brown */
+  --color-accent: #D9A441;         /* Marigold Gold */
+  --color-secondary: #355E3B;      /* Forest Green */
+  --color-background: #F8F3E8;     /* Warm Ivory */
+  --color-accent-2: #C76B4A;       /* Terracotta */
+
+  /* Supplementary Theme Colors & Shades */
+  --color-earth-dark: #3F2B1E;
+  --color-earth-deep: #2A1C13;
+  --color-forest-dark: #1E3B29;
+  --color-forest-deep: #13271B;
+  --color-terracotta-dark: #A54B2D;
+  --color-gold-light: #F3CA68;
+  --color-gold-border: rgba(217, 164, 65, 0.4);
+  --color-ivory-light: #FCF9F2;
+  --color-card-border: #E8DCC8;
+
+  /* Typography */
+  --font-heading: 'Cinzel', serif, system-ui;
+  --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Layout */
+  --app-max-width: 430px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+
+  /* Elevation / Shadows */
+  --shadow-sm: 0 2px 6px rgba(42, 28, 19, 0.08);
+  --shadow-md: 0 6px 16px rgba(42, 28, 19, 0.12);
+  --shadow-button: 0 4px 12px rgba(27, 59, 40, 0.25);
+  --shadow-terra: 0 4px 14px rgba(199, 107, 74, 0.35);
+  --shadow-glow: 0 0 15px rgba(217, 164, 65, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #121513; /* Neutral dark desk background to showcase the mobile frame */
+  color: var(--color-primary);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* Mobile Application Shell */
+.app-container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--color-background);
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 480px) {
+  .app-container {
+    min-height: 890px;
+    height: 92vh;
+    border-radius: 36px;
+    border: 3px solid rgba(217, 164, 65, 0.3);
+    margin: 20px auto;
+  }
+}
+
+/* =========================================
+   ROYAL PAGE TRANSITION ANIMATIONS
+   ========================================= */
+.login-screen,
+.khel-selection-screen,
+.theme-selection-screen,
+.player-setup-screen,
+.page-transition-fade {
+  animation: royalPageEntrance 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes royalPageEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+input, select {
+  font-family: var(--font-body);
+}

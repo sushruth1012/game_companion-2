@@ -1,0 +1,406 @@
+.player-setup-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  position: relative;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* =========================================
+   TOP HEADER ARCH & ART
+   ========================================= */
+.setup-header-arch {
+  position: relative;
+  height: 160px;
+  background: radial-gradient(circle at 50% 20%, #4D3321 0%, #301E13 80%, #22140C 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  overflow: hidden;
+  border-bottom: 2px solid #8C642B;
+}
+
+.setup-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #382417 0%, #22140C 100%);
+  border: 1.2px solid #D9A441;
+  color: #F8F3E8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
+}
+
+.setup-back-btn:hover {
+  transform: scale(1.08);
+  border-color: #F9DB88;
+}
+
+.setup-back-btn:active {
+  transform: scale(0.95);
+}
+
+.header-temple-art {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.setup-header-arch::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: -10%;
+  width: 120%;
+  height: 38px;
+  background-color: var(--color-background);
+  border-radius: 50% 50% 0 0;
+  box-shadow: 0 -3px 0 #A87A2C;
+}
+
+/* =========================================
+   DYNAMIC THEME MEDALLION POSITIONING
+   ========================================= */
+.setup-theme-badge-wrapper {
+  position: relative;
+  z-index: 15;
+  margin-top: -65px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.setup-theme-medallion-ring {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #E6C27A 0%, #A87A2C 50%, #E6C27A 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.35s ease;
+}
+
+/* Floating Top Badge Icon */
+.setup-theme-icon-tag {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 12;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.setup-theme-artwork-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #3F2B1E;
+  position: relative;
+  background-color: #120A05;
+}
+
+.setup-theme-artwork-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  filter: contrast(1.06) brightness(1.02);
+}
+
+.setup-theme-artwork-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, transparent 40%, rgba(18, 10, 5, 0.4) 100%);
+  pointer-events: none;
+}
+
+/* Theme Ribbon Tag at bottom of circle */
+.setup-theme-ribbon-tag {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #2D1A0E 0%, #150C06 100%);
+  border: 1.2px solid #D9A441;
+  border-radius: 12px;
+  padding: 3px 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  z-index: 12;
+}
+
+.ribbon-theme-name {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #D9A441;
+  letter-spacing: 0.08em;
+}
+
+/* =========================================
+   MAIN CONTENT AREA
+   ========================================= */
+.setup-content {
+  flex: 1;
+  padding: 12px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+/* Heading Group */
+.setup-heading-group {
+  text-align: center;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.setup-title {
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #382416;
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+
+/* Mini Golden Divider */
+.setup-mini-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px auto 8px;
+  width: 160px;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1.2px;
+  background: linear-gradient(90deg, transparent, #D9A441);
+}
+
+.divider-line--right {
+  background: linear-gradient(90deg, #D9A441, transparent);
+}
+
+.divider-lotus {
+  display: flex;
+  align-items: center;
+}
+
+.setup-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #304E38;
+}
+
+/* =========================================
+   PLAYER COUNT TABS (SEGMENTED SWITCHER)
+   ========================================= */
+.player-count-tabs {
+  width: 100%;
+  display: flex;
+  background-color: #F1E9DC;
+  border: 1.5px solid #D8C6AB;
+  border-radius: 28px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 2px 4px rgba(107, 79, 58, 0.06);
+}
+
+.player-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 24px;
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #4A3525;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.player-tab-icon {
+  color: inherit;
+}
+
+.player-tab-btn--active {
+  background: linear-gradient(180deg, #244634 0%, #152E20 100%);
+  color: #FFFFFF;
+  box-shadow: 
+    0 4px 10px rgba(21, 46, 32, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  border: 1px solid #D9A441;
+}
+
+.player-tab-btn--active::after {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #152E20;
+}
+
+/* =========================================
+   COLLAPSIBLE PLAYER DETAILS CONTAINER
+   ========================================= */
+.player-details-container {
+  width: 100%;
+  background-color: #FCFAF5;
+  border: 1.5px solid #E2D5C3;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(60, 40, 20, 0.05);
+  margin-bottom: 20px;
+}
+
+.player-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #EADBCA;
+  margin-bottom: 14px;
+}
+
+.details-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.details-users-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #244634 0%, #152E20 100%);
+  border: 1px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.details-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.details-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #362215;
+  letter-spacing: 0.01em;
+}
+
+.details-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  color: #6B5543;
+}
+
+.details-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #5C4332;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.player-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: detailsFadeIn 0.3s ease-out;
+}
+
+@keyframes detailsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.setup-action-wrap {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* =========================================
+   BOTTOM ARCH & SILHOUETTE FOOTER
+   ========================================= */
+.setup-footer-arch {
+  position: relative;
+  min-height: 90px;
+  background: linear-gradient(180deg, #1C3B29 0%, #102419 100%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 14px;
+  overflow: hidden;
+  border-top: 1.5px solid rgba(217, 164, 65, 0.4);
+}
+
+.setup-footer-arch::before {
+  content: '';
+  position: absolute;
+  top: -24px;
+  left: -10%;
+  width: 120%;
+  height: 32px;
+  background-color: var(--color-background);
+  border-radius: 0 0 50% 50%;
+  box-shadow: 0 3px 0 #9E742B;
+  z-index: 2;
+}
+
+.footer-lotus-flourish {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

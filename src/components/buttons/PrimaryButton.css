@@ -1,0 +1,78 @@
+.primary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #FFFFFF;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.primary-button--full {
+  width: 100%;
+}
+
+/* Terracotta Variant (Matches Continue button) */
+.primary-button--terracotta {
+  background: linear-gradient(180deg, #BA4F27 0%, #9C3814 100%);
+  border: 1px solid rgba(248, 187, 134, 0.3);
+  box-shadow: 
+    0 4px 14px rgba(156, 56, 20, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+.primary-button--terracotta:hover:not(:disabled) {
+  background: linear-gradient(180deg, #C75B32 0%, #AB401A 100%);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 18px rgba(156, 56, 20, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+/* Forest Green Variant */
+.primary-button--forest {
+  background: linear-gradient(180deg, #2A523A 0%, #1A3926 100%);
+  border: 1px solid rgba(217, 164, 65, 0.3);
+  box-shadow: 
+    0 4px 14px rgba(26, 57, 38, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.primary-button--forest:hover:not(:disabled) {
+  background: linear-gradient(180deg, #326245 0%, #20452F 100%);
+  transform: translateY(-1px);
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.primary-button__label {
+  display: inline-block;
+}
+
+.primary-button__icon {
+  transition: transform 0.2s ease;
+  margin-left: 2px;
+}
+
+.primary-button:hover .primary-button__icon {
+  transform: translateX(3px);
+}

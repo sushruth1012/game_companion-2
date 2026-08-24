@@ -1,0 +1,226 @@
+.game-slide-card {
+  position: absolute;
+  width: 280px;
+  height: 480px;
+  top: 0;
+  left: 50%;
+  margin-left: -140px; /* Center alignment */
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  transform-origin: center center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.game-card-frame {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 30%, #2A1C12 0%, #170E08 75%, #0F0804 100%);
+  border-radius: 22px;
+  border: 2px solid #8C642A;
+  box-shadow: 0 12px 30px rgba(15, 8, 4, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 14px 20px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Active Center Glow */
+.game-slide-card--active .game-card-frame {
+  border-color: #D9A441;
+  box-shadow: 
+    0 16px 36px rgba(15, 8, 4, 0.8),
+    0 0 24px rgba(217, 164, 65, 0.4),
+    inset 0 0 16px rgba(217, 164, 65, 0.15);
+}
+
+/* Top Center Lotus Medallion */
+.card-top-medallion {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2C1B10 0%, #150C07 100%);
+  border: 1.5px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 5;
+}
+
+/* Board Canvas / Container */
+.game-card-board-container {
+  width: 100%;
+  height: 250px;
+  background-color: #120A05;
+  border-radius: 14px;
+  border: 1.5px solid #4D331B;
+  margin-top: 18px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 3px 10px rgba(0, 0, 0, 0.8);
+}
+
+.board-wooden-texture {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.chowkabara-board-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;
+  filter: contrast(1.05) brightness(0.98);
+  transition: transform 0.3s ease;
+}
+
+.game-slide-card--active:hover .chowkabara-board-img {
+  transform: scale(1.03);
+}
+
+/* Locked state badge */
+.locked-badge-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 8, 4, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #D9A441;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+/* Title & Description */
+.game-card-title-group {
+  text-align: center;
+  margin-top: 14px;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-title-flourish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.flourish-mark {
+  color: #D9A441;
+  font-size: 0.95rem;
+}
+
+.flourish-mark--flip {
+  transform: scaleX(-1);
+}
+
+.card-game-name {
+  font-family: var(--font-heading);
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: #FAF5E8;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.card-game-tagline {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: #C8B9A6;
+  line-height: 1.35;
+  margin-top: 6px;
+  padding: 0 10px;
+}
+
+/* Action Button */
+.game-card-action {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.select-game-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 24px;
+  background: linear-gradient(180deg, #9C6929 0%, #6E4515 100%);
+  border: 1px solid #E5C37A;
+  border-radius: 12px;
+  color: #FFF6E0;
+  cursor: pointer;
+  box-shadow: 
+    0 4px 14px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 160px;
+}
+
+.select-game-btn:hover {
+  background: linear-gradient(180deg, #B57E37 0%, #87551C 100%);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 18px rgba(217, 164, 65, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.select-game-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.select-btn-text {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.select-btn-arrow-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #DDB15D 0%, #A57422 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #261509;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.locked-action-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #9C8974;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(45, 28, 16, 0.6);
+  border: 1px solid #5C3D24;
+}

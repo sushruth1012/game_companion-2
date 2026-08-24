@@ -1,0 +1,193 @@
+.theme-world-card {
+  position: relative;
+  border-radius: 18px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+  width: calc((100% - 18px) / 3);
+  min-width: 116px;
+  max-width: 132px;
+  height: 275px;
+  box-sizing: border-box;
+}
+
+.theme-world-card:hover {
+  transform: translateY(-3px);
+}
+
+.theme-world-card:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.theme-card-frame {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 20%, #20140D 0%, #120A05 85%, #0A0502 100%);
+  border: 1.8px solid #8C642A;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 20px rgba(10, 5, 2, 0.45);
+  box-sizing: border-box;
+}
+
+/* Selected Highlight State */
+.theme-world-card--selected .theme-card-frame {
+  border-color: #D9A441;
+  box-shadow: 
+    0 10px 26px rgba(15, 8, 4, 0.6),
+    0 0 16px rgba(217, 164, 65, 0.4);
+}
+
+/* Top Floating Circular Icon Badge */
+.theme-top-badge {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* Artwork Canvas Wrap - Exact Same Height */
+.theme-card-image-wrap {
+  width: 100%;
+  height: 120px;
+  min-height: 120px;
+  max-height: 120px;
+  position: relative;
+  overflow: hidden;
+  background-color: #0A0502;
+  flex-shrink: 0;
+}
+
+.theme-artwork-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: brightness(0.95) contrast(1.05);
+  transition: transform 0.4s ease;
+}
+
+.theme-world-card:hover .theme-artwork-img {
+  transform: scale(1.06);
+}
+
+.theme-image-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(18, 10, 5, 0.4) 60%, #120A05 100%);
+  pointer-events: none;
+}
+
+/* Card Body Content - Standardized Vertical Alignment */
+.theme-card-body {
+  padding: 6px 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+/* Title Container: Uniform Height for 1 or 2 Line Titles */
+.theme-world-title {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #FAF5E8;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  line-height: 1.15;
+  min-height: 32px;
+  max-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  width: 100%;
+}
+
+/* Description Container: Uniform Height */
+.theme-world-description {
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  color: #C8B9A6;
+  line-height: 1.25;
+  min-height: 48px;
+  max-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2px 0 6px;
+  padding: 0 2px;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Action Button - Exact Same Dimensions across all cards */
+.theme-card-action {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.theme-select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 211, 126, 0.6);
+  cursor: pointer;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 100px;
+  height: 28px;
+}
+
+.theme-select-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.theme-select-btn:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.theme-select-text {
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #FFF6E0;
+  letter-spacing: 0.03em;
+}
+
+.theme-arrow-disc {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}

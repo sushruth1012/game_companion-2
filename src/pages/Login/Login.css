@@ -1,0 +1,364 @@
+.login-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* =========================================
+   TOP HEADER ARCH & BANNER
+   ========================================= */
+.login-header-arch {
+  position: relative;
+  height: 200px;
+  background: radial-gradient(circle at 50% 20%, #4D3321 0%, #301E13 80%, #22140C 100%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+  border-bottom: 2px solid #8C642B;
+}
+
+/* Indian Mandala Etching Pattern */
+.header-mandala-bg {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 380px;
+  height: 380px;
+  background-image: radial-gradient(circle, transparent 20%, rgba(217, 164, 65, 0.12) 21%, transparent 22%),
+    radial-gradient(circle, transparent 40%, rgba(217, 164, 65, 0.15) 41%, transparent 42%),
+    radial-gradient(circle, transparent 60%, rgba(217, 164, 65, 0.12) 61%, transparent 62%),
+    conic-gradient(
+      from 0deg,
+      transparent 0deg 10deg,
+      rgba(217, 164, 65, 0.08) 10deg 20deg,
+      transparent 20deg 30deg,
+      rgba(217, 164, 65, 0.08) 30deg 40deg,
+      transparent 40deg 50deg,
+      rgba(217, 164, 65, 0.08) 50deg 60deg,
+      transparent 60deg 70deg,
+      rgba(217, 164, 65, 0.08) 70deg 80deg,
+      transparent 80deg 90deg,
+      rgba(217, 164, 65, 0.08) 90deg 100deg,
+      transparent 100deg 110deg,
+      rgba(217, 164, 65, 0.08) 110deg 120deg,
+      transparent 120deg 130deg,
+      rgba(217, 164, 65, 0.08) 130deg 140deg,
+      transparent 140deg 150deg,
+      rgba(217, 164, 65, 0.08) 150deg 160deg,
+      transparent 160deg 170deg,
+      rgba(217, 164, 65, 0.08) 170deg 180deg,
+      transparent 180deg 190deg,
+      rgba(217, 164, 65, 0.08) 190deg 200deg,
+      transparent 200deg 210deg,
+      rgba(217, 164, 65, 0.08) 210deg 220deg,
+      transparent 220deg 230deg,
+      rgba(217, 164, 65, 0.08) 230deg 240deg,
+      transparent 240deg 250deg,
+      rgba(217, 164, 65, 0.08) 250deg 260deg,
+      transparent 260deg 270deg,
+      rgba(217, 164, 65, 0.08) 270deg 280deg,
+      transparent 280deg 290deg,
+      rgba(217, 164, 65, 0.08) 290deg 300deg,
+      transparent 300deg 310deg,
+      rgba(217, 164, 65, 0.08) 310deg 320deg,
+      transparent 320deg 330deg,
+      rgba(217, 164, 65, 0.08) 330deg 340deg,
+      transparent 340deg 350deg,
+      rgba(217, 164, 65, 0.08) 350deg 360deg
+    );
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Corner Leaves */
+.corner-leaf {
+  position: absolute;
+  top: 14px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.corner-leaf--left {
+  left: 14px;
+}
+
+.corner-leaf--right {
+  right: 14px;
+}
+
+/* Bottom Arch Curve Shape */
+.login-header-arch::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: -10%;
+  width: 120%;
+  height: 48px;
+  background-color: var(--color-background);
+  border-radius: 50% 50% 0 0;
+  box-shadow: 0 -3px 0 #A87A2C;
+}
+
+/* =========================================
+   BADGE POSITIONING
+   ========================================= */
+.login-badge-wrapper {
+  position: relative;
+  z-index: 12;
+  margin-top: -65px;
+}
+
+/* =========================================
+   MAIN CONTENT AREA
+   ========================================= */
+.login-content {
+  flex: 1;
+  padding: 16px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+/* Heading Group */
+.login-heading-group {
+  text-align: center;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+.login-title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #382416;
+  margin-bottom: 8px;
+  letter-spacing: 0.01em;
+}
+
+/* Ornate Decorative Golden Divider */
+.decorative-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 6px auto 10px;
+  width: 80%;
+  max-width: 260px;
+}
+
+.divider-whisker {
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #D9A441 60%, #B88328 100%);
+  position: relative;
+}
+
+.divider-whisker::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #D9A441;
+  top: -1.2px;
+}
+
+.divider-whisker--left::after {
+  left: 0;
+}
+
+.divider-whisker--right {
+  background: linear-gradient(90deg, #B88328 0%, #D9A441 40%, transparent 100%);
+}
+
+.divider-whisker--right::after {
+  right: 0;
+}
+
+.divider-flourish {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #304E38;
+  letter-spacing: 0.01em;
+}
+
+/* Alert Notification */
+.login-alert {
+  width: 100%;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  background-color: #FDF2E9;
+  border: 1px solid var(--color-accent-2);
+  border-radius: 10px;
+  color: var(--color-terracotta-dark);
+  font-size: 0.88rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Action Area */
+.login-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.action-section {
+  width: 100%;
+}
+
+/* Activation Code Section */
+.activation-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 2px;
+}
+
+.activation-icon-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #244634 0%, #152E20 100%);
+  border: 1px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.activation-key-icon {
+  color: #D9A441;
+}
+
+.activation-title {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #362215;
+  letter-spacing: 0.01em;
+}
+
+.activation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.activation-continue-btn {
+  margin-top: 2px;
+}
+
+/* =========================================
+   BOTTOM ARCH & MONUMENTS FOOTER
+   ========================================= */
+.login-footer-arch {
+  position: relative;
+  min-height: 130px;
+  background: linear-gradient(180deg, #1C3B29 0%, #122B1D 60%, #0A1C12 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 18px;
+  overflow: hidden;
+  border-top: 1.5px solid rgba(217, 164, 65, 0.4);
+}
+
+/* Curved Arch Cutout at top of footer */
+.login-footer-arch::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: -10%;
+  width: 120%;
+  height: 38px;
+  background-color: var(--color-background);
+  border-radius: 0 0 50% 50%;
+  box-shadow: 0 3px 0 #9E742B;
+  z-index: 2;
+}
+
+/* Traditional Indian Palace / Heritage Skyline Silhouette */
+.footer-monuments-bg {
+  position: absolute;
+  bottom: 30px;
+  left: 0;
+  right: 0;
+  height: 75px;
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: 320px 65px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 65' width='320' height='65'%3E%3Cpath fill='%230D2015' opacity='0.75' d='M0,65 L0,50 Q10,48 15,40 L15,30 Q20,25 25,25 Q30,25 35,30 L35,40 Q40,48 50,50 L50,35 Q60,35 65,20 Q67,10 70,5 Q73,10 75,20 Q80,35 90,35 L90,50 Q98,45 105,35 L105,25 Q110,20 115,20 Q120,20 125,25 L125,35 Q132,45 140,50 L140,40 Q150,28 160,28 Q170,28 180,40 L180,50 Q188,45 195,35 L195,25 Q200,20 205,20 Q210,20 215,25 L215,35 Q222,45 230,50 L230,35 Q240,35 245,20 Q247,10 250,5 Q253,10 255,20 Q260,35 270,35 L270,50 Q280,48 285,40 L285,30 Q290,25 295,25 Q300,25 305,30 L305,40 Q310,48 320,50 L320,65 Z'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* Symmetrical Foliage on Sides */
+.footer-foliage {
+  position: absolute;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.footer-foliage--left {
+  left: 4px;
+}
+
+.footer-foliage--right {
+  right: 4px;
+}
+
+/* Tagline Banner */
+.footer-tagline {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.flourish-arrow {
+  color: #D9A441;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.flourish-arrow--right {
+  transform: rotate(180deg);
+}
+
+.tagline-text {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #D9A441;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}

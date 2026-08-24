@@ -1,0 +1,129 @@
+.theme-selection-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.6) 0%, transparent 65%),
+    radial-gradient(circle at 50% 100%, rgba(200, 160, 110, 0.18) 0%, transparent 60%);
+  position: relative;
+  overflow-x: hidden;
+  user-select: none;
+  padding-bottom: 18px;
+}
+
+/* Background Atmosphere */
+.theme-bg-watermark {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 380px auto;
+  opacity: 0.08;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Cpath fill='%236B4F3A' d='M50,300 L50,220 Q60,215 70,195 L70,160 Q80,140 90,140 Q100,140 110,160 L110,195 Q120,215 130,220 L130,300 Z M150,300 L150,200 Q170,180 180,120 Q190,80 200,60 Q210,80 220,120 Q230,180 250,200 L250,300 Z'/%3E%3C/svg%3E");
+}
+
+/* =========================================
+   TOP APP BAR
+   ========================================= */
+.theme-top-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 6px;
+  position: relative;
+  z-index: 20;
+}
+
+.top-banner-pendant {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+}
+
+/* =========================================
+   HEADING SECTION
+   ========================================= */
+.theme-heading-section {
+  text-align: center;
+  padding: 8px 16px 12px;
+  position: relative;
+  z-index: 10;
+}
+
+.theme-main-title-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.theme-flourish-wing {
+  color: #B5842B;
+  font-size: 1.25rem;
+}
+
+.theme-flourish-wing--flip {
+  transform: scaleX(-1);
+}
+
+.theme-main-title {
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #2F1A0E;
+  letter-spacing: 0.05em;
+}
+
+.theme-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: #4A3A2F;
+  font-weight: 500;
+  padding: 0 10px;
+}
+
+/* =========================================
+   THEME CARDS UNIFIED GRID (EXACT EQUAL SIZE)
+   ========================================= */
+.theme-cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 10px;
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* =========================================
+   BOTTOM LOTUS FLOURISH
+   ========================================= */
+.theme-bottom-flourish {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 5;
+}
+
+.bottom-lotus-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 180px;
+}
+
+.lotus-divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #D9A441);
+}
+
+.lotus-divider-line--right {
+  background: linear-gradient(90deg, #D9A441, transparent);
+}
