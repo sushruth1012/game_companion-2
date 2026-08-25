@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Settings, Shield, Scroll, ChevronRight, Sparkles, Coins } from 'lucide-react';
+import { Crown, Settings, Shield, Scroll, Coins } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
 import { addPoints, deductPoints } from '../../services/pointService';
+import { STARTING_MUDRAS } from '../../lib/gameLogic';
 import './LiveCompanion.css';
 
 export const LiveCompanionPage = () => {
   const navigate = useNavigate();
 
-  // Load players from setup or default 4 players matching reference
+  // Initialize 4 players with Member 2 STARTING_MUDRAS (6000)
   const defaultPlayers = [
-    { id: 'p_1', name: 'Arjun', uid: 'CHB001', points: 2450, shieldColor: '#2ECC71', avatar: '👦', num: 1 },
-    { id: 'p_2', name: 'Diya', uid: 'CHB002', points: 1980, shieldColor: '#3498DB', avatar: '👧', num: 2 },
-    { id: 'p_3', name: 'Kabir', uid: 'CHB003', points: 2760, shieldColor: '#E74C3C', avatar: '👦', num: 3 },
-    { id: 'p_4', name: 'Myra', uid: 'CHB004', points: 2120, shieldColor: '#9B59B6', avatar: '👧', num: 4 },
+    { id: 'p_1', name: 'Arjun', uid: 'CHB001', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#2ECC71', avatar: '👦', num: 1 },
+    { id: 'p_2', name: 'Diya', uid: 'CHB002', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#3498DB', avatar: '👧', num: 2 },
+    { id: 'p_3', name: 'Kabir', uid: 'CHB003', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#E74C3C', avatar: '👦', num: 3 },
+    { id: 'p_4', name: 'Myra', uid: 'CHB004', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#9B59B6', avatar: '👧', num: 4 },
   ];
 
   const [players, setPlayers] = useState(defaultPlayers);
@@ -31,10 +32,11 @@ export const LiveCompanionPage = () => {
         const parsed = JSON.parse(storedPlayers);
         if (parsed.length > 0) {
           const mapped = parsed.map((p, idx) => ({
-            id: p.id,
+            id: p.id || `p_${idx + 1}`,
             name: p.name || `Player ${idx + 1}`,
             uid: p.uid || `CHB00${idx + 1}`,
-            points: 2000 + idx * 250,
+            points: typeof p.mudras === 'number' ? p.mudras : (typeof p.points === 'number' ? p.points : STARTING_MUDRAS),
+            mudras: typeof p.mudras === 'number' ? p.mudras : (typeof p.points === 'number' ? p.points : STARTING_MUDRAS),
             shieldColor: ['#2ECC71', '#3498DB', '#E74C3C', '#9B59B6'][idx % 4],
             avatar: idx % 2 === 0 ? '👦' : '👧',
             num: idx + 1,
@@ -80,12 +82,16 @@ export const LiveCompanionPage = () => {
     });
   };
 
-  // Point deductions when buying riddle
-  const handlePointsDeducted = async (cost) => {
-    await deductPoints(activePlayer.id, cost);
+  // Point/Mudras updates when buying riddle
+  const handlePointsDeducted = async (updatedMudrasOrCost) => {
+    const updatedPoints = typeof updatedMudrasOrCost === 'number' && updatedMudrasOrCost <= 1500
+      ? Math.max(0, activePlayer.points - updatedMudrasOrCost)
+      : updatedMudrasOrCost;
+
+    await deductPoints(activePlayer.id, activePlayer.points - updatedPoints);
     setPlayers((prev) =>
       prev.map((p, idx) =>
-        idx === activePlayerIndex ? { ...p, points: Math.max(0, p.points - cost) } : p
+        idx === activePlayerIndex ? { ...p, points: updatedPoints, mudras: updatedPoints } : p
       )
     );
   };
@@ -95,7 +101,9 @@ export const LiveCompanionPage = () => {
     await addPoints(activePlayer.id, rewardPts);
     setPlayers((prev) =>
       prev.map((p, idx) =>
-        idx === activePlayerIndex ? { ...p, points: p.points + rewardPts } : p
+        idx === activePlayerIndex
+          ? { ...p, points: p.points + rewardPts, mudras: p.points + rewardPts }
+          : p
       )
     );
   };
@@ -105,7 +113,9 @@ export const LiveCompanionPage = () => {
       await deductPoints(activePlayer.id, penalty);
       setPlayers((prev) =>
         prev.map((p, idx) =>
-          idx === activePlayerIndex ? { ...p, points: Math.max(0, p.points - penalty) } : p
+          idx === activePlayerIndex
+            ? { ...p, points: Math.max(0, p.points - penalty), mudras: Math.max(0, p.points - penalty) }
+            : p
         )
       );
     }
@@ -176,12 +186,12 @@ export const LiveCompanionPage = () => {
                 <h3 className="player-side-name">{player.name}</h3>
                 <span className="player-side-uid">UID: {player.uid}</span>
 
-                {/* Points */}
+                {/* Points / Mudras */}
                 <div className="player-side-points">
                   <Coins size={12} className="points-coin-icon" />
                   <span>{player.points}</span>
                 </div>
-                <span className="points-label">Points</span>
+                <span className="points-label">Mudras</span>
 
                 {/* Shield / Pawn Icon */}
                 <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
@@ -229,12 +239,12 @@ export const LiveCompanionPage = () => {
                 <h3 className="player-side-name">{player.name}</h3>
                 <span className="player-side-uid">UID: {player.uid}</span>
 
-                {/* Points */}
+                {/* Points / Mudras */}
                 <div className="player-side-points">
                   <Coins size={12} className="points-coin-icon" />
                   <span>{player.points}</span>
                 </div>
-                <span className="points-label">Points</span>
+                <span className="points-label">Mudras</span>
 
                 {/* Shield / Pawn Icon */}
                 <div className="player-shield-wrap" style={{ color: player.shieldColor }}>

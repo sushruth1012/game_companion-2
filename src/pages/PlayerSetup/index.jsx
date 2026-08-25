@@ -140,18 +140,21 @@ export const PlayerSetupPage = () => {
   const handleContinue = async () => {
     try {
       setIsStarting(true);
-      const activePlayers = playersData.slice(0, playerCount).map((p, idx) => ({
-        id: `p_${idx + 1}`,
-        name: `Player ${idx + 1}`,
-        uid: p.uid.trim() || `GUEST_${idx + 1}`,
-        age: p.age || '15+',
-        color: playerThemes[idx].color,
-        pawnIndex: idx,
-      }));
+      const activePlayers = [];
 
-      // Call standard player service functions
-      for (const p of activePlayers) {
-        await addPlayer(p);
+      // Call standard player service functions (integrated with Member 2 game logic)
+      for (let idx = 0; idx < playerCount; idx++) {
+        const p = playersData[idx];
+        const ageNum = p.age === '5 - 10' ? 8 : p.age === '10 - 15' ? 12 : 20;
+        const createdPlayer = await addPlayer({
+          id: `p_${idx + 1}`,
+          name: `Player ${idx + 1}`,
+          uid: p.uid.trim() || `GUEST_${idx + 1}`,
+          age: ageNum,
+          color: playerThemes[idx].color,
+          pawnIndex: idx,
+        });
+        activePlayers.push(createdPlayer);
       }
 
       // Save active session for Live Companion

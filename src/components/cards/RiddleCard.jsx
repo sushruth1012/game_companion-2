@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Sparkles, CheckCircle, HelpCircle, Coins, Lock, RotateCw, ArrowLeft } from 'lucide-react';
-import { buyRiddle, submitAnswer, themeRiddlesDatabase } from '../../services/riddleService';
+import { BookOpen, Sparkles, CheckCircle, HelpCircle, Coins, Lock, RotateCw } from 'lucide-react';
+import { buyRiddle, submitAnswer, themeRiddlesDatabase, STARTING_MUDRAS } from '../../services/riddleService';
 import wiseAdvisorImg from '../../assets/wise_advisor.jpg';
 import kshetraImg from '../../assets/themes/kshetra_devalaya.jpg';
 import navarasaImg from '../../assets/themes/navarasa.jpg';
@@ -42,19 +42,30 @@ export const RiddleCard = ({
     setOutcome(null);
   }, [themeKey]);
 
-  // Handle Buying & Flipping Riddle
+  // Handle Buying & Flipping Riddle via Member 2 Game Logic
   const handleBuyAndFlip = async () => {
-    const cost = currentRiddle.cost || 1000;
-    if (activePlayer.points < cost) {
-      onEventLog?.(`⚠️ ${activePlayer.name} needs ${cost} points to unlock this riddle! (Has ${activePlayer.points} pts)`);
-      return;
-    }
+    const playerObj = {
+      uid: activePlayer.uid || 'CHB001',
+      age: typeof activePlayer.age === 'number' ? activePlayer.age : 20,
+      mudras: activePlayer.points ?? STARTING_MUDRAS,
+    };
+    const riddleObj = {
+      id: currentRiddle.id,
+      difficulty: currentRiddle.difficulty || 'medium',
+      question: currentRiddle.question,
+    };
 
     try {
       setIsPurchasing(true);
-      await buyRiddle(activePlayer.id, cost);
-      onPointsDeducted?.(cost);
-      onEventLog?.(`🪙 ${activePlayer.name} spent ${cost} points to unlock the ${currentRiddle.title} riddle!`);
+      const result = await buyRiddle(playerObj, riddleObj);
+
+      if (!result.success) {
+        onEventLog?.(`⚠️ ${result.message}`);
+        return;
+      }
+
+      onPointsDeducted?.(result.player.mudras);
+      onEventLog?.(`🪙 ${activePlayer.name}: ${result.message}`);
 
       // Trigger 3D Card Flip
       setIsFlipped(true);
@@ -65,19 +76,27 @@ export const RiddleCard = ({
     }
   };
 
-  // Handle Answer Selection
+  // Handle Answer Selection via Member 2 Game Logic
   const handleOptionSelect = async (option) => {
     setSelectedOption(option.id);
-    const result = await submitAnswer(currentRiddle.id, option.id);
+    const isCorrect = option.isCorrect;
 
-    if (result.correct) {
+    const playerObj = {
+      uid: activePlayer.uid || 'CHB001',
+      age: typeof activePlayer.age === 'number' ? activePlayer.age : 20,
+      mudras: activePlayer.points ?? STARTING_MUDRAS,
+    };
+
+    const submitResult = await submitAnswer(playerObj, isCorrect, currentRiddle.advantage);
+
+    if (submitResult.solved) {
       setOutcome('correct');
       onSolveSuccess?.(currentRiddle.reward || 1500, currentRiddle.advantage);
-      onEventLog?.(`🎉 ${activePlayer.name} answered correctly! Earned +${currentRiddle.reward} pts and unlocked: ${currentRiddle.advantage}`);
+      onEventLog?.(`🎉 ${activePlayer.name}: ${submitResult.message}`);
     } else {
       setOutcome('wrong');
       onSolveFail?.(0);
-      onEventLog?.(`❌ ${activePlayer.name}'s answer was incorrect. No advantage granted.`);
+      onEventLog?.(`❌ ${activePlayer.name}: ${submitResult.message}`);
     }
   };
 
@@ -126,7 +145,7 @@ export const RiddleCard = ({
             <div className="riddle-hidden-prompt-box">
               <Lock size={15} className="lock-icon-faint" />
               <span className="hidden-prompt-hint">
-                Riddle challenge is locked. Spend points to reveal and gain strategic advantages.
+                Riddle challenge is locked. Spend Mudras to reveal and gain strategic advantages.
               </span>
             </div>
 
@@ -140,7 +159,7 @@ export const RiddleCard = ({
               >
                 <Coins size={16} className="coin-icon" />
                 <span>
-                  {isPurchasing ? 'Unlocking...' : `Unlock Riddle (🪙 ${currentRiddle.cost || 1000} Pts)`}
+                  {isPurchasing ? 'Unlocking...' : `Unlock Riddle (${currentRiddle.cost || 1000} Mudras)`}
                 </span>
               </button>
             </div>
@@ -190,9 +209,11 @@ export const RiddleCard = ({
                   <div className="outcome-box outcome-box--success">
                     <div className="outcome-header">
                       <CheckCircle size={18} color="#2ECC71" />
-                      <strong>Correct! (+{currentRiddle.reward} Pts)</strong>
+                      <strong>Correct! (+{currentRiddle.reward} Mudras)</strong>
                     </div>
-                    <p className="outcome-adv">Advantage: {currentRiddle.advantage}</p>
+                    <p className="outcome-adv">
+                      Advantage: {typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : currentRiddle.advantage}
+                    </p>
                   </div>
                 ) : (
                   <div className="outcome-box outcome-box--fail">

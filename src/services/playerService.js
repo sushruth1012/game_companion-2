@@ -1,17 +1,24 @@
 // Standard Players Service - Integrated with Member 2 (src/lib/gameLogic.ts)
-import { createPlayer, STARTING_MUDRAS } from '../lib/gameLogic';
+import { createPlayer as member2CreatePlayer, STARTING_MUDRAS } from '../lib/gameLogic';
 
 export { STARTING_MUDRAS };
 
 export const addPlayer = async (player) => {
   console.log('[Player Service] Calling standard function: addPlayer()', player);
-  const mudrasPlayer = createPlayer(player.uid || `CHB_${Date.now()}`, typeof player.age === 'number' ? player.age : 20);
+  const mudrasPlayer = member2CreatePlayer(
+    player.uid || `CHB_${Date.now()}`,
+    typeof player.age === 'number' ? player.age : 20
+  );
 
   return {
     id: player.id || 'p_' + Date.now(),
+    name: player.name || `Player`,
+    uid: mudrasPlayer.uid,
+    age: mudrasPlayer.age,
     mudras: mudrasPlayer.mudras,
-    points: mudrasPlayer.mudras,
-    ...player,
+    points: mudrasPlayer.mudras, // 6000 Mudras/Points initially per gameLogic
+    color: player.color || '#355E3B',
+    pawnIndex: player.pawnIndex ?? 0,
   };
 };
 
