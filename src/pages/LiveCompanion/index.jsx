@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Settings, Shield, Scroll, Coins } from 'lucide-react';
+import { Crown, Settings, Shield, Scroll, Coins, Sparkles, Zap } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
 import { addPoints, deductPoints } from '../../services/pointService';
@@ -12,10 +12,10 @@ export const LiveCompanionPage = () => {
 
   // Initialize 4 players with Member 2 STARTING_MUDRAS (6000)
   const defaultPlayers = [
-    { id: 'p_1', name: 'Arjun', uid: 'CHB001', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#2ECC71', avatar: '👦', num: 1 },
-    { id: 'p_2', name: 'Diya', uid: 'CHB002', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#3498DB', avatar: '👧', num: 2 },
-    { id: 'p_3', name: 'Kabir', uid: 'CHB003', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#E74C3C', avatar: '👦', num: 3 },
-    { id: 'p_4', name: 'Myra', uid: 'CHB004', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#9B59B6', avatar: '👧', num: 4 },
+    { id: 'p_1', name: 'Arjun', uid: 'CHB001', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#2ECC71', avatar: '👦', num: 1, advantages: [] },
+    { id: 'p_2', name: 'Diya', uid: 'CHB002', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#3498DB', avatar: '👧', num: 2, advantages: [] },
+    { id: 'p_3', name: 'Kabir', uid: 'CHB003', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#E74C3C', avatar: '👦', num: 3, advantages: [] },
+    { id: 'p_4', name: 'Myra', uid: 'CHB004', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#9B59B6', avatar: '👧', num: 4, advantages: [] },
   ];
 
   const [players, setPlayers] = useState(defaultPlayers);
@@ -40,6 +40,7 @@ export const LiveCompanionPage = () => {
             shieldColor: ['#2ECC71', '#3498DB', '#E74C3C', '#9B59B6'][idx % 4],
             avatar: idx % 2 === 0 ? '👦' : '👧',
             num: idx + 1,
+            advantages: p.advantages || [],
           }));
           setPlayers(mapped);
         }
@@ -96,13 +97,18 @@ export const LiveCompanionPage = () => {
     );
   };
 
-  // Riddle Reward Handlers
+  // Riddle Reward Handlers: Update points & attach unlocked Advantage
   const handleSolveSuccess = async (rewardPts, advantage) => {
     await addPoints(activePlayer.id, rewardPts);
     setPlayers((prev) =>
       prev.map((p, idx) =>
         idx === activePlayerIndex
-          ? { ...p, points: p.points + rewardPts, mudras: p.points + rewardPts }
+          ? {
+              ...p,
+              points: p.points + rewardPts,
+              mudras: p.points + rewardPts,
+              advantages: advantage ? [...(p.advantages || []), advantage] : p.advantages,
+            }
           : p
       )
     );
@@ -193,6 +199,14 @@ export const LiveCompanionPage = () => {
                 </div>
                 <span className="points-label">Mudras</span>
 
+                {/* Active Advantages Badges */}
+                {player.advantages && player.advantages.length > 0 && (
+                  <div className="player-advantages-tag" title={player.advantages.map(a => typeof a === 'object' ? a.name : a).join(', ')}>
+                    <Zap size={10} color="#D9A441" />
+                    <span>{player.advantages.length} Adv</span>
+                  </div>
+                )}
+
                 {/* Shield / Pawn Icon */}
                 <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
                   <Shield size={16} fill="currentColor" fillOpacity={0.25} />
@@ -202,7 +216,7 @@ export const LiveCompanionPage = () => {
           })}
         </div>
 
-        {/* CENTER COLUMN: 3D Flip Riddle Card */}
+        {/* CENTER COLUMN: 3D Flip Riddle Card with Difficulty Switcher */}
         <div className="arena-center-card">
           <RiddleCard
             activePlayer={activePlayer}
@@ -246,6 +260,14 @@ export const LiveCompanionPage = () => {
                 </div>
                 <span className="points-label">Mudras</span>
 
+                {/* Active Advantages Badges */}
+                {player.advantages && player.advantages.length > 0 && (
+                  <div className="player-advantages-tag" title={player.advantages.map(a => typeof a === 'object' ? a.name : a).join(', ')}>
+                    <Zap size={10} color="#D9A441" />
+                    <span>{player.advantages.length} Adv</span>
+                  </div>
+                )}
+
                 {/* Shield / Pawn Icon */}
                 <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
                   <Shield size={16} fill="currentColor" fillOpacity={0.25} />
@@ -269,6 +291,19 @@ export const LiveCompanionPage = () => {
             <span className="turn-label">CURRENT TURN</span>
           </div>
           <h2 className="active-turn-player-name">{activePlayer.name}’s Turn</h2>
+
+          {/* Active Advantages List for current player */}
+          {activePlayer.advantages && activePlayer.advantages.length > 0 && (
+            <div className="active-player-adv-chips">
+              {activePlayer.advantages.map((adv, i) => (
+                <span key={i} className="adv-chip">
+                  <Sparkles size={11} color="#D9A441" />
+                  {typeof adv === 'object' ? adv.name : adv}
+                </span>
+              ))}
+            </div>
+          )}
+
           <p className="turn-sub-instruction">
             Tap banner to pass turn or select another player on the board
           </p>
