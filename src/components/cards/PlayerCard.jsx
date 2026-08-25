@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, QrCode, Calendar, ChevronDown } from 'lucide-react';
+import { User, Calendar, ChevronDown } from 'lucide-react';
 import './PlayerCard.css';
 
 export const PlayerCard = ({
@@ -8,7 +8,6 @@ export const PlayerCard = ({
   themeColor = '#355E3B', // '#355E3B' | '#C76B4A' | '#D9A441' | '#6B4F3A'
   onUidChange,
   onAgeChange,
-  onScanClick,
 }) => {
   return (
     <div
@@ -29,27 +28,18 @@ export const PlayerCard = ({
 
       {/* Input Fields Row */}
       <div className="player-inputs-row">
-        {/* Player UID Input */}
+        {/* Player Name Input */}
         <div className="player-input-group">
-          <label className="player-input-label">Player UID</label>
+          <label className="player-input-label">Player Name</label>
           <div className="player-input-wrap">
             <input
               type="text"
-              placeholder="Enter UID"
+              placeholder="Enter Name"
               value={playerData.uid || ''}
               onChange={(e) => onUidChange(e.target.value)}
               className="player-text-input"
               spellCheck="false"
             />
-            <button
-              type="button"
-              className="qr-scan-btn"
-              onClick={onScanClick}
-              title="Scan Player QR Code"
-              aria-label="Scan QR Code"
-            >
-              <QrCode size={18} />
-            </button>
           </div>
         </div>
 

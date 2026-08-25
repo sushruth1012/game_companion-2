@@ -146,10 +146,11 @@ export const PlayerSetupPage = () => {
       for (let idx = 0; idx < playerCount; idx++) {
         const p = playersData[idx];
         const ageNum = p.age === '5 - 10' ? 8 : p.age === '10 - 15' ? 12 : 20;
+        const enteredName = p.uid.trim();
         const createdPlayer = await addPlayer({
           id: `p_${idx + 1}`,
-          name: `Player ${idx + 1}`,
-          uid: p.uid.trim() || `GUEST_${idx + 1}`,
+          name: enteredName || `Player ${idx + 1}`,
+          uid: enteredName ? enteredName.toUpperCase().replace(/\s+/g, '_') : `CHB00${idx + 1}`,
           age: ageNum,
           color: playerThemes[idx].color,
           pawnIndex: idx,

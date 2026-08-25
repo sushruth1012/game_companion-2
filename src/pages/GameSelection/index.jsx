@@ -109,6 +109,7 @@ export const GameSelectionPage = () => {
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
   };
 
   const handleTouchMove = (e) => {
@@ -117,7 +118,7 @@ export const GameSelectionPage = () => {
 
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
-    const threshold = 40; // minimum swipe distance
+    const threshold = 50; // minimum swipe distance
 
     if (diff > threshold) {
       // Swiped Left -> Move Next
