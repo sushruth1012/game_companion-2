@@ -264,6 +264,47 @@
   margin-top: 2px;
 }
 
+/* Player Advantages Tag on Card */
+.player-advantages-tag {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #2D1A0E 0%, #150C07 100%);
+  border: 1px solid #D9A441;
+  border-radius: 6px;
+  padding: 1px 4px;
+  font-family: var(--font-body);
+  font-size: 0.54rem;
+  font-weight: 700;
+  color: #F9D77E;
+  margin-bottom: 2px;
+}
+
+/* Active Player Unlocked Advantage Chips in Banner */
+.active-player-adv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 3px 0 5px;
+}
+
+.adv-chip {
+  background: linear-gradient(180deg, #2C1B0F 0%, #170E08 100%);
+  border: 1px solid #D9A441;
+  border-radius: 12px;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #FAF5E8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 /* Arena Center Card Wrapper */
 .arena-center-card {
   flex: 2;

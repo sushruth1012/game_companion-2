@@ -1,7 +1,7 @@
 .riddle-3d-scene {
   width: 100%;
-  max-width: 255px;
-  height: 410px;
+  max-width: 258px;
+  height: 425px;
   perspective: 1200px;
   user-select: none;
   z-index: 10;
@@ -28,7 +28,7 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border-radius: 18px;
-  padding: 14px 12px 12px;
+  padding: 12px 10px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -51,11 +51,11 @@
 /* Top Floating Medallion */
 .riddle-top-medallion {
   position: absolute;
-  top: -14px;
+  top: -13px;
   left: 50%;
   transform: translateX(-50%);
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: radial-gradient(circle, #3D2616 0%, #1A0F08 100%);
   border: 1.5px solid #D9A441;
@@ -73,13 +73,13 @@
 
 /* Header Text */
 .riddle-header-text {
-  margin-top: 6px;
-  margin-bottom: 8px;
+  margin-top: 4px;
+  margin-bottom: 6px;
 }
 
 .riddle-category-tag {
   font-family: var(--font-heading);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 700;
   color: #D9A441;
   letter-spacing: 0.08em;
@@ -92,22 +92,93 @@
 
 .riddle-title {
   font-family: var(--font-heading);
-  font-size: 0.98rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: #FAF5E8;
   letter-spacing: 0.02em;
   margin-top: 1px;
 }
 
+/* =========================================
+   DIFFICULTY TIER SWITCHER (EASY / MED / HARD)
+   ========================================= */
+.riddle-difficulty-switcher {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  background: rgba(18, 10, 5, 0.8);
+  border: 1px solid #4D3219;
+  border-radius: 10px;
+  padding: 2px;
+  margin-bottom: 6px;
+}
+
+.diff-tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 3px 2px;
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.diff-tab-btn span {
+  font-family: var(--font-heading);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #C8B9A6;
+  line-height: 1;
+}
+
+.diff-tab-btn small {
+  font-family: var(--font-body);
+  font-size: 0.52rem;
+  color: #8C7864;
+  font-weight: 600;
+}
+
+/* Active Difficulty Highlights */
+.diff-tab-btn--easy.diff-tab-btn--active {
+  background: linear-gradient(180deg, #1E462E 0%, #112B1B 100%);
+  border: 1px solid #2ECC71;
+}
+.diff-tab-btn--easy.diff-tab-btn--active span,
+.diff-tab-btn--easy.diff-tab-btn--active small {
+  color: #2ECC71;
+}
+
+.diff-tab-btn--med.diff-tab-btn--active {
+  background: linear-gradient(180deg, #6E4515 0%, #42290B 100%);
+  border: 1px solid #D9A441;
+}
+.diff-tab-btn--med.diff-tab-btn--active span,
+.diff-tab-btn--med.diff-tab-btn--active small {
+  color: #F9D77E;
+}
+
+.diff-tab-btn--hard.diff-tab-btn--active {
+  background: linear-gradient(180deg, #5A1E1E 0%, #380F0F 100%);
+  border: 1px solid #E74C3C;
+}
+.diff-tab-btn--hard.diff-tab-btn--active span,
+.diff-tab-btn--hard.diff-tab-btn--active small {
+  color: #F1948A;
+}
+
 /* Artwork Wrap */
 .riddle-artwork-wrap {
   width: 100%;
-  height: 110px;
+  height: 95px;
   border-radius: 10px;
   overflow: hidden;
   border: 1.2px solid #5C3D22;
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   background-color: #0A0502;
   flex-shrink: 0;
 }
@@ -127,20 +198,27 @@
   pointer-events: none;
 }
 
-.riddle-mystery-badge {
+.riddle-shuffle-btn {
   position: absolute;
-  bottom: 6px;
-  right: 6px;
-  background: rgba(26, 15, 8, 0.85);
+  bottom: 5px;
+  right: 5px;
+  background: rgba(26, 15, 8, 0.9);
   border: 1px solid #D9A441;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 2px 6px;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 0.58rem;
+  font-weight: 600;
   color: #FAF5E8;
   display: flex;
   align-items: center;
   gap: 3px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.riddle-shuffle-btn:hover {
+  transform: scale(1.05);
 }
 
 /* Front Body */
@@ -155,10 +233,10 @@
 
 .riddle-lore-text {
   font-family: var(--font-body);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   color: #C8B9A6;
-  line-height: 1.32;
-  margin-bottom: 6px;
+  line-height: 1.3;
+  margin-bottom: 4px;
   padding: 0 4px;
 }
 
@@ -168,11 +246,11 @@
   background: rgba(36, 22, 14, 0.7);
   border: 1px dashed rgba(217, 164, 65, 0.4);
   border-radius: 8px;
-  padding: 6px 8px;
+  padding: 5px 8px;
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .lock-icon-faint {
@@ -182,7 +260,7 @@
 
 .hidden-prompt-hint {
   font-family: var(--font-body);
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   color: #D6C2A5;
   text-align: left;
   line-height: 1.25;
@@ -200,13 +278,13 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 8px 10px;
   border-radius: 10px;
   background: linear-gradient(180deg, #A87522 0%, #7A4E12 100%);
   border: 1px solid #F5D37E;
   color: #FFFDF8;
   font-family: var(--font-heading);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 
@@ -237,6 +315,35 @@
   transform: rotateY(180deg);
 }
 
+.back-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.diff-pill-badge {
+  font-size: 0.52rem;
+  font-weight: 800;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-heading);
+}
+
+.diff-pill-badge--easy {
+  background: #2ECC71;
+  color: #0A140D;
+}
+.diff-pill-badge--medium {
+  background: #D9A441;
+  color: #261509;
+}
+.diff-pill-badge--hard {
+  background: #E74C3C;
+  color: #FFF;
+}
+
 .riddle-back-body {
   width: 100%;
   display: flex;
@@ -252,16 +359,16 @@
   background: rgba(18, 32, 22, 0.9);
   border: 1px solid #3F6F4C;
   border-radius: 8px;
-  padding: 8px 10px;
-  margin-bottom: 8px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
 }
 
 .riddle-question-text {
   font-family: var(--font-heading);
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #FAF5E8;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: 0.01em;
 }
 
@@ -270,24 +377,24 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .riddle-back-option-btn {
   width: 100%;
-  padding: 7px 8px;
+  padding: 6px 8px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid #4D7F5C;
   color: #FAF5E8;
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   transition: all 0.2s ease;
 }
 
@@ -298,13 +405,13 @@
 }
 
 .opt-letter {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #2ECC71;
   color: #0A140D;
   font-weight: 800;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,16 +423,16 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .outcome-box {
   border-radius: 8px;
-  padding: 8px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .outcome-box--success {
@@ -343,26 +450,33 @@
 .outcome-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.76rem;
+  gap: 4px;
+  font-size: 0.72rem;
 }
 
 .outcome-adv {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
+  color: #F5D37E;
+  font-weight: 700;
+}
+
+.outcome-adv-desc {
+  font-size: 0.54rem;
   color: #EFE4D4;
+  line-height: 1.2;
 }
 
 .riddle-flip-back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 5px 10px;
   border-radius: 8px;
   background: #D9A441;
   color: #2D1C13;
   font-family: var(--font-heading);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
