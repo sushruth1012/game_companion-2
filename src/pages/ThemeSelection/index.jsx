@@ -112,18 +112,15 @@ export const ThemeSelectionPage = () => {
 
       {/* ===== TOP BAR ===== */}
       <header className="theme-top-bar">
-        {/* Left Game Master Badge */}
-        <div className="game-master-badge">
-          <div className="dice-icon-box">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="#D9A441">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <div className="game-master-text">
-            <span className="master-title">CHOWKABARA</span>
-            <span className="master-subtitle">THE GAME MASTER</span>
-          </div>
-        </div>
+        {/* Left Back Button */}
+        <button
+          type="button"
+          className="theme-back-btn"
+          onClick={() => navigate('/game-selection')}
+          aria-label="Back to Game Selection"
+        >
+          <Home size={18} />
+        </button>
 
         {/* Right Action / Emblem Badge */}
         <div className="theme-top-right-badge">

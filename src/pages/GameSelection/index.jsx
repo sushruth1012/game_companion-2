@@ -163,18 +163,15 @@ export const GameSelectionPage = () => {
 
       {/* ===== TOP APP BAR ===== */}
       <header className="khel-top-bar">
-        {/* Left Game Master Badge */}
-        <div className="game-master-badge">
-          <div className="dice-icon-box">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="#D9A441">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-          </div>
-          <div className="game-master-text">
-            <span className="master-title">CHOWKABARA</span>
-            <span className="master-subtitle">THE GAME MASTER</span>
-          </div>
-        </div>
+        {/* Left Home Button */}
+        <button
+          type="button"
+          className="header-icon-btn"
+          onClick={() => navigate('/login')}
+          aria-label="Back to Login"
+        >
+          <Home size={18} />
+        </button>
 
         {/* Center Royal Hanging Tapestry Banner */}
         <div className="royal-hanging-banner">
@@ -191,14 +188,6 @@ export const GameSelectionPage = () => {
 
         {/* Right Action Buttons */}
         <div className="top-bar-actions">
-          <button
-            type="button"
-            className="header-icon-btn"
-            onClick={() => navigate('/login')}
-            aria-label="Home"
-          >
-            <Home size={18} />
-          </button>
           <button
             type="button"
             className="header-icon-btn"
