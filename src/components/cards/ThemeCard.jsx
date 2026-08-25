@@ -3,10 +3,20 @@ import { ChevronRight } from 'lucide-react';
 import './ThemeCard.css';
 
 export const ThemeCard = ({ theme, isSelected, onSelect }) => {
+  const handleTriggerSelect = (e) => {
+    e.stopPropagation();
+    if (onSelect) {
+      onSelect(theme);
+    }
+  };
+
   return (
     <div
       className={`theme-world-card ${isSelected ? 'theme-world-card--selected' : ''}`}
-      onClick={() => onSelect(theme)}
+      onClick={handleTriggerSelect}
+      role="button"
+      tabIndex={0}
+      aria-label={`Select ${theme.name} theme`}
     >
       <div className="theme-card-frame">
         {/* Top Floating Circular Icon Badge */}
@@ -45,10 +55,7 @@ export const ThemeCard = ({ theme, isSelected, onSelect }) => {
                 background: theme.buttonGradient,
                 borderColor: theme.buttonBorder || '#E5C37A',
               }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onSelect(theme);
-              }}
+              onClick={handleTriggerSelect}
             >
               <span className="theme-select-text">Select</span>
               <div

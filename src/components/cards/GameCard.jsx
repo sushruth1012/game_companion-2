@@ -10,9 +10,10 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
     if (isCenter) {
       return {
         transform: 'scale(1) translateX(0) translateZ(50px)',
-        zIndex: 10,
+        zIndex: 15,
         filter: 'none',
         opacity: 1,
+        touchAction: 'manipulation',
       };
     }
 
@@ -33,11 +34,20 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
     };
   };
 
+  const handleAction = (e) => {
+    e.stopPropagation();
+    if (isPlayable && onSelect) {
+      onSelect(game);
+    }
+  };
+
   return (
     <div
       className={`game-slide-card ${isCenter ? 'game-slide-card--active' : 'game-slide-card--side'}`}
       style={getCardStyle()}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
     >
       <div className="game-card-frame">
         {/* Top Center Lotus Medallion */}
@@ -79,10 +89,7 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
               <button
                 type="button"
                 className="select-game-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect(game);
-                }}
+                onClick={handleAction}
               >
                 <span className="select-btn-text">Select</span>
                 <div className="select-btn-arrow-circle">
