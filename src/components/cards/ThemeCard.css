@@ -11,6 +11,12 @@
   max-width: 132px;
   height: 275px;
   box-sizing: border-box;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .theme-world-card:hover {

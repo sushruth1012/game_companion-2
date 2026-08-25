@@ -3,19 +3,18 @@ import { ChevronRight } from 'lucide-react';
 import './ThemeCard.css';
 
 export const ThemeCard = ({ theme, isSelected, onSelect }) => {
-  const handleTriggerSelect = (e) => {
-    e.stopPropagation();
+  const handleClick = (e) => {
+    e.preventDefault();
     if (onSelect) {
       onSelect(theme);
     }
   };
 
   return (
-    <div
+    <button
+      type="button"
       className={`theme-world-card ${isSelected ? 'theme-world-card--selected' : ''}`}
-      onClick={handleTriggerSelect}
-      role="button"
-      tabIndex={0}
+      onClick={handleClick}
       aria-label={`Select ${theme.name} theme`}
     >
       <div className="theme-card-frame">
@@ -46,16 +45,14 @@ export const ThemeCard = ({ theme, isSelected, onSelect }) => {
           <h3 className="theme-world-title">{theme.name}</h3>
           <p className="theme-world-description">{theme.description}</p>
 
-          {/* Theme-Themed Action Button */}
+          {/* Theme-Themed Action Button Container */}
           <div className="theme-card-action">
-            <button
-              type="button"
+            <div
               className="theme-select-btn"
               style={{
                 background: theme.buttonGradient,
                 borderColor: theme.buttonBorder || '#E5C37A',
               }}
-              onClick={handleTriggerSelect}
             >
               <span className="theme-select-text">Select</span>
               <div
@@ -67,11 +64,11 @@ export const ThemeCard = ({ theme, isSelected, onSelect }) => {
               >
                 <ChevronRight size={13} strokeWidth={3} />
               </div>
-            </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 
