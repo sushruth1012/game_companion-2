@@ -25,7 +25,11 @@ export interface PurchaseResult {
   message: string;
 }
 
+<<<<<<< HEAD
 export const STARTING_MUDRAS = 9000;
+=======
+export const STARTING_MUDRAS = 8000;
+>>>>>>> 386ba99 (Update starting Mudras to 8000)
 
 export const RIDDLE_COSTS: Record<Difficulty, number> = {
   easy: 500,
