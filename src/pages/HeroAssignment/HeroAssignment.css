@@ -218,13 +218,13 @@
   margin: 0;
 }
 
-/* Speaker Audio Button (Replaces Lore Paragraph) */
+/* Speaker Audio Dummy Pill (Replaces Lore Paragraph) */
 .hero-audio-action-row {
   display: flex;
   align-items: center;
 }
 
-.hero-audio-btn {
+.hero-audio-dummy-pill {
   background: #F5E8D3;
   border: 1.2px solid #8C642A;
   border-radius: 14px;
@@ -236,19 +236,7 @@
   font-size: 0.64rem;
   font-weight: 700;
   color: #4A2E1B;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.hero-audio-btn:hover {
-  background: #D9A441;
-  color: #1A0F08;
-}
-
-.hero-audio-btn--active {
-  background: #2C180E;
-  border-color: #E74C3C;
-  color: #FFB4A2;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* 3. Flow Arrow */
