@@ -527,66 +527,81 @@ export const LiveCompanionPage = () => {
 
         {/* Right Settings & Survey Dropdown Menu */}
         <div className="top-right-group">
-          <div className="settings-menu-anchor" onClick={(e) => e.stopPropagation()}>
+          <div className="settings-menu-anchor">
             <button
               type="button"
               className={`settings-gear-btn ${isSettingsMenuOpen ? 'settings-gear-btn--active' : ''}`}
-              onClick={() => setIsSettingsMenuOpen((prev) => !prev)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSettingsMenuOpen((prev) => !prev);
+              }}
               aria-label="Settings and Survey Menu"
             >
               <Settings size={17} />
             </button>
 
-            {/* Dropdown Menu Popup */}
+            {/* Dropdown Menu Popup & Backdrop */}
             {isSettingsMenuOpen && (
-              <div className="live-settings-dropdown page-dropdown-slide">
-                <button
-                  type="button"
-                  className="dropdown-menu-item"
-                  onClick={() => {
+              <>
+                <div
+                  className="settings-backdrop-overlay"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setIsSettingsMenuOpen(false);
-                    handleOpenSurveyModal();
                   }}
+                />
+                <div
+                  className="live-settings-dropdown page-dropdown-slide"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <FileSpreadsheet size={16} color="#2ECC71" />
-                  <div className="menu-item-text">
-                    <strong>Survey & Google Sheets</strong>
-                    <small>Timestamps & total time</small>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    className="dropdown-menu-item"
+                    onClick={() => {
+                      setIsSettingsMenuOpen(false);
+                      handleOpenSurveyModal();
+                    }}
+                  >
+                    <FileSpreadsheet size={17} color="#2ECC71" />
+                    <div className="menu-item-text">
+                      <strong>Survey & Google Sheets</strong>
+                      <small>Timestamps & total time</small>
+                    </div>
+                  </button>
 
-                <button
-                  type="button"
-                  className="dropdown-menu-item"
-                  onClick={() => {
-                    setIsSettingsMenuOpen(false);
-                    navigate('/settings');
-                  }}
-                >
-                  <Settings size={16} color="#D9A441" />
-                  <div className="menu-item-text">
-                    <strong>Game Preferences</strong>
-                    <small>Audio, vibration & display</small>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    className="dropdown-menu-item"
+                    onClick={() => {
+                      setIsSettingsMenuOpen(false);
+                      navigate('/settings');
+                    }}
+                  >
+                    <Settings size={17} color="#D9A441" />
+                    <div className="menu-item-text">
+                      <strong>Game Preferences</strong>
+                      <small>Audio, vibration & display</small>
+                    </div>
+                  </button>
 
-                <div className="dropdown-divider" />
+                  <div className="dropdown-divider" />
 
-                <button
-                  type="button"
-                  className="dropdown-menu-item dropdown-menu-item--logout"
-                  onClick={() => {
-                    setIsSettingsMenuOpen(false);
-                    handleLogout();
-                  }}
-                >
-                  <LogOut size={16} color="#E74C3C" />
-                  <div className="menu-item-text">
-                    <strong style={{ color: '#E74C3C' }}>Log Out</strong>
-                    <small>Return to login screen</small>
-                  </div>
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    className="dropdown-menu-item dropdown-menu-item--logout"
+                    onClick={() => {
+                      setIsSettingsMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    <LogOut size={17} color="#E74C3C" />
+                    <div className="menu-item-text">
+                      <strong style={{ color: '#E74C3C' }}>Log Out</strong>
+                      <small>Return to login screen</small>
+                    </div>
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
