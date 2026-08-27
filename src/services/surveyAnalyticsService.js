@@ -1,19 +1,14 @@
 /**
  * Survey & Move Telemetry Service
- * Records time taken by individuals for each move with complete timestamps
- * for analysis and Google Sheets sync/export.
+ * Records time taken by each player for each move with complete timestamps
+ * Grouped cleanly by Player with total time and recording date.
  */
 
 const LOCAL_STORAGE_KEY = 'chowkabara_survey_move_telemetry';
 const WEBHOOK_STORAGE_KEY = 'chowkabara_google_sheets_webhook_url';
 
-// Default Google Apps Script / Webhook Endpoint (can be updated dynamically)
 let googleSheetsWebhookUrl = localStorage.getItem(WEBHOOK_STORAGE_KEY) || '';
 
-/**
- * Configure the Google Sheets Webhook URL
- * @param {string} url - Google Apps Script Web App URL or SheetDB endpoint
- */
 export const setGoogleSheetsWebhook = (url) => {
   googleSheetsWebhookUrl = url.trim();
   localStorage.setItem(WEBHOOK_STORAGE_KEY, googleSheetsWebhookUrl);
@@ -24,10 +19,6 @@ export const getGoogleSheetsWebhook = () => {
   return localStorage.getItem(WEBHOOK_STORAGE_KEY) || googleSheetsWebhookUrl;
 };
 
-/**
- * Get all recorded move records from storage
- * @returns {Array} List of move telemetry logs
- */
 export const getAllSurveyRecords = () => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -39,8 +30,7 @@ export const getAllSurveyRecords = () => {
 };
 
 /**
- * Record a completed move timestamp into local telemetry and sync to Google Sheets
- * @param {Object} moveData
+ * Record a completed move timestamp
  */
 export const recordMoveTelemetry = async ({
   sessionId = 'chowkabara_live_session',
@@ -73,34 +63,30 @@ export const recordMoveTelemetry = async ({
     durationFormatted: `${durationSeconds}s`,
     actionType,
     mudras,
-    recordedAt: new Date().toISOString(),
+    recordedAt: new Date().toLocaleString(),
+    timestampIso: new Date().toISOString(),
   };
 
-  // 1. Save locally in localStorage for persistent survey history
   try {
     const existing = getAllSurveyRecords();
     existing.push(record);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existing));
-    console.log(`[Survey Telemetry] Logged move #${moveNumber} for ${playerName}: ${durationSeconds}s (${actionType})`);
   } catch (err) {
     console.error('Failed to store survey telemetry locally:', err);
   }
 
-  // 2. Post to Google Sheets webhook if configured
+  // Webhook sync if configured
   const webhookUrl = getGoogleSheetsWebhook();
   if (webhookUrl) {
     try {
       await fetch(webhookUrl, {
         method: 'POST',
-        mode: 'no-cors', // standard for Google Apps Script Webhooks
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(record),
       });
-      console.log('[Survey Telemetry] Synced move record to Google Sheets webhook');
     } catch (webhookErr) {
-      console.warn('[Survey Telemetry] Webhook delivery notice (persisted in local cache):', webhookErr);
+      console.warn('[Survey Telemetry] Webhook delivery note:', webhookErr);
     }
   }
 
@@ -108,52 +94,130 @@ export const recordMoveTelemetry = async ({
 };
 
 /**
- * Generate CSV string formatted for direct Google Sheets / Excel import
+ * Groups all telemetry records cleanly by Player with total time and timestamps
  */
-export const generateSurveyCSV = () => {
+export const getPlayerGroupedSurveyData = (registeredPlayers = []) => {
   const records = getAllSurveyRecords();
-  if (records.length === 0) return '';
+  const grouped = {};
 
-  const headers = [
-    'Move Number',
-    'Player Name',
-    'Player UID',
-    'Hero Name',
-    'Hero Secondary Title',
-    'Time Taken (Seconds)',
-    'Turn Start Time',
-    'Turn End Time',
-    'Action Type',
-    'Mudras Balance',
-    'Session ID',
-    'Date Recorded',
-  ];
+  // Pre-seed all registered players
+  registeredPlayers.forEach((p, idx) => {
+    grouped[p.name] = {
+      playerIndex: idx + 1,
+      name: p.name,
+      uid: p.uid,
+      heroName: p.heroName || '',
+      heroTitle: p.heroSecondaryTitle || '',
+      moves: [],
+      totalSeconds: 0,
+      totalMoves: 0,
+      averageSeconds: 0,
+    };
+  });
 
-  const rows = records.map((r) => [
-    r.moveNumber,
-    `"${r.playerName.replace(/"/g, '""')}"`,
-    `"${r.playerUid}"`,
-    `"${r.heroName || ''}"`,
-    `"${r.heroTitle || ''}"`,
-    r.durationSeconds,
-    `"${r.startFormatted} (${r.startIsoTime})"`,
-    `"${r.endFormatted} (${r.endIsoTime})"`,
-    `"${r.actionType}"`,
-    r.mudras,
-    `"${r.sessionId}"`,
-    `"${r.recordedAt}"`,
-  ]);
+  // Populate moves
+  records.forEach((r) => {
+    if (!grouped[r.playerName]) {
+      grouped[r.playerName] = {
+        playerIndex: Object.keys(grouped).length + 1,
+        name: r.playerName,
+        uid: r.playerUid,
+        heroName: r.heroName || '',
+        heroTitle: r.heroTitle || '',
+        moves: [],
+        totalSeconds: 0,
+        totalMoves: 0,
+        averageSeconds: 0,
+      };
+    }
 
-  return [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    grouped[r.playerName].moves.push(r);
+    grouped[r.playerName].totalSeconds += r.durationSeconds || 0;
+    grouped[r.playerName].totalMoves += 1;
+  });
+
+  // Calculate averages
+  Object.values(grouped).forEach((p) => {
+    p.totalSeconds = Number(p.totalSeconds.toFixed(1));
+    p.averageSeconds = p.totalMoves > 0 ? Number((p.totalSeconds / p.totalMoves).toFixed(1)) : 0;
+  });
+
+  return Object.values(grouped);
+};
+
+/**
+ * Generates the clean CSV format requested by the user:
+ * Player 1 (Name) - all timestamps, total time
+ * Player 2 ...
+ * Date of recording at the end
+ */
+export const generateSurveyCSV = (registeredPlayers = []) => {
+  const groupedPlayers = getPlayerGroupedSurveyData(registeredPlayers);
+  if (groupedPlayers.length === 0) return '';
+
+  const lines = [];
+
+  // Header Banner
+  lines.push('CHOWKABARA GAME MOVE SURVEY ANALYSIS');
+  lines.push('');
+
+  groupedPlayers.forEach((player) => {
+    lines.push(`========================================================================`);
+    lines.push(`PLAYER ${player.playerIndex}: ${player.name} (UID: ${player.uid} | Hero: ${player.heroTitle || player.heroName || 'N/A'})`);
+    lines.push(`Move #,Turn Start Time,Turn End Time,Time Taken (Seconds),Action`);
+
+    if (player.moves.length === 0) {
+      lines.push(`No moves recorded yet for this player`);
+    } else {
+      player.moves.forEach((m, idx) => {
+        lines.push(`${idx + 1},"${m.startFormatted}","${m.endFormatted}",${m.durationSeconds}s,"${m.actionType}"`);
+      });
+    }
+
+    lines.push(`TOTAL TIME TAKEN,${player.totalSeconds}s,AVERAGE PER MOVE,${player.averageSeconds}s,TOTAL MOVES,${player.totalMoves}`);
+    lines.push('');
+  });
+
+  // Date of Recording at the very end
+  lines.push(`========================================================================`);
+  const recordingDate = new Date().toLocaleString();
+  lines.push(`DATE OF RECORDING:,"${recordingDate}"`);
+
+  return lines.join('\n');
+};
+
+/**
+ * Generate clean copyable plain-text summary
+ */
+export const generateSurveyTextSummary = (registeredPlayers = []) => {
+  const groupedPlayers = getPlayerGroupedSurveyData(registeredPlayers);
+  const recordingDate = new Date().toLocaleString();
+
+  let text = `📊 CHOWKABARA SURVEY MOVE ANALYSIS\n\n`;
+
+  groupedPlayers.forEach((p) => {
+    text += `👤 PLAYER ${p.playerIndex}: ${p.name} (UID: ${p.uid} | Hero: ${p.heroTitle || 'N/A'})\n`;
+    if (p.moves.length === 0) {
+      text += `   - No moves recorded yet\n`;
+    } else {
+      p.moves.forEach((m, i) => {
+        text += `   • Move ${i + 1}: ${m.durationSeconds}s (${m.startFormatted} → ${m.endFormatted}) [${m.actionType}]\n`;
+      });
+    }
+    text += `   ⏱️ TOTAL TIME: ${p.totalSeconds}s (Avg: ${p.averageSeconds}s/move across ${p.totalMoves} moves)\n\n`;
+  });
+
+  text += `📅 DATE OF RECORDING: ${recordingDate}\n`;
+  return text;
 };
 
 /**
  * Trigger download of Survey Move Telemetry CSV for Google Sheets
  */
-export const downloadSurveyCSV = (filename = `chowkabara_turn_survey_${Date.now()}.csv`) => {
-  const csvContent = generateSurveyCSV();
+export const downloadSurveyCSV = (registeredPlayers = [], filename = `chowkabara_survey_${Date.now()}.csv`) => {
+  const csvContent = generateSurveyCSV(registeredPlayers);
   if (!csvContent) {
-    alert('No move telemetry recorded yet. Play a few turns in Live Game first!');
+    alert('No move telemetry recorded yet.');
     return false;
   }
 
@@ -169,16 +233,10 @@ export const downloadSurveyCSV = (filename = `chowkabara_turn_survey_${Date.now(
   return true;
 };
 
-/**
- * Open Google Sheets import URL
- */
 export const openGoogleSheets = () => {
   window.open('https://sheets.new', '_blank');
 };
 
-/**
- * Clear all survey telemetry
- */
 export const clearSurveyRecords = () => {
   localStorage.removeItem(LOCAL_STORAGE_KEY);
   return [];

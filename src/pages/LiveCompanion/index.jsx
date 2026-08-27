@@ -19,9 +19,9 @@ import {
   Download,
   ExternalLink,
   Trash2,
-  BarChart2,
+  Copy,
   Check,
-  Users,
+  Calendar,
 } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
@@ -30,6 +30,8 @@ import { recordGameActivity } from '../../services/gameService';
 import {
   recordMoveTelemetry,
   getAllSurveyRecords,
+  getPlayerGroupedSurveyData,
+  generateSurveyTextSummary,
   downloadSurveyCSV,
   openGoogleSheets,
   setGoogleSheetsWebhook,
@@ -116,7 +118,7 @@ export const LiveCompanionPage = () => {
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [turnDropdown, setTurnDropdown] = useState(null);
 
-  // Synchronized References for Rock-Solid Survey Telemetry Logging
+  // Synchronized References for Survey Telemetry Logging
   const playersRef = useRef(players);
   const activePlayerIndexRef = useRef(activePlayerIndex);
   const turnStartTimeRef = useRef(Date.now());
@@ -138,9 +140,10 @@ export const LiveCompanionPage = () => {
 
   // Survey Analytics Modal State
   const [isSurveyModalOpen, setIsSurveyModalOpen] = useState(false);
-  const [surveyLogs, setSurveyLogs] = useState([]);
+  const [groupedSurveyData, setGroupedSurveyData] = useState([]);
   const [webhookUrlInput, setWebhookUrlInput] = useState(getGoogleSheetsWebhook());
   const [webhookSaved, setWebhookSaved] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
 
   // Core function to log a player's move telemetry
   const logPlayerMove = (playerIdx, actionType = 'Manual Pass') => {
@@ -193,7 +196,6 @@ export const LiveCompanionPage = () => {
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Timeout! Pass turn to next player
           return 0;
         }
         return prev - 1;
@@ -326,13 +328,25 @@ export const LiveCompanionPage = () => {
 
   // Open Survey Analytics Modal
   const handleOpenSurveyModal = () => {
-    // If the active player has spent at least 1s on their move, log it so the survey shows the ongoing turn
+    // If the active player has spent at least 1s on their move, log it so survey shows current turn
     const thinkingTime = (Date.now() - turnStartTimeRef.current) / 1000;
     if (thinkingTime >= 1.0) {
       logPlayerMove(activePlayerIndexRef.current, 'Current Turn Check');
     }
-    setSurveyLogs(getAllSurveyRecords());
+    setGroupedSurveyData(getPlayerGroupedSurveyData(playersRef.current));
     setIsSurveyModalOpen(true);
+  };
+
+  // Copy Survey Summary Text to Clipboard
+  const handleCopySummary = async () => {
+    const text = generateSurveyTextSummary(playersRef.current);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedText(true);
+      setTimeout(() => setCopiedText(false), 2500);
+    } catch (e) {
+      console.warn('Clipboard write notice:', e);
+    }
   };
 
   // Save Google Sheets Webhook
@@ -347,7 +361,7 @@ export const LiveCompanionPage = () => {
   const handleClearSurveyData = () => {
     if (window.confirm('Clear all recorded survey move telemetry for this session?')) {
       clearSurveyRecords();
-      setSurveyLogs([]);
+      setGroupedSurveyData(getPlayerGroupedSurveyData(playersRef.current));
     }
   };
 
@@ -430,26 +444,6 @@ export const LiveCompanionPage = () => {
     const s = secs % 60;
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
-
-  // Compute analytics statistics per player (ensuring EVERY player is represented)
-  const computePlayerStats = () => {
-    const stats = {};
-    players.forEach((p) => {
-      stats[p.name] = { count: 0, totalSeconds: 0, uid: p.uid, hero: p.heroSecondaryTitle };
-    });
-
-    surveyLogs.forEach((log) => {
-      if (!stats[log.playerName]) {
-        stats[log.playerName] = { count: 0, totalSeconds: 0, uid: log.playerUid, hero: log.heroTitle };
-      }
-      stats[log.playerName].count += 1;
-      stats[log.playerName].totalSeconds += log.durationSeconds || 0;
-    });
-
-    return stats;
-  };
-
-  const playerStats = computePlayerStats();
 
   return (
     <div className="live-companion-screen page-transition-fade">
@@ -885,7 +879,7 @@ export const LiveCompanionPage = () => {
         </div>
       )}
 
-      {/* ===== MODAL 3: SURVEY TELEMETRY & GOOGLE SHEETS EXPORT MODAL ===== */}
+      {/* ===== MODAL 3: SURVEY TELEMETRY - PLAYER BY PLAYER WITH RECORDING DATE ===== */}
       {isSurveyModalOpen && (
         <div className="live-modal-overlay" onClick={() => setIsSurveyModalOpen(false)}>
           <div className="survey-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -902,119 +896,109 @@ export const LiveCompanionPage = () => {
             <div className="survey-modal-title-row">
               <FileSpreadsheet size={22} color="#2ECC71" />
               <div>
-                <h3 className="survey-modal-title">Move Timestamps & Analysis</h3>
+                <h3 className="survey-modal-title">Move Timestamps Survey</h3>
                 <span className="survey-modal-sub">
-                  Full survey move telemetry across all {players.length} players
+                  Organized by player with timestamps & total time
                 </span>
               </div>
             </div>
 
-            {/* Quick Stats Grid: Guaranteed entry for ALL players in match */}
-            <div className="survey-stats-summary-grid">
-              <div className="survey-stat-card survey-stat-card--total">
-                <span className="stat-label">Total Moves</span>
-                <strong className="stat-value">{surveyLogs.length}</strong>
-              </div>
-              {Object.entries(playerStats).map(([name, stat]) => (
-                <div key={name} className="survey-stat-card">
-                  <span className="stat-label">{name}</span>
-                  <strong className="stat-value">
-                    {stat.count > 0 ? `${(stat.totalSeconds / stat.count).toFixed(1)}s avg` : '0s'}
-                  </strong>
-                  <span className="stat-sub">{stat.count} moves logged</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Google Sheets Actions */}
+            {/* Quick Action Export Bar */}
             <div className="survey-actions-panel">
               <button
                 type="button"
                 className="survey-export-btn survey-export-btn--csv"
-                onClick={() => downloadSurveyCSV()}
+                onClick={() => downloadSurveyCSV(playersRef.current)}
+                title="Download CSV formatted by Player"
               >
-                <Download size={15} />
-                <span>Download Survey CSV</span>
+                <Download size={14} />
+                <span>Download CSV (Sheets)</span>
+              </button>
+
+              <button
+                type="button"
+                className="survey-export-btn survey-export-btn--copy"
+                onClick={handleCopySummary}
+                title="Copy all player timestamps to clipboard"
+              >
+                {copiedText ? <Check size={14} color="#2ECC71" /> : <Copy size={14} />}
+                <span>{copiedText ? 'Copied!' : 'Copy Text'}</span>
               </button>
 
               <button
                 type="button"
                 className="survey-export-btn survey-export-btn--sheets"
                 onClick={openGoogleSheets}
+                title="Open Google Sheets"
               >
-                <ExternalLink size={15} />
-                <span>Open Google Sheets</span>
+                <ExternalLink size={14} />
+                <span>Open Sheets</span>
               </button>
             </div>
 
-            {/* Google Sheets Webhook Sync Config */}
-            <form className="survey-webhook-form" onSubmit={handleSaveWebhook}>
-              <label className="webhook-label">
-                <span>Google Sheets Webhook URL (Live Auto-Sync):</span>
-                <div className="webhook-input-row">
-                  <input
-                    type="url"
-                    placeholder="https://script.google.com/macros/s/... or SheetDB URL"
-                    value={webhookUrlInput}
-                    onChange={(e) => setWebhookUrlInput(e.target.value)}
-                    className="webhook-input"
-                  />
-                  <button type="submit" className="webhook-save-btn">
-                    {webhookSaved ? <Check size={14} color="#2ECC71" /> : 'Save'}
-                  </button>
-                </div>
-              </label>
-            </form>
+            {/* PLAYER-BY-PLAYER TIMESTAMPS & TOTAL TIME SECTION */}
+            <div className="survey-players-grouped-container">
+              {groupedSurveyData.map((player) => (
+                <div key={player.name} className="survey-player-group-card">
+                  {/* Player Header */}
+                  <div className="group-card-header">
+                    <div className="group-header-left">
+                      <span className="group-num-pill">Player {player.playerIndex}</span>
+                      <strong className="group-player-name">{player.name}</strong>
+                      <span className="group-hero-tag">{player.heroTitle || 'HERO'}</span>
+                    </div>
+                    <div className="group-header-right">
+                      <span className="group-total-time-badge">
+                        ⏱️ Total: <strong>{player.totalSeconds}s</strong>
+                      </span>
+                    </div>
+                  </div>
 
-            {/* Move Records Telemetry Table for All Players */}
-            <div className="survey-table-wrap">
-              <table className="survey-telemetry-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Player</th>
-                    <th>Hero</th>
-                    <th>Time</th>
-                    <th>Start ➔ End</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {surveyLogs.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="survey-empty-cell">
-                        No moves recorded yet. Play a turn in the companion!
-                      </td>
-                    </tr>
-                  ) : (
-                    surveyLogs.slice(-25).reverse().map((log) => (
-                      <tr key={log.id}>
-                        <td><strong>#{log.moveNumber}</strong></td>
-                        <td><strong className="table-player-name">{log.playerName}</strong></td>
-                        <td><span className="table-hero-tag">{log.heroTitle}</span></td>
-                        <td><strong className="time-highlight">{log.durationFormatted}</strong></td>
-                        <td className="time-sub-cell">{log.startFormatted} → {log.endFormatted}</td>
-                        <td><span className="action-tag">{log.actionType}</span></td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                  {/* Moves Timestamps List */}
+                  <div className="group-moves-list">
+                    {player.moves.length === 0 ? (
+                      <div className="group-empty-hint">No moves played yet in this session</div>
+                    ) : (
+                      player.moves.map((m, idx) => (
+                        <div key={m.id || idx} className="group-move-row">
+                          <span className="move-number-badge">Move #{idx + 1}</span>
+                          <span className="move-timestamps-text">
+                            {m.startFormatted} → {m.endFormatted}
+                          </span>
+                          <strong className="move-duration-highlight">{m.durationSeconds}s</strong>
+                          <span className="move-action-type-tag">{m.actionType}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Player Footer Summary */}
+                  <div className="group-card-footer">
+                    <span>Total Moves: <strong>{player.totalMoves}</strong></span>
+                    <span>Average per Move: <strong>{player.averageSeconds}s</strong></span>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Footer with Clear Button */}
-            <div className="survey-modal-footer">
-              <span className="survey-count-note">
-                Showing recent {Math.min(25, surveyLogs.length)} of {surveyLogs.length} moves
-              </span>
-              {surveyLogs.length > 0 && (
+            {/* DATE OF RECORDING AT THE END */}
+            <div className="survey-recording-date-footer">
+              <div className="date-banner-content">
+                <Calendar size={15} color="#D9A441" />
+                <span>
+                  Date of Recording: <strong>{new Date().toLocaleString()}</strong>
+                </span>
+              </div>
+
+              {groupedSurveyData.some((p) => p.moves.length > 0) && (
                 <button
                   type="button"
                   className="survey-clear-btn"
                   onClick={handleClearSurveyData}
+                  title="Clear all recorded moves"
                 >
-                  <Trash2 size={13} />
-                  <span>Clear Logs</span>
+                  <Trash2 size={12} />
+                  <span>Clear</span>
                 </button>
               )}
             </div>
