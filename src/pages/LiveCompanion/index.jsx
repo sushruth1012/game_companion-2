@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Settings, Shield, Coins, Sparkles, Zap, Info, CheckCircle2, X, AlertCircle, Volume2 } from 'lucide-react';
+import { Crown, Settings, Shield, Coins, Sparkles, Zap, Info, CheckCircle2, X, AlertCircle, Clock, Play, Pause, TimerReset } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
 import { addPoints, deductPoints } from '../../services/pointService';
@@ -80,10 +80,54 @@ export const LiveCompanionPage = () => {
   const [themeKey, setThemeKey] = useState('rajya');
   const [worldThemeName, setWorldThemeName] = useState('KINGDOMS');
 
+  // 1-Minute Chess Timer State
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [turnDropdown, setTurnDropdown] = useState(null);
+
   // Modals state
   const [selectedInfoPlayer, setSelectedInfoPlayer] = useState(null);
   const [advantageToConfirm, setAdvantageToConfirm] = useState(null);
   const [activeRewardNotification, setActiveRewardNotification] = useState(null);
+
+  // Show dropdown notification when turn changes
+  const showTurnDropdown = (player, isTimeout = false) => {
+    setTurnDropdown({
+      playerName: player.name,
+      heroTitle: player.heroSecondaryTitle,
+      isTimeout,
+    });
+  };
+
+  // Auto-dismiss turn dropdown banner after 2.6s
+  useEffect(() => {
+    if (!turnDropdown) return;
+    const timer = setTimeout(() => {
+      setTurnDropdown(null);
+    }, 2600);
+    return () => clearTimeout(timer);
+  }, [turnDropdown]);
+
+  // 1-Minute Turn Countdown Interval
+  useEffect(() => {
+    if (isTimerPaused) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Time's up! Automatically pass turn to next player
+          const nextIdx = (activePlayerIndex + 1) % players.length;
+          const nextPlayer = players[nextIdx];
+          setActivePlayerIndex(nextIdx);
+          showTurnDropdown(nextPlayer, true);
+          return 60; // Reset to 60s
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activePlayerIndex, isTimerPaused, players]);
 
   useEffect(() => {
     // Read configured players from setup & hero assignment
@@ -152,18 +196,29 @@ export const LiveCompanionPage = () => {
 
   // Handle Player Banner Tap: Directly switches turn to that player
   const handlePlayerTap = (index) => {
-    setActivePlayerIndex(index);
-    recordGameActivity?.().catch(() => {});
+    if (index !== activePlayerIndex) {
+      setActivePlayerIndex(index);
+      setTimeLeft(60);
+      showTurnDropdown(players[index], false);
+      recordGameActivity?.().catch(() => {});
+    }
   };
 
   // Next Turn Button Action
   const handleNextTurn = async () => {
     await nextTurn('chowkabara_live_session');
-    setActivePlayerIndex((prev) => {
-      const nextIdx = (prev + 1) % players.length;
-      return nextIdx;
-    });
+    const nextIdx = (activePlayerIndex + 1) % players.length;
+    const nextPlayer = players[nextIdx];
+    setActivePlayerIndex(nextIdx);
+    setTimeLeft(60);
+    showTurnDropdown(nextPlayer, false);
     recordGameActivity?.().catch(() => {});
+  };
+
+  // Toggle Timer Pause
+  const handleTogglePause = (e) => {
+    e.stopPropagation();
+    setIsTimerPaused((prev) => !prev);
   };
 
   // Point/Mudras updates when buying riddle
@@ -235,11 +290,46 @@ export const LiveCompanionPage = () => {
     recordGameActivity?.().catch(() => {});
   };
 
+  // Format seconds to MM:SS
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   return (
     <div className="live-companion-screen page-transition-fade">
       {/* Dynamic Atmospheric Blurred Background */}
       <div className="live-ambient-blurred-bg" />
       <div className="live-bg-board-watermark" />
+
+      {/* ===== TOP SLIDE DROPDOWN NOTIFICATION BANNER ===== */}
+      {turnDropdown && (
+        <div
+          className={`turn-dropdown-banner ${turnDropdown.isTimeout ? 'turn-dropdown-banner--timeout' : ''}`}
+          onClick={() => setTurnDropdown(null)}
+        >
+          <div className="dropdown-icon-pill">
+            {turnDropdown.isTimeout ? (
+              <TimerReset size={16} color="#E74C3C" />
+            ) : (
+              <Crown size={16} color="#D9A441" />
+            )}
+          </div>
+          <div className="dropdown-text-wrap">
+            <span className="dropdown-badge-label">
+              {turnDropdown.isTimeout ? "⏳ TIME'S UP! TURN PASSED" : "⚔️ CURRENT TURN"}
+            </span>
+            <h4 className="dropdown-player-turn">
+              {turnDropdown.playerName}’s Turn
+              {turnDropdown.heroTitle && (
+                <span className="dropdown-hero-sub"> · {turnDropdown.heroTitle}</span>
+              )}
+            </h4>
+          </div>
+          <span className="dropdown-dismiss-hint">✕</span>
+        </div>
+      )}
 
       {/* ===== TOP APP BAR ===== */}
       <header className="live-top-bar">
@@ -260,7 +350,7 @@ export const LiveCompanionPage = () => {
         {/* Right Header Status & Settings */}
         <div className="top-right-group">
           <div className="progress-badge">
-            <span>Game in Progress ⏳</span>
+            <span>Live Match ⏳</span>
           </div>
           <button
             type="button"
@@ -313,7 +403,7 @@ export const LiveCompanionPage = () => {
                 {/* Player Name */}
                 <h3 className="player-side-name">{player.name}</h3>
 
-                {/* Hero Secondary Title (e.g. GANDIVA, SURYAKAVACHA, DYUTA MAYA, MAYA SHAKTI) */}
+                {/* Hero Secondary Title */}
                 <div className="player-hero-title-tag">
                   <span>{player.heroSecondaryTitle}</span>
                 </div>
@@ -394,7 +484,7 @@ export const LiveCompanionPage = () => {
                 {/* Player Name */}
                 <h3 className="player-side-name">{player.name}</h3>
 
-                {/* Hero Secondary Title (e.g. GANDIVA, SURYAKAVACHA, DYUTA MAYA, MAYA SHAKTI) */}
+                {/* Hero Secondary Title */}
                 <div className="player-hero-title-tag">
                   <span>{player.heroSecondaryTitle}</span>
                 </div>
@@ -429,16 +519,47 @@ export const LiveCompanionPage = () => {
 
       {/* ===== BOTTOM COMPANION CONTROLS ===== */}
       <footer className="live-bottom-panel">
-        {/* 1. CURRENT TURN BANNER */}
+        {/* 1. CURRENT TURN BANNER WITH 1-MINUTE CHESS TIMER */}
         <div
           className="current-turn-banner"
           onClick={handleNextTurn}
-          title="Click to advance to next player's turn"
+          title="Click to pass turn to next player"
         >
           <div className="turn-banner-header">
-            <Crown size={18} color="#D9A441" />
-            <span className="turn-label">CURRENT TURN</span>
+            <div className="turn-header-left">
+              <Crown size={17} color="#D9A441" />
+              <span className="turn-label">CURRENT TURN</span>
+            </div>
+
+            {/* CHESS-STYLE 1-MINUTE TIMER WIDGET */}
+            <div
+              className={`turn-chess-timer ${timeLeft <= 10 ? 'turn-chess-timer--warning' : ''}`}
+              onClick={(e) => e.stopPropagation()}
+              title="1-Minute Turn Timer (Auto-passes on timeout)"
+            >
+              <Clock size={13} className={timeLeft <= 10 ? 'timer-pulse-icon' : ''} />
+              <span className="timer-countdown-digits">{formatTime(timeLeft)}</span>
+              
+              <button
+                type="button"
+                className="timer-pause-toggle-btn"
+                onClick={handleTogglePause}
+                title={isTimerPaused ? "Resume Timer" : "Pause Timer"}
+                aria-label="Pause or Resume Timer"
+              >
+                {isTimerPaused ? <Play size={11} fill="currentColor" /> : <Pause size={11} fill="currentColor" />}
+              </button>
+            </div>
           </div>
+
+          {/* Timer Progress Track Bar */}
+          <div className="turn-timer-progress-track">
+            <div
+              className={`turn-timer-progress-fill ${timeLeft <= 10 ? 'progress-fill--warning' : ''}`}
+              style={{ width: `${(timeLeft / 60) * 100}%` }}
+            />
+          </div>
+
           <h2 className="active-turn-player-name">
             {activePlayer.name}’s Turn
             {activePlayer.heroSecondaryTitle && (
@@ -447,11 +568,11 @@ export const LiveCompanionPage = () => {
           </h2>
 
           <p className="turn-sub-instruction">
-            Tap banner to pass turn or select another player on the board ➔
+            ⏳ 1 min per turn · Tap banner to pass turn early ➔
           </p>
         </div>
 
-        {/* 2. USE ADVANTAGE ACTION BANNER (Replaces Event Log) */}
+        {/* 2. USE ADVANTAGE ACTION BANNER */}
         <div className="use-advantage-banner">
           <div className="use-adv-content-wrap">
             <div className="use-adv-header-row">
