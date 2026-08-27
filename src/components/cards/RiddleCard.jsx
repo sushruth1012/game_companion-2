@@ -11,6 +11,8 @@ import './RiddleCard.css';
 export const RiddleCard = ({
   activePlayer,
   themeKey = 'rajya',
+  hasAnsweredRiddleThisTurn = false,
+  onRiddleAnswered,
   onPointsDeducted,
   onSolveSuccess,
   onSolveFail,
@@ -44,13 +46,13 @@ export const RiddleCard = ({
   }, [themeKey, difficulty]);
 
   const handleDifficultyChange = (newDiff) => {
-    if (isFlipped) return; // Prevent changing tier during active challenge
+    if (isFlipped || hasAnsweredRiddleThisTurn) return;
     setDifficulty(newDiff);
     onEventLog?.(`Selected ${newDiff.toUpperCase()} difficulty (${RIDDLE_COSTS[newDiff]} Mudras).`);
   };
 
   const handleShuffle = () => {
-    if (isFlipped) return;
+    if (isFlipped || hasAnsweredRiddleThisTurn) return;
     const riddle = getRandomRiddle(themeKey, difficulty);
     setCurrentRiddle(riddle);
     onEventLog?.(`Drawn a new ${difficulty.toUpperCase()} riddle challenge.`);
@@ -58,7 +60,7 @@ export const RiddleCard = ({
 
   // Handle Buying & Flipping Riddle via Member 2 Game Logic
   const handleBuyAndFlip = async () => {
-    if (!currentRiddle) return;
+    if (!currentRiddle || hasAnsweredRiddleThisTurn) return;
 
     const playerObj = {
       uid: activePlayer.uid || 'CHB001',
@@ -104,6 +106,9 @@ export const RiddleCard = ({
       age: typeof activePlayer.age === 'number' ? activePlayer.age : 20,
       mudras: activePlayer.points ?? STARTING_MUDRAS,
     };
+
+    // Mark that a riddle has been answered for this player's turn (1 riddle per move rule)
+    onRiddleAnswered?.();
 
     const submitResult = await submitAnswer(playerObj, isCorrect, currentRiddle.advantage);
 
@@ -154,6 +159,7 @@ export const RiddleCard = ({
               type="button"
               className={`diff-tab-btn diff-tab-btn--easy ${difficulty === 'easy' ? 'diff-tab-btn--active' : ''}`}
               onClick={() => handleDifficultyChange('easy')}
+              disabled={hasAnsweredRiddleThisTurn}
               title="Easy: 500 Mudras"
             >
               <span>Easy</span>
@@ -163,6 +169,7 @@ export const RiddleCard = ({
               type="button"
               className={`diff-tab-btn diff-tab-btn--med ${difficulty === 'medium' ? 'diff-tab-btn--active' : ''}`}
               onClick={() => handleDifficultyChange('medium')}
+              disabled={hasAnsweredRiddleThisTurn}
               title="Medium: 1000 Mudras"
             >
               <span>Med</span>
@@ -172,6 +179,7 @@ export const RiddleCard = ({
               type="button"
               className={`diff-tab-btn diff-tab-btn--hard ${difficulty === 'hard' ? 'diff-tab-btn--active' : ''}`}
               onClick={() => handleDifficultyChange('hard')}
+              disabled={hasAnsweredRiddleThisTurn}
               title="Hard: 1500 Mudras"
             >
               <span>Hard</span>
@@ -179,18 +187,13 @@ export const RiddleCard = ({
             </button>
           </div>
 
-          {/* Artwork Canvas */}
-          <div className="riddle-artwork-wrap">
-            <img
-              src={storyImage}
-              alt={currentRiddle.title}
-              className="riddle-artwork-img"
-            />
-            <div className="riddle-artwork-overlay" />
+          {/* Shuffle Button Row */}
+          <div className="riddle-shuffle-row">
             <button
               type="button"
               className="riddle-shuffle-btn"
               onClick={handleShuffle}
+              disabled={hasAnsweredRiddleThisTurn}
               title="Draw another challenge"
             >
               <Shuffle size={12} />
@@ -198,30 +201,51 @@ export const RiddleCard = ({
             </button>
           </div>
 
-          {/* Lore Teaser (Question is HIDDEN) */}
+          {/* Lore Teaser */}
           <div className="riddle-front-body">
             <p className="riddle-lore-text">{currentRiddle.lore}</p>
-            <div className="riddle-hidden-prompt-box">
-              <Lock size={14} className="lock-icon-faint" />
-              <span className="hidden-prompt-hint">
-                Unlock {difficulty.toUpperCase()} challenge for {currentRiddle.cost} Mudras to reveal question & win{' '}
-                <strong>{typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : 'Advantage'}</strong>!
-              </span>
-            </div>
+            
+            {hasAnsweredRiddleThisTurn ? (
+              <div className="riddle-already-answered-box">
+                <Lock size={14} color="#D9A441" />
+                <span>
+                  <strong>1 Riddle Limit:</strong> You have already answered a riddle for this move. Pass turn to make another move!
+                </span>
+              </div>
+            ) : (
+              <div className="riddle-hidden-prompt-box">
+                <Lock size={14} className="lock-icon-faint" />
+                <span className="hidden-prompt-hint">
+                  Unlock {difficulty.toUpperCase()} challenge for {currentRiddle.cost} Mudras to reveal question & win{' '}
+                  <strong>{typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : 'Advantage'}</strong>!
+                </span>
+              </div>
+            )}
 
             {/* Buy / Unlock Action Button */}
             <div className="riddle-buy-action-wrap">
-              <button
-                type="button"
-                className="riddle-unlock-buy-btn"
-                onClick={handleBuyAndFlip}
-                disabled={isPurchasing}
-              >
-                <Coins size={16} className="coin-icon" />
-                <span>
-                  {isPurchasing ? 'Unlocking...' : `Unlock Riddle (${currentRiddle.cost} Mudras)`}
-                </span>
-              </button>
+              {hasAnsweredRiddleThisTurn ? (
+                <button
+                  type="button"
+                  className="riddle-unlock-buy-btn riddle-unlock-buy-btn--disabled"
+                  disabled={true}
+                >
+                  <Lock size={15} />
+                  <span>1 Riddle Per Move (Completed)</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="riddle-unlock-buy-btn"
+                  onClick={handleBuyAndFlip}
+                  disabled={isPurchasing}
+                >
+                  <Coins size={16} className="coin-icon" />
+                  <span>
+                    {isPurchasing ? 'Unlocking...' : `Unlock Riddle (${currentRiddle.cost} Mudras)`}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -238,71 +262,77 @@ export const RiddleCard = ({
           {/* Back Header */}
           <div className="riddle-header-text">
             <div className="back-badge-row">
-              <span className={`diff-pill-badge diff-pill-badge--${currentRiddle.difficulty}`}>
-                {currentRiddle.difficulty.toUpperCase()}
+              <span className="difficulty-pill-tag">
+                {difficulty.toUpperCase()} • {currentRiddle.cost} MUDRAS
               </span>
-              <span className="riddle-category-tag riddle-category-tag--gold">QUESTION REVEALED</span>
+              <span className="reward-pill-tag">
+                <Sparkles size={11} color="#2ECC71" /> +{currentRiddle.reward || 1500}
+              </span>
             </div>
-            <h2 className="riddle-title">Solve for Advantage</h2>
+            <h2 className="riddle-title riddle-title--back">{currentRiddle.title}</h2>
           </div>
 
-          {/* Question Container */}
-          <div className="riddle-back-body">
-            <div className="riddle-revealed-question-box">
-              <p className="riddle-question-text">{currentRiddle.question}</p>
-            </div>
+          {/* Question Text */}
+          <div className="riddle-question-wrap">
+            <p className="riddle-question-prompt">{currentRiddle.question}</p>
+          </div>
 
-            {/* Interactive Options List */}
-            {outcome === null ? (
-              <div className="riddle-options-list">
-                {currentRiddle.options.map((opt, idx) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    className="riddle-back-option-btn"
-                    onClick={() => handleOptionSelect(opt)}
-                  >
-                    <span className="opt-letter">{String.fromCharCode(65 + idx)}</span>
-                    <span className="opt-text">{opt.text}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              /* Result Banner */
-              <div className="riddle-outcome-display">
-                {outcome === 'correct' ? (
-                  <div className="outcome-box outcome-box--success">
-                    <div className="outcome-header">
-                      <CheckCircle size={18} color="#2ECC71" />
-                      <strong>Correct! (+{currentRiddle.reward} Mudras)</strong>
-                    </div>
-                    <p className="outcome-adv">
-                      Advantage: {typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : currentRiddle.advantage}
-                    </p>
-                    <small className="outcome-adv-desc">
-                      {typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.description : ''}
-                    </small>
-                  </div>
-                ) : (
-                  <div className="outcome-box outcome-box--fail">
-                    <div className="outcome-header">
-                      <HelpCircle size={18} color="#E74C3C" />
-                      <strong>Incorrect Answer</strong>
-                    </div>
-                    <p className="outcome-adv">No refund. No advantage gained this round.</p>
-                  </div>
-                )}
+          {/* Advantage Perk Preview */}
+          <div className="riddle-perk-ribbon">
+            <span className="perk-label">REWARD:</span>
+            <span className="perk-name">
+              {typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : 'Divine Advantage'}
+            </span>
+          </div>
 
+          {/* 4 Interactive Options */}
+          <div className="riddle-options-container">
+            {currentRiddle.options.map((opt) => {
+              const isSelected = selectedOption === opt.id;
+              let optionClass = 'riddle-option-choice';
+
+              if (outcome && isSelected) {
+                optionClass += outcome === 'correct' ? ' option--correct' : ' option--wrong';
+              } else if (outcome && opt.isCorrect) {
+                optionClass += ' option--show-correct';
+              }
+
+              return (
                 <button
+                  key={opt.id}
                   type="button"
-                  className="riddle-flip-back-btn"
-                  onClick={handleFlipBack}
+                  className={optionClass}
+                  onClick={() => !outcome && handleOptionSelect(opt)}
+                  disabled={outcome !== null}
                 >
-                  <RotateCw size={14} /> Next Challenge
+                  <span className="option-letter">{opt.id.toUpperCase()}</span>
+                  <span className="option-text">{opt.text}</span>
+                  {outcome && opt.isCorrect && (
+                    <CheckCircle size={15} className="option-status-icon" color="#2ECC71" />
+                  )}
                 </button>
-              </div>
-            )}
+              );
+            })}
           </div>
+
+          {/* Outcome Result Message */}
+          {outcome && (
+            <div className={`riddle-outcome-banner outcome--${outcome}`}>
+              <span className="outcome-text">
+                {outcome === 'correct'
+                  ? `🎉 Solved! +${currentRiddle.reward || 1500} Mudras awarded!`
+                  : `❌ Incorrect! No advantage awarded.`}
+              </span>
+              <button
+                type="button"
+                className="riddle-flipback-btn"
+                onClick={handleFlipBack}
+              >
+                <RotateCw size={13} />
+                <span>Return to Event Card</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

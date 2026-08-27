@@ -163,14 +163,14 @@ export const GameSelectionPage = () => {
 
       {/* ===== TOP APP BAR ===== */}
       <header className="khel-top-bar">
-        {/* Left Home Button */}
+        {/* Left Constant Back Button */}
         <button
           type="button"
-          className="header-icon-btn"
+          className="app-back-btn"
           onClick={() => navigate('/login')}
           aria-label="Back to Login"
         >
-          <Home size={18} />
+          <ChevronLeft size={20} />
         </button>
 
         {/* Center Royal Hanging Tapestry Banner */}

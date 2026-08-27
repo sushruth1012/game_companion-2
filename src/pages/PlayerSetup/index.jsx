@@ -175,10 +175,10 @@ export const PlayerSetupPage = () => {
     <div className="player-setup-screen page-transition-fade">
       {/* ===== TOP ARCH BANNER ===== */}
       <header className="setup-header-arch">
-        {/* Back Button */}
+        {/* Constant Back Button */}
         <button
           type="button"
-          className="setup-back-btn"
+          className="app-back-btn"
           onClick={() => navigate('/theme-selection')}
           aria-label="Back to Theme Selection"
         >

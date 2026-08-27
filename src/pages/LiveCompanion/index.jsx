@@ -22,6 +22,8 @@ import {
   Copy,
   Check,
   Calendar,
+  ChevronLeft,
+  LogOut,
 } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
@@ -113,10 +115,16 @@ export const LiveCompanionPage = () => {
   const [themeKey, setThemeKey] = useState('rajya');
   const [worldThemeName, setWorldThemeName] = useState('KINGDOMS');
 
+  // 1 Riddle Per Move Rule State
+  const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
+
   // 1-Minute Chess Timer State
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [turnDropdown, setTurnDropdown] = useState(null);
+
+  // Settings & Survey Header Dropdown State
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
 
   // Synchronized References for Survey Telemetry Logging
   const playersRef = useRef(players);
@@ -214,11 +222,12 @@ export const LiveCompanionPage = () => {
       // 1. Log previous player's move as Timeout
       logPlayerMove(currentIdx, 'Timeout (60s)');
 
-      // 2. Advance to next player
+      // 2. Advance to next player and reset 1-riddle-per-move rule
       const nextIdx = (currentIdx + 1) % playerList.length;
       const nextPlayer = playerList[nextIdx];
       setActivePlayerIndex(nextIdx);
       setTimeLeft(60);
+      setHasAnsweredRiddleThisTurn(false);
       showTurnDropdown(nextPlayer, true);
     }
   }, [timeLeft]);
@@ -296,9 +305,10 @@ export const LiveCompanionPage = () => {
       // 1. Log previous player's move
       logPlayerMove(activePlayerIndexRef.current, 'Manual Switch');
 
-      // 2. Set new active player
+      // 2. Set new active player and reset 1-riddle-per-move rule
       setActivePlayerIndex(index);
       setTimeLeft(60);
+      setHasAnsweredRiddleThisTurn(false);
       showTurnDropdown(players[index], false);
       recordGameActivity?.().catch(() => {});
     }
@@ -311,11 +321,12 @@ export const LiveCompanionPage = () => {
     // 1. Log previous player's move
     logPlayerMove(activePlayerIndexRef.current, 'Manual Pass');
 
-    // 2. Advance to next player
+    // 2. Advance to next player and reset 1-riddle-per-move rule
     const nextIdx = (activePlayerIndexRef.current + 1) % players.length;
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
     setTimeLeft(60);
+    setHasAnsweredRiddleThisTurn(false);
     showTurnDropdown(nextPlayer, false);
     recordGameActivity?.().catch(() => {});
   };
@@ -328,13 +339,22 @@ export const LiveCompanionPage = () => {
 
   // Open Survey Analytics Modal
   const handleOpenSurveyModal = () => {
-    // If the active player has spent at least 1s on their move, log it so survey shows current turn
     const thinkingTime = (Date.now() - turnStartTimeRef.current) / 1000;
     if (thinkingTime >= 1.0) {
       logPlayerMove(activePlayerIndexRef.current, 'Current Turn Check');
     }
     setGroupedSurveyData(getPlayerGroupedSurveyData(playersRef.current));
     setIsSurveyModalOpen(true);
+  };
+
+  // Handle Log Out
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out? This will end the active game session.')) {
+      sessionStorage.clear();
+      localStorage.removeItem('active_device_session');
+      localStorage.removeItem('activated_box_code');
+      navigate('/login');
+    }
   };
 
   // Copy Survey Summary Text to Clipboard
@@ -446,7 +466,7 @@ export const LiveCompanionPage = () => {
   };
 
   return (
-    <div className="live-companion-screen page-transition-fade">
+    <div className="live-companion-screen page-transition-fade" onClick={() => isSettingsMenuOpen && setIsSettingsMenuOpen(false)}>
       {/* Dynamic Atmospheric Blurred Background */}
       <div className="live-ambient-blurred-bg" />
       <div className="live-bg-board-watermark" />
@@ -479,8 +499,18 @@ export const LiveCompanionPage = () => {
         </div>
       )}
 
-      {/* ===== TOP APP BAR ===== */}
+      {/* ===== TOP APP BAR WITH CONSTANT BACK BUTTON & SETTINGS MENU ===== */}
       <header className="live-top-bar">
+        {/* Left Constant Back Button */}
+        <button
+          type="button"
+          className="app-back-btn"
+          onClick={() => navigate('/hero-assignment')}
+          aria-label="Back to Hero Assignment"
+        >
+          <ChevronLeft size={20} />
+        </button>
+
         {/* World Badge */}
         <div className="world-theme-badge">
           <Crown size={15} color="#D9A441" />
@@ -495,28 +525,70 @@ export const LiveCompanionPage = () => {
           <span className="chapter-title">Chapter 1: The Young Heir 📜</span>
         </div>
 
-        {/* Right Header: Survey Sheets & Settings */}
+        {/* Right Settings & Survey Dropdown Menu */}
         <div className="top-right-group">
-          {/* Survey Google Sheets Export Trigger */}
-          <button
-            type="button"
-            className="survey-sheets-btn"
-            onClick={handleOpenSurveyModal}
-            title="Survey Move Timestamps & Google Sheets Sync"
-            aria-label="Survey Analytics"
-          >
-            <FileSpreadsheet size={15} color="#2ECC71" />
-            <span>Survey</span>
-          </button>
+          <div className="settings-menu-anchor" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className={`settings-gear-btn ${isSettingsMenuOpen ? 'settings-gear-btn--active' : ''}`}
+              onClick={() => setIsSettingsMenuOpen((prev) => !prev)}
+              aria-label="Settings and Survey Menu"
+            >
+              <Settings size={17} />
+            </button>
 
-          <button
-            type="button"
-            className="settings-gear-btn"
-            onClick={() => navigate('/settings')}
-            aria-label="Settings"
-          >
-            <Settings size={17} />
-          </button>
+            {/* Dropdown Menu Popup */}
+            {isSettingsMenuOpen && (
+              <div className="live-settings-dropdown page-dropdown-slide">
+                <button
+                  type="button"
+                  className="dropdown-menu-item"
+                  onClick={() => {
+                    setIsSettingsMenuOpen(false);
+                    handleOpenSurveyModal();
+                  }}
+                >
+                  <FileSpreadsheet size={16} color="#2ECC71" />
+                  <div className="menu-item-text">
+                    <strong>Survey & Google Sheets</strong>
+                    <small>Timestamps & total time</small>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className="dropdown-menu-item"
+                  onClick={() => {
+                    setIsSettingsMenuOpen(false);
+                    navigate('/settings');
+                  }}
+                >
+                  <Settings size={16} color="#D9A441" />
+                  <div className="menu-item-text">
+                    <strong>Game Preferences</strong>
+                    <small>Audio, vibration & display</small>
+                  </div>
+                </button>
+
+                <div className="dropdown-divider" />
+
+                <button
+                  type="button"
+                  className="dropdown-menu-item dropdown-menu-item--logout"
+                  onClick={() => {
+                    setIsSettingsMenuOpen(false);
+                    handleLogout();
+                  }}
+                >
+                  <LogOut size={16} color="#E74C3C" />
+                  <div className="menu-item-text">
+                    <strong style={{ color: '#E74C3C' }}>Log Out</strong>
+                    <small>Return to login screen</small>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -592,11 +664,13 @@ export const LiveCompanionPage = () => {
           })}
         </div>
 
-        {/* CENTER COLUMN: 3D Flip Riddle Card */}
+        {/* CENTER COLUMN: 3D Flip Riddle Card (1 Riddle Per Move Limit) */}
         <div className="arena-center-card">
           <RiddleCard
             activePlayer={activePlayer}
             themeKey={themeKey}
+            hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
+            onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
             onPointsDeducted={handlePointsDeducted}
             onSolveSuccess={handleSolveSuccess}
             onSolveFail={handleSolveFail}

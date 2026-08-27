@@ -293,9 +293,28 @@
   transition: all 0.2s ease;
 }
 
-.riddle-unlock-buy-btn:hover {
-  background: linear-gradient(180deg, #C28B2F 0%, #915F19 100%);
-  transform: translateY(-1px);
+.riddle-already-answered-box {
+  background: rgba(217, 164, 65, 0.12);
+  border: 1px dashed rgba(217, 164, 65, 0.45);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-family: var(--font-body);
+  font-size: 0.58rem;
+  color: #F9D77E;
+  line-height: 1.25;
+}
+
+.riddle-unlock-buy-btn--disabled {
+  background: rgba(45, 30, 20, 0.7) !important;
+  border: 1px solid #5C3D22 !important;
+  color: #8C7864 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .riddle-unlock-buy-btn:active {
