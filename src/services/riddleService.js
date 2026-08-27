@@ -1,4 +1,4 @@
-// Standard Riddles Service - Fully Integrated with Member 2 Game Logic (src/lib/gameLogic.ts)
+// Standard Riddles Service - Integrated with Age-Group Spreadsheet & Member 2 Game Logic
 import {
   buyRiddle as member2BuyRiddle,
   getRandomRiddle as member2GetRandomRiddle,
@@ -10,284 +10,491 @@ import {
 
 export { STARTING_MUDRAS, RIDDLE_COSTS };
 
-// Comprehensive Theme-Based Riddles by Difficulty (Easy: 500, Medium: 1000, Hard: 1500)
-export const themeRiddlesDatabase = {
-  rajya: {
+/**
+ * Complete Riddles Database from Google Sheets organized by Age Group & Difficulty
+ * Age Groups: 8-12 | 13-16 | 17+
+ * Difficulties: easy | medium | hard
+ */
+export const spreadsheetRiddles = {
+  '8-12': {
     easy: [
       {
-        id: 'rajya_easy_1',
-        title: 'The Royal Envoy',
+        id: 'r_8_12_easy_1',
+        title: 'Festival of Lights',
         difficulty: 'easy',
-        lore: 'An envoy from a neighboring realm seeks safe passage through your province.',
-        question: 'In the ancient Arthashastra, which state official oversaw safe merchant trade routes and fortress checkpoints?',
+        ageGroup: '8-12',
+        lore: 'A joyous occasion celebrated across the lands with glowing deepas and sweets.',
+        question: 'Which festival is popularly known as the “Festival of Lights” in India?',
         cost: RIDDLE_COSTS.easy,
         reward: 800,
-        advantage: { id: 'adv_safe_passage', name: 'Safe Route', description: 'Immune from capture for 1 full round' },
+        advantage: { id: 'adv_deepa_light', name: 'Festival Radiance', description: 'Advance any pawn by +1 bonus space' },
         options: [
-          { id: 'opt_1', text: 'Samsthadhyaksha (Route & Market Overseer)', isCorrect: true },
-          { id: 'opt_2', text: 'Koshadhyaksha (Royal Vault Keeper)', isCorrect: false },
-          { id: 'opt_3', text: 'Durgapala (Fortress Guard)', isCorrect: false },
+          { id: 'a', text: 'Holi', isCorrect: false },
+          { id: 'b', text: 'Diwali', isCorrect: true },
+          { id: 'c', text: 'Pongal', isCorrect: false },
+          { id: 'd', text: 'Onam', isCorrect: false },
         ],
       },
       {
-        id: 'rajya_easy_2',
-        title: 'The Palace Granary',
+        id: 'r_8_12_easy_2',
+        title: 'Bounty of the Forest',
         difficulty: 'easy',
-        lore: 'The royal storekeeper prepares rations for the kingdom.',
-        question: 'Which ancient grain was stored in royal granaries for up to a decade as drought insurance?',
+        ageGroup: '8-12',
+        lore: 'The green trees and sacred plants nourish the earth and air.',
+        question: 'What do plants mainly take in from the air to make their food?',
         cost: RIDDLE_COSTS.easy,
         reward: 800,
-        advantage: { id: 'adv_extra_step', name: 'Granary Rations', description: 'Advance pawn by +1 extra step' },
+        advantage: { id: 'adv_plant_nourish', name: 'Nature’s Vitality', description: 'Immune from opponent capture for 1 turn' },
         options: [
-          { id: 'opt_1', text: 'Millets (Ragi and Foxtail Millet)', isCorrect: true },
-          { id: 'opt_2', text: 'Imported Spices', isCorrect: false },
-          { id: 'opt_3', text: 'Fresh Sugarcane', isCorrect: false },
+          { id: 'a', text: 'Oxygen', isCorrect: false },
+          { id: 'b', text: 'Nitrogen', isCorrect: false },
+          { id: 'c', text: 'Carbon dioxide', isCorrect: true },
+          { id: 'd', text: 'Water vapour', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_8_12_easy_3',
+        title: 'The Royal Banquet Share',
+        difficulty: 'easy',
+        ageGroup: '8-12',
+        lore: 'The royal confectioner prepares sweet golden laddus for four young travelers.',
+        question: 'You have 12 laddus and share them equally among 4 friends. How many laddus does each friend get?',
+        cost: RIDDLE_COSTS.easy,
+        reward: 800,
+        advantage: { id: 'adv_equal_share', name: 'Equal Harmony', description: 'Choose between 2 dice roll options on board' },
+        options: [
+          { id: 'a', text: '2', isCorrect: false },
+          { id: 'b', text: '3', isCorrect: true },
+          { id: 'c', text: '4', isCorrect: false },
+          { id: 'd', text: '6', isCorrect: false },
         ],
       },
     ],
     medium: [
       {
-        id: 'rajya_med_1',
-        title: 'The Wise Advisor',
+        id: 'r_8_12_med_1',
+        title: 'The Great Soul',
         difficulty: 'medium',
-        lore: 'Your royal council has presented a critical state dilemma before the emperor.',
-        question: 'What ancient Maurya & Chola strategy helped the kingdom survive dry seasons without depleting the royal treasury?',
+        ageGroup: '8-12',
+        lore: 'A revered leader walked with truth and non-violence across the nation.',
+        question: 'Who is known as the “Father of the Nation” in India?',
         cost: RIDDLE_COSTS.medium,
         reward: 1500,
-        advantage: { id: 'adv_double_roll', name: 'Double Roll', description: 'Roll two consecutive turns on physical board' },
+        advantage: { id: 'adv_peace_walk', name: 'Ahimsa Shield', description: 'Shield your nearest pawn in a safe zone' },
         options: [
-          { id: 'opt_1', text: 'Build state rainwater reservoirs & community stepwells', isCorrect: true },
-          { id: 'opt_2', text: 'Impose emergency grain taxes on local farmers', isCorrect: false },
-          { id: 'opt_3', text: 'Host a grand royal tournament in the capital', isCorrect: false },
+          { id: 'a', text: 'Jawaharlal Nehru', isCorrect: false },
+          { id: 'b', text: 'Sardar Patel', isCorrect: false },
+          { id: 'c', text: 'Mahatma Gandhi', isCorrect: true },
+          { id: 'd', text: 'Subhas Chandra Bose', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_8_12_med_2',
+        title: 'Toss of Fate',
+        difficulty: 'medium',
+        ageGroup: '8-12',
+        lore: 'A royal coin spins through the air to determine the first move.',
+        question: 'A coin has two sides: heads and tails. If you toss it once, what is the chance of getting heads?',
+        cost: RIDDLE_COSTS.medium,
+        reward: 1500,
+        advantage: { id: 'adv_fortune_toss', name: 'Fortune Coin', description: 'Re-roll your cowries if unsatisfied with result' },
+        options: [
+          { id: 'a', text: '0%', isCorrect: false },
+          { id: 'b', text: '25%', isCorrect: false },
+          { id: 'c', text: '50%', isCorrect: true },
+          { id: 'd', text: '100%', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_8_12_med_3',
+        title: 'Rhythm of Life',
+        difficulty: 'medium',
+        ageGroup: '8-12',
+        lore: 'Deep inside the chest, a tireless engine beats with energy and life.',
+        question: 'Which organ pumps blood throughout your body?',
+        cost: RIDDLE_COSTS.medium,
+        reward: 1500,
+        advantage: { id: 'adv_pulse_power', name: 'Vital Heartbeat', description: 'Double movement speed for your lead pawn' },
+        options: [
+          { id: 'a', text: 'Brain', isCorrect: false },
+          { id: 'b', text: 'Heart', isCorrect: true },
+          { id: 'c', text: 'Lungs', isCorrect: false },
+          { id: 'd', text: 'Stomach', isCorrect: false },
         ],
       },
     ],
     hard: [
       {
-        id: 'rajya_hard_1',
-        title: 'The Emperor’s Gambit',
+        id: 'r_8_12_hard_1',
+        title: 'Sacred Thread of Protection',
         difficulty: 'hard',
-        lore: 'Emperor Krishnadevaraya faces a multi-front diplomatic standoff.',
-        question: 'In Indian statecraft (Saptanga theory), what constitutes the 7th vital limb that guarantees a kingdom’s supreme sovereignty?',
+        ageGroup: '8-12',
+        lore: 'An elder offers a sacred blessing before the warrior sets forth on the quest.',
+        question: 'I am worn on the wrist, but I am not a watch. In many Indian traditions, I am tied for blessings and protection. What am I?',
         cost: RIDDLE_COSTS.hard,
         reward: 2500,
-        advantage: { id: 'adv_teleport_home', name: 'Emperor’s Command', description: 'Teleport any friendly pawn directly into the inner Katte' },
+        advantage: { id: 'adv_kalava_shield', name: 'Sacred Raksha', description: 'Teleport one pawn directly to the nearest safe Katte' },
         options: [
-          { id: 'opt_1', text: 'Mitra (Faithful Strategic Allies & Treaties)', isCorrect: true },
-          { id: 'opt_2', text: 'Sena (Mercenary Cavalry)', isCorrect: false },
-          { id: 'opt_3', text: 'Kosha (Hidden Mountain Treasure)', isCorrect: false },
+          { id: 'a', text: 'Kalava', isCorrect: true },
+          { id: 'b', text: 'Turban', isCorrect: false },
+          { id: 'c', text: 'Anklet', isCorrect: false },
+          { id: 'd', text: 'Bindi', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_8_12_hard_2',
+        title: 'The Infallible Bow',
+        difficulty: 'hard',
+        ageGroup: '8-12',
+        lore: 'A divine weapon bestowed upon the greatest archer of the epic era.',
+        question: 'I have many strings, but I am not a rope. Arjuna was famous for using me in the Mahabharata. What am I?',
+        cost: RIDDLE_COSTS.hard,
+        reward: 2500,
+        advantage: { id: 'adv_gandiva_aim', name: 'Gandiva Strike', description: 'Target any opponent pawn and return it to their house' },
+        options: [
+          { id: 'a', text: 'Veena', isCorrect: false },
+          { id: 'b', text: 'Gandiva', isCorrect: true },
+          { id: 'c', text: 'Flute', isCorrect: false },
+          { id: 'd', text: 'Tabla', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_8_12_hard_3',
+        title: 'The Traditional Seat',
+        difficulty: 'hard',
+        ageGroup: '8-12',
+        lore: 'In the heritage courtyard, dining and gatherings carry age-old customs.',
+        question: 'I have four legs, but I am not an animal. In a traditional Indian kitchen, I may help you sit while eating. What am I?',
+        cost: RIDDLE_COSTS.hard,
+        reward: 2500,
+        advantage: { id: 'adv_patla_rest', name: 'Courtyard Solace', description: 'Pawn cannot be pushed back on this round' },
+        options: [
+          { id: 'a', text: 'Patla', isCorrect: true },
+          { id: 'b', text: 'Dholak', isCorrect: false },
+          { id: 'c', text: 'Kalash', isCorrect: false },
+          { id: 'd', text: 'Diya', isCorrect: false },
         ],
       },
     ],
   },
-  kshetra_devalaya: {
+  '13-16': {
     easy: [
       {
-        id: 'temple_easy_1',
-        title: 'The Pillar of Lights',
+        id: 'r_13_16_easy_1',
+        title: 'Dance of the Gods',
         difficulty: 'easy',
-        lore: 'The temple archaka lights the evening lamps at the entrance.',
-        question: 'What is the towering pillar erected outside temple courtyards to hold oil lamps during festivities called?',
+        ageGroup: '13-16',
+        lore: 'Elaborate painted face masks, dramatic gestures, and beating drums echo through Kerala.',
+        question: 'Which Indian classical dance originated in Kerala?',
         cost: RIDDLE_COSTS.easy,
         reward: 800,
-        advantage: { id: 'adv_glow_shield', name: 'Deepa Shield', description: 'Pawn cannot be attacked on normal squares for 1 turn' },
+        advantage: { id: 'adv_kathakali_grace', name: 'Kathakali Step', description: 'Move +1 additional space forward' },
         options: [
-          { id: 'opt_1', text: 'Deepa Sthambha', isCorrect: true },
-          { id: 'opt_2', text: 'Gopuram Vimana', isCorrect: false },
-          { id: 'opt_3', text: 'Bali Peetham', isCorrect: false },
+          { id: 'a', text: 'Kathak', isCorrect: false },
+          { id: 'b', text: 'Bharatanatyam', isCorrect: false },
+          { id: 'c', text: 'Kathakali', isCorrect: true },
+          { id: 'd', text: 'Odissi', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_13_16_easy_2',
+        title: 'Breath of the Elements',
+        difficulty: 'easy',
+        ageGroup: '13-16',
+        lore: 'The air carries life across the vast mountains and lush rivers of the subcontinent.',
+        question: 'Which gas do humans need to breathe in order to survive?',
+        cost: RIDDLE_COSTS.easy,
+        reward: 800,
+        advantage: { id: 'adv_prana_vitality', name: 'Prana Surge', description: 'Roll two consecutive turns' },
+        options: [
+          { id: 'a', text: 'Oxygen', isCorrect: true },
+          { id: 'b', text: 'Carbon dioxide', isCorrect: false },
+          { id: 'c', text: 'Hydrogen', isCorrect: false },
+          { id: 'd', text: 'Helium', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_13_16_easy_3',
+        title: 'The Merchant’s Calculation',
+        difficulty: 'easy',
+        ageGroup: '13-16',
+        lore: 'A Silk Route merchant calculates tax for a trade caravan of 200 gold coins.',
+        question: 'What is 15% of 200?',
+        cost: RIDDLE_COSTS.easy,
+        reward: 800,
+        advantage: { id: 'adv_mercantile_math', name: 'Merchant Precision', description: 'Choose your desired roll for the next move' },
+        options: [
+          { id: 'a', text: '15', isCorrect: false },
+          { id: 'b', text: '20', isCorrect: false },
+          { id: 'c', text: '30', isCorrect: true },
+          { id: 'd', text: '40', isCorrect: false },
         ],
       },
     ],
     medium: [
       {
-        id: 'temple_med_1',
-        title: 'The Sacred Gateway',
+        id: 'r_13_16_med_1',
+        title: 'Architect of the Empire',
         difficulty: 'medium',
-        lore: 'The chief Sthapati (temple architect) challenges you at the temple gopuram.',
-        question: 'In Dravidian temple architecture, what sacred hall connects the pilgrim pathway to the innermost Garbhagriha?',
+        ageGroup: '13-16',
+        lore: 'Guided by Chanakya, a young warrior unified ancient kingdoms into a grand empire.',
+        question: 'Who was the first emperor of the Maurya Empire?',
         cost: RIDDLE_COSTS.medium,
         reward: 1500,
-        advantage: { id: 'adv_katte_sanctuary', name: 'Katte Sanctuary', description: 'Move immediately to the nearest safe Katte square' },
+        advantage: { id: 'adv_maurya_might', name: 'Imperial Command', description: 'Move any pawn directly to the inner corridor' },
         options: [
-          { id: 'opt_1', text: 'Ardha Mandapa (Pillared Hall of Transition)', isCorrect: true },
-          { id: 'opt_2', text: 'Natya Shala (Hall of Dance)', isCorrect: false },
-          { id: 'opt_3', text: 'Kalyana Mandapa', isCorrect: false },
+          { id: 'a', text: 'Ashoka', isCorrect: false },
+          { id: 'b', text: 'Chandragupta Maurya', isCorrect: true },
+          { id: 'c', text: 'Bindusara', isCorrect: false },
+          { id: 'd', text: 'Harshavardhana', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_13_16_med_2',
+        title: 'The Pouch of Fate',
+        difficulty: 'medium',
+        ageGroup: '13-16',
+        lore: 'A mysterious pouch holds colorful gems. Probability dictates the traveler’s destiny.',
+        question: 'A bag contains 3 red balls and 2 blue balls. If you pick one ball without looking, what is the probability of getting a blue ball?',
+        cost: RIDDLE_COSTS.medium,
+        reward: 1500,
+        advantage: { id: 'adv_probability_insight', name: 'Strategic Vision', description: 'Look at the next 2 challenge cards' },
+        options: [
+          { id: 'a', text: '1/5', isCorrect: false },
+          { id: 'b', text: '2/5', isCorrect: true },
+          { id: 'c', text: '3/5', isCorrect: false },
+          { id: 'd', text: '1/2', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_13_16_med_3',
+        title: 'Cosmic Tether',
+        difficulty: 'medium',
+        ageGroup: '13-16',
+        lore: 'The night sky reveals celestial bodies revolving in perfect, eternal harmony.',
+        question: 'What force keeps the Moon moving around the Earth?',
+        cost: RIDDLE_COSTS.medium,
+        reward: 1500,
+        advantage: { id: 'adv_cosmic_gravity', name: 'Gravitational Pull', description: 'Pull an opponent’s pawn 2 squares back' },
+        options: [
+          { id: 'a', text: 'Friction', isCorrect: false },
+          { id: 'b', text: 'Magnetism', isCorrect: false },
+          { id: 'c', text: 'Gravity', isCorrect: true },
+          { id: 'd', text: 'Electricity', isCorrect: false },
         ],
       },
     ],
     hard: [
       {
-        id: 'temple_hard_1',
-        title: 'Cosmic Geometry of Vastu',
+        id: 'r_13_16_hard_1',
+        title: 'The Eternal Flame',
         difficulty: 'hard',
-        lore: 'The grand master builder reveals the sacred geometry of the temple plan.',
-        question: 'In Vastu Shastra, the 81-square grid (Paramasayika Mandala) aligns the temple sanctum with which supreme cosmic center?',
+        ageGroup: '13-16',
+        lore: 'A brass lamp shines in the sanctum, dispelling darkness and ignorance.',
+        question: 'I am a lamp that is often lit during prayers and festivals. My small flame is said to represent light overcoming darkness. What am I?',
         cost: RIDDLE_COSTS.hard,
         reward: 2500,
-        advantage: { id: 'adv_divine_blessing', name: 'Brahmasthana Halo', description: 'All your pawns gain double movement for 2 rounds' },
+        advantage: { id: 'adv_diya_blaze', name: 'Deepa Jyoti', description: 'Shield all your pawns from attacks for 1 round' },
         options: [
-          { id: 'opt_1', text: 'Brahmasthana (Cosmic Center of Pure Energy)', isCorrect: true },
-          { id: 'opt_2', text: 'Yama Dik (Southern Horizon)', isCorrect: false },
-          { id: 'opt_3', text: 'Agni Kona (Fire Corner)', isCorrect: false },
+          { id: 'a', text: 'Diya', isCorrect: true },
+          { id: 'b', text: 'Kalash', isCorrect: false },
+          { id: 'c', text: 'Chakra', isCorrect: false },
+          { id: 'd', text: 'Conch', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_13_16_hard_2',
+        title: 'The Royal Horn of Ceremony',
+        difficulty: 'hard',
+        ageGroup: '13-16',
+        lore: 'A wind instrument resonated across temple corridors and royal courts during celebrations.',
+        question: 'I am a curved instrument with a deep, powerful sound. In Indian royal processions and ceremonies, I have announced grand occasions. What am I?',
+        cost: RIDDLE_COSTS.hard,
+        reward: 2500,
+        advantage: { id: 'adv_nadaswaram_anthem', name: 'Mangala Dhwani', description: 'Advance pawn by +3 extra steps' },
+        options: [
+          { id: 'a', text: 'Shehnai', isCorrect: false },
+          { id: 'b', text: 'Nadaswaram', isCorrect: true },
+          { id: 'c', text: 'Nagara', isCorrect: false },
+          { id: 'd', text: 'Sitar', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_13_16_hard_3',
+        title: 'Wheel of Righteousness',
+        difficulty: 'hard',
+        ageGroup: '13-16',
+        lore: 'Emblazoned in navy blue on white silk, 24 spokes spin the wheel of eternal virtue.',
+        question: 'I am a wheel with many spokes, found on India\'s national flag. I remind us to keep moving forward. What am I?',
+        cost: RIDDLE_COSTS.hard,
+        reward: 2500,
+        advantage: { id: 'adv_ashoka_wheel', name: 'Dharma Velocity', description: 'Advance any pawn directly into the winning Katte' },
+        options: [
+          { id: 'a', text: 'Sudarshan Chakra', isCorrect: false },
+          { id: 'b', text: 'Ashoka Chakra', isCorrect: true },
+          { id: 'c', text: 'Dharma Chakra', isCorrect: false },
+          { id: 'd', text: 'Kalachakra', isCorrect: false },
         ],
       },
     ],
   },
-  navarasa: {
+  '17+': {
     easy: [
       {
-        id: 'navarasa_easy_1',
-        title: 'The Graceful Glance',
+        id: 'r_17_easy_1',
+        title: 'Seat of Ancient Wisdom',
         difficulty: 'easy',
-        lore: 'A young classical dancer demonstrates the rasa of beauty and devotion.',
-        question: 'Which of the nine rasas in Natyashastra represents divine love, aesthetic beauty, and romance?',
+        ageGroup: '17+',
+        lore: 'Scholars from across the world traveled over mountains to study in this residential university.',
+        question: 'Which ancient Indian university was located in present-day Bihar?',
         cost: RIDDLE_COSTS.easy,
         reward: 800,
-        advantage: { id: 'adv_charm', name: 'Aesthetic Grace', description: 'Swap positions with an adjacent friendly pawn' },
+        advantage: { id: 'adv_nalanda_wisdom', name: 'Nalanda Insight', description: 'Gain +800 Mudras and move +1 step' },
         options: [
-          { id: 'opt_1', text: 'Shringara Rasa', isCorrect: true },
-          { id: 'opt_2', text: 'Bibhatsa Rasa', isCorrect: false },
-          { id: 'opt_3', text: 'Bhayanaka Rasa', isCorrect: false },
+          { id: 'a', text: 'Takshashila', isCorrect: false },
+          { id: 'b', text: 'Nalanda', isCorrect: true },
+          { id: 'c', text: 'Vikramaditya', isCorrect: false },
+          { id: 'd', text: 'Ujjain', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_17_easy_2',
+        title: 'The Core of Being',
+        difficulty: 'easy',
+        ageGroup: '17+',
+        lore: 'At the microscopic center of life lies the blueprint of heritage and heredity.',
+        question: 'Which part of the cell contains most of its genetic material?',
+        cost: RIDDLE_COSTS.easy,
+        reward: 800,
+        advantage: { id: 'adv_nucleus_core', name: 'Cellular Resilience', description: 'Pawn cannot be displaced on normal tiles for 1 round' },
+        options: [
+          { id: 'a', text: 'Ribosome', isCorrect: false },
+          { id: 'b', text: 'Nucleus', isCorrect: true },
+          { id: 'c', text: 'Cell wall', isCorrect: false },
+          { id: 'd', text: 'Cytoplasm', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_17_easy_3',
+        title: 'Growth of the Treasury',
+        difficulty: 'easy',
+        ageGroup: '17+',
+        lore: 'A treasury accountant calculates the original investment after a twenty percent harvest surplus.',
+        question: 'If a number is increased by 20% and becomes 120, what was the original number?',
+        cost: RIDDLE_COSTS.easy,
+        reward: 800,
+        advantage: { id: 'adv_treasury_surplus', name: 'Surplus Dividend', description: 'Add +500 bonus Mudras' },
+        options: [
+          { id: 'a', text: '80', isCorrect: false },
+          { id: 'b', text: '90', isCorrect: false },
+          { id: 'c', text: '100', isCorrect: true },
+          { id: 'd', text: '110', isCorrect: false },
         ],
       },
     ],
     medium: [
       {
-        id: 'navarasa_med_1',
-        title: 'The Master of Expressions',
+        id: 'r_17_med_1',
+        title: 'Master of the Shunya',
         difficulty: 'medium',
-        lore: 'A master Natya dancer challenges you to identify the supreme emotion of valor.',
-        question: 'In Bharata Muni’s Natyashastra, which rasa embodies unshakeable heroic courage, duty, and nobility?',
+        ageGroup: '17+',
+        lore: 'Ancient Indian treatises formulated mathematical rules for operations involving zero and negatives.',
+        question: 'The concept of “zero” as a number was significantly developed in ancient India. Which mathematician is strongly associated with rules for calculating with zero?',
         cost: RIDDLE_COSTS.medium,
         reward: 1500,
-        advantage: { id: 'adv_heroic_surge', name: 'Heroic Surge', description: 'Gain 1 bonus roll after moving' },
+        advantage: { id: 'adv_shunya_mastery', name: 'Zero Calculation', description: 'Zero out an opponent’s roll on their next turn' },
         options: [
-          { id: 'opt_1', text: 'Veera Rasa (The Heroic Spirit)', isCorrect: true },
-          { id: 'opt_2', text: 'Raudra Rasa (The Fury of Agni)', isCorrect: false },
-          { id: 'opt_3', text: 'Adbhuta Rasa (The Sense of Wonder)', isCorrect: false },
+          { id: 'a', text: 'Aryabhata', isCorrect: false },
+          { id: 'b', text: 'Brahmagupta', isCorrect: true },
+          { id: 'c', text: 'Bhaskara I', isCorrect: false },
+          { id: 'd', text: 'Varahamihira', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_17_med_2',
+        title: 'Duality of Chance',
+        difficulty: 'medium',
+        ageGroup: '17+',
+        lore: 'Two royal coins clink on the stone board. Probabilities govern the strategic crossroads.',
+        question: 'You toss two fair coins at the same time. What is the probability of getting exactly one head?',
+        cost: RIDDLE_COSTS.medium,
+        reward: 1500,
+        advantage: { id: 'adv_dual_chance', name: 'Dual Probability', description: 'Split your dice move between two pawns' },
+        options: [
+          { id: 'a', text: '1/4', isCorrect: false },
+          { id: 'b', text: '1/3', isCorrect: false },
+          { id: 'c', text: '1/2', isCorrect: true },
+          { id: 'd', text: '3/4', isCorrect: false },
+        ],
+      },
+      {
+        id: 'r_17_med_3',
+        title: 'Buoyancy of the Waters',
+        difficulty: 'medium',
+        ageGroup: '17+',
+        lore: 'From the frozen Himalayas to sacred lakes, physical principles govern water and ice.',
+        question: 'Why does ice float on water?',
+        cost: RIDDLE_COSTS.medium,
+        reward: 1500,
+        advantage: { id: 'adv_buoyant_flow', name: 'Buoyant Glide', description: 'Jump over any obstacle pawn on the board' },
+        options: [
+          { id: 'a', text: 'Ice contains air', isCorrect: false },
+          { id: 'b', text: 'Ice is less dense', isCorrect: true },
+          { id: 'c', text: 'Ice is heavier', isCorrect: false },
+          { id: 'd', text: 'Water pushes it upward', isCorrect: false },
         ],
       },
     ],
     hard: [
       {
-        id: 'navarasa_hard_1',
-        title: 'The Tenth Dimension',
+        id: 'r_17_hard_1',
+        title: 'The National Pillar of Pride',
         difficulty: 'hard',
-        lore: 'The philosopher Abhinavagupta ponders the ultimate stillness of the mind.',
-        question: 'Which transcendental emotion was added by Abhinavagupta to complete the aesthetic journey into supreme tranquility?',
+        ageGroup: '17+',
+        lore: 'Four Asiatic lions stand back to back atop an abacus carrying the wheel of law.',
+        question: 'I stand tall with four lions, but you can see only three from one side. I became the national emblem of India. What am I?',
         cost: RIDDLE_COSTS.hard,
         reward: 2500,
-        advantage: { id: 'adv_shanta_peace', name: 'Shanta Serenity', description: 'Freeze all opponent movement on the board for 1 turn' },
+        advantage: { id: 'adv_lion_capital', name: 'Ashoka Emblem', description: 'Move any pawn directly to the home lane' },
         options: [
-          { id: 'opt_1', text: 'Shanta Rasa (Tranquil Peace & Detachment)', isCorrect: true },
-          { id: 'opt_2', text: 'Vatsalya Rasa (Parental Affection)', isCorrect: false },
-          { id: 'opt_3', text: 'Bhakti Rasa (Pure Devotion)', isCorrect: false },
+          { id: 'a', text: 'Lion Capital of Ashoka', isCorrect: true },
+          { id: 'b', text: 'Gateway of India', isCorrect: false },
+          { id: 'c', text: 'Konark Wheel', isCorrect: false },
+          { id: 'd', text: 'Sanchi Stupa', isCorrect: false },
         ],
       },
-    ],
-  },
-  panchabootha: {
-    easy: [
       {
-        id: 'panch_easy_1',
-        title: 'The Sacred Flame',
-        difficulty: 'easy',
-        lore: 'The hermit tending the sacrificial fire asks of the elemental forces.',
-        question: 'Which of the five primordial elements represents light, heat, vision (Rupa), and transformation?',
-        cost: RIDDLE_COSTS.easy,
-        reward: 800,
-        advantage: { id: 'adv_fire_speed', name: 'Agni Spark', description: 'Reroll any roll of 1 or 2' },
-        options: [
-          { id: 'opt_1', text: 'Agni (Tejas / Sacred Fire)', isCorrect: true },
-          { id: 'opt_2', text: 'Prithvi (Mother Earth)', isCorrect: false },
-          { id: 'opt_3', text: 'Jala (Pure Water)', isCorrect: false },
-        ],
-      },
-    ],
-    medium: [
-      {
-        id: 'panch_med_1',
-        title: 'The Elemental Guardian',
-        difficulty: 'medium',
-        lore: 'The guardian sage of the forest asks the mystery of primordial space.',
-        question: 'According to Vedic cosmology, which of the five elements governs sound (Shabda) and vast celestial space?',
-        cost: RIDDLE_COSTS.medium,
-        reward: 1500,
-        advantage: { id: 'adv_ether_glide', name: 'Ether Glide', description: 'Leap over opponent blockades without stopping' },
-        options: [
-          { id: 'opt_1', text: 'Akasha (Ether / Cosmic Space)', isCorrect: true },
-          { id: 'opt_2', text: 'Vayu (Wind / Atmospheric Flow)', isCorrect: false },
-          { id: 'opt_3', text: 'Jala (Primordial Water)', isCorrect: false },
-        ],
-      },
-    ],
-    hard: [
-      {
-        id: 'panch_hard_1',
-        title: 'The Tanmatra Matrix',
+        id: 'r_17_hard_2',
+        title: 'The Queen’s Stepwell',
         difficulty: 'hard',
-        lore: 'The ancient Samkhya philosopher asks of the subtle senses.',
-        question: 'In Samkhya philosophy, which elemental Tanmatra (subtle essence) gives rise to the sense of smell in Prithvi?',
+        ageGroup: '17+',
+        lore: 'Sculptured pillars descend deep into the earth in an inverted subterranean temple of water.',
+        question: 'I am an ancient Indian stepwell, built with flights of stairs leading down to water. One of my most famous examples is in Gujarat. What am I?',
         cost: RIDDLE_COSTS.hard,
         reward: 2500,
-        advantage: { id: 'adv_earth_anchor', name: 'Prithvi Anchor', description: 'Prevent opponent from capturing your lead pawn for 3 rounds' },
+        advantage: { id: 'adv_stepwell_depth', name: 'Rani ki Vav Sanctuary', description: 'Move your pawn to the nearest safe Katte square' },
         options: [
-          { id: 'opt_1', text: 'Gandha Tanmatra (Subtle Essence of Fragrance)', isCorrect: true },
-          { id: 'opt_2', text: 'Rasa Tanmatra (Subtle Taste)', isCorrect: false },
-          { id: 'opt_3', text: 'Sparsha Tanmatra (Subtle Touch)', isCorrect: false },
+          { id: 'a', text: 'Charminar', isCorrect: false },
+          { id: 'b', text: 'Gol Gumbaz', isCorrect: false },
+          { id: 'c', text: 'Rani ki Vav', isCorrect: true },
+          { id: 'd', text: 'Brihadeeswara Temple', isCorrect: false },
         ],
       },
-    ],
-  },
-  kala_yuga: {
-    easy: [
       {
-        id: 'kala_easy_1',
-        title: 'The Cycle of Eras',
-        difficulty: 'easy',
-        lore: 'The Gurukul astronomer explains the four cosmic epochs of time.',
-        question: 'What is the first, golden era of truth, virtue, and cosmic order called in Indian cosmology?',
-        cost: RIDDLE_COSTS.easy,
-        reward: 800,
-        advantage: { id: 'adv_satya_boost', name: 'Satya Epoch', description: 'Advance pawn by +2 steps' },
-        options: [
-          { id: 'opt_1', text: 'Satya Yuga (Krita Yuga)', isCorrect: true },
-          { id: 'opt_2', text: 'Treta Yuga', isCorrect: false },
-          { id: 'opt_3', text: 'Dvapara Yuga', isCorrect: false },
-        ],
-      },
-    ],
-    medium: [
-      {
-        id: 'kala_med_1',
-        title: 'The Celestial Musician',
-        difficulty: 'medium',
-        lore: 'The court Gandharva tests your understanding of Indian classical instruments.',
-        question: 'Which ancient 24-fret string instrument crafted from jackfruit wood is considered the Queen of all Indian melody?',
-        cost: RIDDLE_COSTS.medium,
-        reward: 1500,
-        advantage: { id: 'adv_melodic_leap', name: 'Melodic Leap', description: 'Advance forward +4 steps immediately' },
-        options: [
-          { id: 'opt_1', text: 'Saraswati Veena', isCorrect: true },
-          { id: 'opt_2', text: 'Ektara Folk Lute', isCorrect: false },
-          { id: 'opt_3', text: 'Mridangam Drum', isCorrect: false },
-        ],
-      },
-    ],
-    hard: [
-      {
-        id: 'kala_hard_1',
-        title: 'The Surya Siddhanta Calculation',
+        id: 'r_17_hard_3',
+        title: 'The Ancient Cross Game',
         difficulty: 'hard',
-        lore: 'The ancient astronomer calculates the celestial movement of the planets.',
-        question: 'What ancient Indian mathematical treaty accurately calculated the Earth’s diameter and planetary sidereal periods in the 5th century CE?',
+        ageGroup: '17+',
+        lore: 'Cowrie shells clatter on cloth and wooden boards in a traditional 5x5 race of strategy and Katte sanctuaries.',
+        question: 'I am a traditional Indian board game where players move pieces using cowrie shells. I am considered an ancestor of games like Ludo. What am I?',
         cost: RIDDLE_COSTS.hard,
         reward: 2500,
-        advantage: { id: 'adv_astronomy_warp', name: 'Cosmic Warp', description: 'Move pawn directly to the final inner track of Chowkabara' },
+        advantage: { id: 'adv_choukabara_legend', name: 'Grandmaster Katte', description: 'Teleport any friendly pawn directly into the winning square' },
         options: [
-          { id: 'opt_1', text: 'Surya Siddhanta & Aryabhatiya', isCorrect: true },
-          { id: 'opt_2', text: 'Sulba Sutras', isCorrect: false },
-          { id: 'opt_3', text: 'Charaka Samhita', isCorrect: false },
+          { id: 'a', text: 'Pachisi', isCorrect: false },
+          { id: 'b', text: 'Chaturanga', isCorrect: false },
+          { id: 'c', text: 'Moksha Patam', isCorrect: false },
+          { id: 'd', text: 'Chouka Bara', isCorrect: true },
         ],
       },
     ],
@@ -295,35 +502,60 @@ export const themeRiddlesDatabase = {
 };
 
 /**
- * buyRiddle - calls Member 2 pure game logic
+ * Normalizes player age input to one of the 3 supported age group keys
+ */
+export const normalizeAgeGroup = (playerAge) => {
+  if (!playerAge) return '8-12';
+  
+  if (typeof playerAge === 'string') {
+    const clean = playerAge.trim().replace(/\s+/g, '');
+    if (clean === '8-12' || clean === '5-10' || clean === '8to12') return '8-12';
+    if (clean === '13-16' || clean === '10-15' || clean === '13to16') return '13-16';
+    if (clean === '17+' || clean === '15+' || clean === '17plus' || clean === '18+') return '17+';
+  }
+
+  if (typeof playerAge === 'number') {
+    if (playerAge <= 12) return '8-12';
+    if (playerAge <= 16) return '13-16';
+    return '17+';
+  }
+
+  return '8-12';
+};
+
+/**
+ * Get random riddle filtered strictly by the player's Age Group and Difficulty tier
+ */
+export const getRandomRiddle = (themeKey = 'rajya', difficulty = 'medium', playerAge = '8-12') => {
+  const ageGroupKey = normalizeAgeGroup(playerAge);
+  const ageGroupRiddles = spreadsheetRiddles[ageGroupKey] || spreadsheetRiddles['8-12'];
+  const pool = ageGroupRiddles[difficulty] || ageGroupRiddles['medium'] || [];
+
+  if (pool.length === 0) {
+    return spreadsheetRiddles['8-12']['medium'][0];
+  }
+
+  const randomIdx = Math.floor(Math.random() * pool.length);
+  return pool[randomIdx];
+};
+
+/**
+ * Buy a riddle via Member 2 Game Logic
  */
 export const buyRiddle = async (player, riddle) => {
-  console.log('[Riddle Service] Calling Member 2 buyRiddle()', { player, riddle });
   return member2BuyRiddle(player, riddle);
 };
 
 /**
- * getRandomRiddle - picks a random riddle using Member 2 logic
+ * Submit answer via Member 2 Game Logic
  */
-export const getRandomRiddle = (themeKey = 'rajya', difficulty = 'medium') => {
-  const themePool = themeRiddlesDatabase[themeKey] || themeRiddlesDatabase.rajya;
-  const list = themePool[difficulty] || themePool.medium || [];
-  const picked = member2GetRandomRiddle(list);
-  console.log('[Riddle Service] Calling Member 2 getRandomRiddle()', { themeKey, difficulty, picked });
-  return picked || list[0];
+export const submitAnswer = async (player, isCorrect, advantage) => {
+  return member2SubmitAnswer(player, isCorrect, advantage);
 };
 
 /**
- * submitAnswer - calls Member 2 pure game logic
+ * Validate answer
  */
-export const submitAnswer = async (player, solved, advantage) => {
-  console.log('[Riddle Service] Calling Member 2 submitAnswer()', { player, solved, advantage });
-  return member2SubmitAnswer(player, solved, advantage);
-};
-
-/**
- * validateAnswer - calls Member 2 validateAnswer
- */
-export const validateAnswer = (solved) => {
-  return member2ValidateAnswer(solved);
+export const validateAnswer = (isCorrect) => {
+  return member2ValidateAnswer(isCorrect);
 };

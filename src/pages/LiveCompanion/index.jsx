@@ -248,10 +248,13 @@ export const LiveCompanionPage = () => {
 
           const mapped = parsed.map((p, idx) => {
             const fallback = fallbackHeroes[idx % fallbackHeroes.length];
+            const ageGroup = p.ageGroup || (typeof p.age === 'number' ? (p.age <= 12 ? '8-12' : p.age <= 16 ? '13-16' : '17+') : '8-12');
             return {
               id: p.id || `p_${idx + 1}`,
               name: p.name || `Player ${idx + 1}`,
               uid: p.uid || `CHB00${idx + 1}`,
+              age: typeof p.age === 'number' ? p.age : (ageGroup === '8-12' ? 10 : ageGroup === '13-16' ? 14 : 20),
+              ageGroup: ageGroup,
               heroName: p.heroName || p.hero?.name || fallback.name,
               heroSecondaryTitle: p.heroSecondaryTitle || p.hero?.secondaryTitle || fallback.title,
               heroAdvantage: p.heroAdvantage || p.hero?.advantage || fallback.adv,
@@ -652,7 +655,7 @@ export const LiveCompanionPage = () => {
                   <span>{player.heroSecondaryTitle}</span>
                 </div>
 
-                <span className="player-side-uid">UID: {player.uid}</span>
+                <span className="player-side-uid">UID: {player.uid} · Age {player.ageGroup || '8-12'}</span>
 
                 {/* Points / Mudras */}
                 <div className="player-side-points">
@@ -735,7 +738,7 @@ export const LiveCompanionPage = () => {
                   <span>{player.heroSecondaryTitle}</span>
                 </div>
 
-                <span className="player-side-uid">UID: {player.uid}</span>
+                <span className="player-side-uid">UID: {player.uid} · Age {player.ageGroup || '8-12'}</span>
 
                 {/* Points / Mudras */}
                 <div className="player-side-points">
