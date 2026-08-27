@@ -25,7 +25,7 @@ export interface PurchaseResult {
   message: string;
 }
 
-export const STARTING_MUDRAS = 8000;
+export const STARTING_MUDRAS = 6000;
 
 export const RIDDLE_COSTS: Record<Difficulty, number> = {
   easy: 500,
