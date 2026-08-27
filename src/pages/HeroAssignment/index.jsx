@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, VolumeX, ArrowRight, Crown, ChevronLeft } from 'lucide-react';
+import { Volume2, ArrowRight, Crown, ChevronLeft } from 'lucide-react';
 import PrimaryButton from '../../components/buttons/PrimaryButton';
 import { HEROES_DATABASE, assignRandomHeroes } from '../../services/heroService';
 import './HeroAssignment.css';
@@ -8,7 +8,6 @@ import './HeroAssignment.css';
 export const HeroAssignmentPage = () => {
   const navigate = useNavigate();
   const [assignedPlayers, setAssignedPlayers] = useState([]);
-  const [speakingHeroId, setSpeakingHeroId] = useState(null);
 
   useEffect(() => {
     // Read configured players from setup
@@ -36,29 +35,7 @@ export const HeroAssignmentPage = () => {
     sessionStorage.setItem('activeGamePlayers', JSON.stringify(updated));
   }, []);
 
-  // Speaker audio narration for character lore
-  const handlePlayLore = (hero) => {
-    if (!window.speechSynthesis) return;
-
-    if (speakingHeroId === hero.id) {
-      window.speechSynthesis.cancel();
-      setSpeakingHeroId(null);
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(hero.lore);
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.onend = () => setSpeakingHeroId(null);
-    utterance.onerror = () => setSpeakingHeroId(null);
-
-    setSpeakingHeroId(hero.id);
-    window.speechSynthesis.speak(utterance);
-  };
-
   const handleProceed = () => {
-    window.speechSynthesis?.cancel();
     navigate('/live-game');
   };
 
@@ -89,7 +66,7 @@ export const HeroAssignmentPage = () => {
           </div>
 
           <div className="heroes-main-headings">
-            <h1 className="heroes-main-title">CHOOSE YOUR HEROES</h1>
+            <h1 className="heroes-main-title">KNOW YOUR HEROES</h1>
             <p className="heroes-sub-badge">✦ EACH HERO IS ASSIGNED TO A PLAYER ✦</p>
           </div>
 
@@ -110,7 +87,6 @@ export const HeroAssignmentPage = () => {
       <main className="heroes-assignment-list">
         {assignedPlayers.map((player, idx) => {
           const hero = player.hero || HEROES_DATABASE[idx % HEROES_DATABASE.length];
-          const isSpeaking = speakingHeroId === hero.id;
 
           return (
             <div key={player.id || idx} className="hero-assignment-row">
@@ -147,26 +123,12 @@ export const HeroAssignmentPage = () => {
                   <p className="advantage-box-text">{hero.advantage}</p>
                 </div>
 
-                {/* Speaker Lore Button */}
+                {/* Dummy Speaker Lore Icon Button */}
                 <div className="hero-audio-action-row">
-                  <button
-                    type="button"
-                    className={`hero-audio-btn ${isSpeaking ? 'hero-audio-btn--active' : ''}`}
-                    onClick={() => handlePlayLore(hero)}
-                    title={isSpeaking ? "Stop narration" : "Listen to character lore"}
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <VolumeX size={15} color="#E74C3C" />
-                        <span>Stop Lore Narration</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 size={15} color="#D9A441" />
-                        <span>Listen to Lore</span>
-                      </>
-                    )}
-                  </button>
+                  <div className="hero-audio-dummy-pill" title="Audio Lore Narration">
+                    <Volume2 size={15} color="#8C642A" />
+                    <span>Lore Audio</span>
+                  </div>
                 </div>
               </div>
 
