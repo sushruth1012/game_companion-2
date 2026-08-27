@@ -106,7 +106,7 @@
   box-sizing: border-box;
 }
 
-/* Single Row */
+/* Single Row - Staggered entrance on page load */
 .hero-assignment-row {
   display: flex;
   align-items: center;
@@ -115,12 +115,23 @@
   border-radius: 14px;
   padding: 10px 12px;
   gap: 12px;
-  box-shadow: 0 6px 18px rgba(74, 46, 27, 0.12);
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 14px rgba(74, 46, 27, 0.08);
+  opacity: 0;
+  animation: cardStaggerPopIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  will-change: transform, box-shadow;
 }
 
+.hero-assignment-row:nth-child(1) { animation-delay: 80ms; }
+.hero-assignment-row:nth-child(2) { animation-delay: 180ms; }
+.hero-assignment-row:nth-child(3) { animation-delay: 280ms; }
+.hero-assignment-row:nth-child(4) { animation-delay: 380ms; }
+
+/* Gentle rise and scale on hover with soft shadow */
 .hero-assignment-row:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.018);
+  border-color: #D9A441;
+  box-shadow: 0 10px 24px rgba(74, 46, 27, 0.16), 0 2px 8px rgba(217, 164, 65, 0.22);
 }
 
 /* 1. Hero Portrait Frame */
