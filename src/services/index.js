@@ -1,7 +1,19 @@
-export * from './authService';
-export * from './gameService';
-export * from './playerService';
-export * from './turnService';
-export * from './pointService';
-export * from './riddleService';
-export * from './themeService';
+export * from "./authService.js";
+
+export * from "./activationService.js";
+
+export * from "./deviceService.js";
+
+export * from "./sessionService.js";
+
+export * from "./gameService.js";
+
+export * from "./playerService.js";
+
+export * from "./turnService.js";
+
+export * from "./pointService.js";
+
+export * from "./riddleService.js";
+
+export * from "./themeService.js";

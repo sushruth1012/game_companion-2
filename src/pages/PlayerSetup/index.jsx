@@ -112,7 +112,7 @@ export const PlayerSetupPage = () => {
     { color: '#6B4F3A', label: 'Earth Brown' },
   ];
 
-  // Update specific player UID
+  // Update specific player UID / Name
   const handleUidChange = (index, value) => {
     setPlayersData((prev) => {
       const updated = [...prev];
@@ -130,19 +130,13 @@ export const PlayerSetupPage = () => {
     });
   };
 
-  // Mock QR scan handler
-  const handleScan = (index) => {
-    const mockUID = 'YTR_' + Math.floor(1000 + Math.random() * 9000);
-    handleUidChange(index, mockUID);
-  };
-
   // Handle Form Submission -> Start Live Game
   const handleContinue = async () => {
     try {
       setIsStarting(true);
       const activePlayers = [];
 
-      // Call standard player service functions (integrated with Member 2 game logic)
+      // Call standard player service functions (integrated with Firebase and Member 2 game logic)
       for (let idx = 0; idx < playerCount; idx++) {
         const p = playersData[idx];
         const ageNum = p.age === '5 - 10' ? 8 : p.age === '10 - 15' ? 12 : 20;
@@ -154,6 +148,7 @@ export const PlayerSetupPage = () => {
           age: ageNum,
           color: playerThemes[idx].color,
           pawnIndex: idx,
+          gameId: 'chowkabara_live_session',
         });
         activePlayers.push(createdPlayer);
       }
@@ -161,7 +156,12 @@ export const PlayerSetupPage = () => {
       // Save active session for Live Companion
       sessionStorage.setItem('activeGamePlayers', JSON.stringify(activePlayers));
       sessionStorage.setItem('activeTheme', selectedThemeKey);
-      await startGame('chowkabara_live_session');
+
+      try {
+        await startGame('chowkabara_live_session');
+      } catch (e) {
+        console.warn('Firebase startGame notice (continuing to live match):', e);
+      }
 
       navigate('/live-game');
     } catch (err) {
@@ -306,7 +306,6 @@ export const PlayerSetupPage = () => {
                   themeColor={playerThemes[idx].color}
                   onUidChange={(val) => handleUidChange(idx, val)}
                   onAgeChange={(val) => handleAgeChange(idx, val)}
-                  onScanClick={() => handleScan(idx)}
                 />
               ))}
             </div>
