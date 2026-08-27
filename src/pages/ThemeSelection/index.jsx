@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, Sparkles, Flame, Music, Landmark, Home, Settings } from 'lucide-react';
+import { Crown, Sparkles, Flame, Music, Landmark, ChevronLeft, Settings } from 'lucide-react';
 import ThemeCard from '../../components/cards/ThemeCard';
 import { setTheme } from '../../services/themeService';
 import rajyaImg from '../../assets/themes/rajya.jpg';

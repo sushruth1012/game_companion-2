@@ -41,11 +41,19 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
     }
   };
 
+  const handleCardClick = (e) => {
+    if (isCenter && isPlayable && onSelect) {
+      onSelect(game);
+    } else if (onClick) {
+      onClick(e);
+    }
+  };
+
   return (
     <div
       className={`game-slide-card ${isCenter ? 'game-slide-card--active' : 'game-slide-card--side'}`}
       style={getCardStyle()}
-      onClick={onClick}
+      onClick={handleCardClick}
       role="button"
       tabIndex={0}
     >

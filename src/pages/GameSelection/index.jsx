@@ -148,10 +148,15 @@ export const GameSelectionPage = () => {
   }, []);
 
   // Selection Handler
-  const handleSelectGame = async (game) => {
+  const handleSelectGame = (game) => {
     if (game.id === 'chowkabara') {
-      console.log('Selected MVP game: Chowkabara');
-      await createGame({ name: 'Chowkabara', boardSize: 5 });
+      try {
+        createGame({ name: 'Chowkabara', boardSize: 5 }).catch((err) => {
+          console.warn('Game creation offline fallback:', err);
+        });
+      } catch (e) {
+        console.warn('Game creation error ignored:', e);
+      }
       navigate('/theme-selection');
     }
   };
