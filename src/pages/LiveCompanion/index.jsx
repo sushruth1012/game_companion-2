@@ -11,12 +11,12 @@ import './LiveCompanion.css';
 export const LiveCompanionPage = () => {
   const navigate = useNavigate();
 
-  // Initialize 4 players with Member 2 STARTING_MUDRAS (8000)
+  // Initialize 4 players with Member 2 STARTING_MUDRAS (8000) & secondary hero titles
   const defaultPlayers = [
-    { id: 'p_1', name: 'Arjun', uid: 'CHB001', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#2ECC71', avatar: '👦', num: 1, advantages: [] },
-    { id: 'p_2', name: 'Diya', uid: 'CHB002', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#3498DB', avatar: '👧', num: 2, advantages: [] },
-    { id: 'p_3', name: 'Kabir', uid: 'CHB003', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#E74C3C', avatar: '👦', num: 3, advantages: [] },
-    { id: 'p_4', name: 'Myra', uid: 'CHB004', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#9B59B6', avatar: '👧', num: 4, advantages: [] },
+    { id: 'p_1', name: 'Arjun', uid: 'CHB001', heroSecondaryTitle: 'GANDIVA', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#2ECC71', avatar: '👦', num: 1, advantages: [] },
+    { id: 'p_2', name: 'Diya', uid: 'CHB002', heroSecondaryTitle: 'SURYAKAVACHA', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#3498DB', avatar: '👧', num: 2, advantages: [] },
+    { id: 'p_3', name: 'Kabir', uid: 'CHB003', heroSecondaryTitle: 'DYUTA MAYA', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#E74C3C', avatar: '👦', num: 3, advantages: [] },
+    { id: 'p_4', name: 'Myra', uid: 'CHB004', heroSecondaryTitle: 'MAYA SHAKTI', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#9B59B6', avatar: '👧', num: 4, advantages: [] },
   ];
 
   const [players, setPlayers] = useState(defaultPlayers);
@@ -26,16 +26,19 @@ export const LiveCompanionPage = () => {
   const [eventLogText, setEventLogText] = useState('A new story event has been triggered!');
 
   useEffect(() => {
-    // Read configured players from setup if available
+    // Read configured players from setup & hero assignment
     const storedPlayers = sessionStorage.getItem('activeGamePlayers');
     if (storedPlayers) {
       try {
         const parsed = JSON.parse(storedPlayers);
         if (parsed.length > 0) {
+          const fallbackTitles = ['GANDIVA', 'SURYAKAVACHA', 'DYUTA MAYA', 'MAYA SHAKTI'];
           const mapped = parsed.map((p, idx) => ({
             id: p.id || `p_${idx + 1}`,
             name: p.name || `Player ${idx + 1}`,
             uid: p.uid || `CHB00${idx + 1}`,
+            heroSecondaryTitle: p.heroSecondaryTitle || (p.hero?.secondaryTitle) || fallbackTitles[idx % 4],
+            heroName: p.heroName || (p.hero?.name) || 'HERO',
             points: typeof p.mudras === 'number' ? p.mudras : (typeof p.points === 'number' ? p.points : STARTING_MUDRAS),
             mudras: typeof p.mudras === 'number' ? p.mudras : (typeof p.points === 'number' ? p.points : STARTING_MUDRAS),
             shieldColor: ['#2ECC71', '#3498DB', '#E74C3C', '#9B59B6'][idx % 4],
@@ -71,7 +74,7 @@ export const LiveCompanionPage = () => {
   const handlePlayerTap = (index) => {
     setActivePlayerIndex(index);
     const selected = players[index];
-    setEventLogText(`Turn switched to ${selected.name}.`);
+    setEventLogText(`Turn switched to ${selected.name} (${selected.heroSecondaryTitle}).`);
     recordGameActivity?.().catch(() => {});
   };
 
@@ -80,7 +83,7 @@ export const LiveCompanionPage = () => {
     await nextTurn('chowkabara_live_session');
     setActivePlayerIndex((prev) => {
       const nextIdx = (prev + 1) % players.length;
-      setEventLogText(`Turn passed to ${players[nextIdx].name}.`);
+      setEventLogText(`Turn passed to ${players[nextIdx].name} (${players[nextIdx].heroSecondaryTitle}).`);
       return nextIdx;
     });
     recordGameActivity?.().catch(() => {});
@@ -194,8 +197,14 @@ export const LiveCompanionPage = () => {
                   <span className="player-emoji-avatar">{player.avatar}</span>
                 </div>
 
-                {/* Player Info */}
+                {/* Player Name */}
                 <h3 className="player-side-name">{player.name}</h3>
+
+                {/* Hero Secondary Title (e.g. GANDIVA, SURYAKAVACHA, DYUTA MAYA, MAYA SHAKTI) */}
+                <div className="player-hero-title-tag">
+                  <span>{player.heroSecondaryTitle}</span>
+                </div>
+
                 <span className="player-side-uid">UID: {player.uid}</span>
 
                 {/* Points / Mudras */}
@@ -222,7 +231,7 @@ export const LiveCompanionPage = () => {
           })}
         </div>
 
-        {/* CENTER COLUMN: 3D Flip Riddle Card with Difficulty Switcher */}
+        {/* CENTER COLUMN: 3D Flip Riddle Card */}
         <div className="arena-center-card">
           <RiddleCard
             activePlayer={activePlayer}
@@ -255,8 +264,14 @@ export const LiveCompanionPage = () => {
                   <span className="player-emoji-avatar">{player.avatar}</span>
                 </div>
 
-                {/* Player Info */}
+                {/* Player Name */}
                 <h3 className="player-side-name">{player.name}</h3>
+
+                {/* Hero Secondary Title (e.g. GANDIVA, SURYAKAVACHA, DYUTA MAYA, MAYA SHAKTI) */}
+                <div className="player-hero-title-tag">
+                  <span>{player.heroSecondaryTitle}</span>
+                </div>
+
                 <span className="player-side-uid">UID: {player.uid}</span>
 
                 {/* Points / Mudras */}
@@ -296,7 +311,12 @@ export const LiveCompanionPage = () => {
             <Crown size={18} color="#D9A441" />
             <span className="turn-label">CURRENT TURN</span>
           </div>
-          <h2 className="active-turn-player-name">{activePlayer.name}’s Turn</h2>
+          <h2 className="active-turn-player-name">
+            {activePlayer.name}’s Turn
+            {activePlayer.heroSecondaryTitle && (
+              <span className="turn-hero-title"> · {activePlayer.heroSecondaryTitle}</span>
+            )}
+          </h2>
 
           {/* Active Advantages List for current player */}
           {activePlayer.advantages && activePlayer.advantages.length > 0 && (

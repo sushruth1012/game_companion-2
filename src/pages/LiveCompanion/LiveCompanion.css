@@ -230,6 +230,28 @@
   margin-bottom: 1px;
 }
 
+/* Hero Secondary Title Tag */
+.player-hero-title-tag {
+  background: linear-gradient(135deg, #3D2616 0%, #1A0F08 100%);
+  border: 1px solid #D9A441;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-heading);
+  font-size: 0.52rem;
+  font-weight: 800;
+  color: #F9D77E;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.turn-hero-title {
+  color: #D9A441;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
 .player-side-uid {
   font-family: var(--font-body);
   font-size: 0.52rem;

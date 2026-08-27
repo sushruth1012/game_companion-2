@@ -163,7 +163,7 @@ export const PlayerSetupPage = () => {
         console.warn('Firebase startGame notice (continuing to live match):', e);
       }
 
-      navigate('/live-game');
+      navigate('/hero-assignment');
     } catch (err) {
       console.error('Failed to start game:', err);
     } finally {

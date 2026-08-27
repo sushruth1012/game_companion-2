@@ -1,0 +1,367 @@
+.heroes-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #EFE4D2;
+  position: relative;
+  overflow-x: hidden;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+/* Authentic Parchment Texture Overlay */
+.heroes-parchment-bg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+    linear-gradient(180deg, #F5EDE0 0%, #E7DAC3 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* =========================================
+   TOP HEADER & ENGRAVINGS
+   ========================================= */
+.heroes-top-header {
+  position: relative;
+  z-index: 10;
+  padding: 16px 16px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #8C642A;
+  background: linear-gradient(180deg, rgba(239, 228, 210, 0.95) 0%, rgba(226, 210, 187, 0.95) 100%);
+  box-shadow: 0 4px 12px rgba(107, 79, 58, 0.15);
+}
+
+.heroes-back-btn,
+.heroes-shuffle-top-btn {
+  background: #FAF5E8;
+  border: 1.2px solid #8C642A;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #382416;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-heading);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.heroes-back-btn:hover,
+.heroes-shuffle-top-btn:hover {
+  background: #D9A441;
+  color: #2D1C13;
+}
+
+.heroes-title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+  text-align: center;
+}
+
+.heroes-main-title {
+  font-family: var(--font-heading);
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #2D1A0E;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(217, 164, 65, 0.3);
+}
+
+.heroes-sub-badge {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6E4515;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* =========================================
+   HERO ASSIGNMENT LIST
+   ========================================= */
+.heroes-assignment-list {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  padding: 12px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Single Row */
+.hero-assignment-row {
+  display: flex;
+  align-items: center;
+  background: #FAF5EA;
+  border: 1.8px solid #8C642A;
+  border-radius: 14px;
+  padding: 10px 12px;
+  gap: 12px;
+  box-shadow: 0 6px 18px rgba(74, 46, 27, 0.12);
+  transition: transform 0.2s ease;
+}
+
+.hero-assignment-row:hover {
+  transform: translateY(-2px);
+}
+
+/* 1. Hero Portrait Frame */
+.hero-portrait-frame {
+  width: 105px;
+  height: 115px;
+  min-width: 105px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid #8C642A;
+  background: #1A0F08;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.hero-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* 2. Hero Details Column */
+.hero-details-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.hero-name {
+  font-family: var(--font-heading);
+  font-size: 1.12rem;
+  font-weight: 800;
+  color: #2D1A0E;
+  margin: 0 0 3px;
+  letter-spacing: 0.04em;
+}
+
+/* Secondary Title Banner Pill */
+.hero-title-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  border: 1.2px solid;
+  color: #FFFFFF;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.pill-text {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.pill-flourish {
+  font-size: 0.6rem;
+  color: #F9D77E;
+}
+
+/* Advantage Box */
+.hero-advantage-box {
+  background: #FDF9F0;
+  border: 1.2px solid #C4A572;
+  border-radius: 8px;
+  padding: 5px 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 6px;
+}
+
+.advantage-box-header {
+  font-family: var(--font-heading);
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #6E4515;
+  letter-spacing: 0.06em;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.advantage-box-text {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #382416;
+  line-height: 1.25;
+  margin: 0;
+}
+
+/* Speaker Audio Button (Replaces Lore Paragraph) */
+.hero-audio-action-row {
+  display: flex;
+  align-items: center;
+}
+
+.hero-audio-btn {
+  background: #F5E8D3;
+  border: 1.2px solid #8C642A;
+  border-radius: 14px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-heading);
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #4A2E1B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-audio-btn:hover {
+  background: #D9A441;
+  color: #1A0F08;
+}
+
+.hero-audio-btn--active {
+  background: #2C180E;
+  border-color: #E74C3C;
+  color: #FFB4A2;
+}
+
+/* 3. Flow Arrow */
+.hero-flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* 4. Assigned Player Card */
+.hero-assigned-player-card {
+  width: 95px;
+  height: 120px;
+  min-width: 95px;
+  border-radius: 12px;
+  border: 2px solid;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  color: #FFF;
+}
+
+.assigned-card-sub {
+  font-family: var(--font-heading);
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #E6C27A;
+  letter-spacing: 0.06em;
+}
+
+.assigned-card-player-num {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #FFFDF8;
+  letter-spacing: 0.04em;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.assigned-avatar-disc {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #FAF5EA;
+  border: 1.5px solid #D9A441;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.assigned-crown-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================
+   BOTTOM ACTION PANEL
+   ========================================= */
+.heroes-bottom-panel {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  background: linear-gradient(180deg, rgba(239, 228, 210, 0.9) 0%, #E7DAC3 100%);
+  border-top: 1.5px solid #8C642A;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 -4px 12px rgba(107, 79, 58, 0.15);
+}
+
+.heroes-bottom-panel button {
+  width: 100%;
+  max-width: 380px;
+}
+
+/* Mobile responsive tuning */
+@media (max-width: 480px) {
+  .hero-assignment-row {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .hero-portrait-frame {
+    width: 80px;
+    height: 95px;
+    min-width: 80px;
+  }
+  .hero-name {
+    font-size: 0.95rem;
+  }
+  .pill-text {
+    font-size: 0.62rem;
+  }
+  .advantage-box-text {
+    font-size: 0.62rem;
+  }
+  .hero-assigned-player-card {
+    width: 80px;
+    height: 105px;
+    min-width: 80px;
+  }
+  .assigned-avatar-disc {
+    width: 36px;
+    height: 36px;
+  }
+}
