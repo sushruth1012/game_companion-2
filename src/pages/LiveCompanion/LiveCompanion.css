@@ -1143,6 +1143,16 @@
   text-align: center;
 }
 
+.survey-stat-card--total {
+  border-color: #2ECC71;
+  background: rgba(46, 204, 113, 0.1);
+}
+
+.table-player-name {
+  color: #FAF5E8;
+  font-family: var(--font-heading);
+}
+
 .stat-label {
   font-family: var(--font-heading);
   font-size: 0.52rem;

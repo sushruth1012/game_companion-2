@@ -21,6 +21,7 @@ import {
   Trash2,
   BarChart2,
   Check,
+  Users,
 } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
@@ -115,9 +116,20 @@ export const LiveCompanionPage = () => {
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [turnDropdown, setTurnDropdown] = useState(null);
 
-  // Survey & Move Telemetry Timestamps Ref
+  // Synchronized References for Rock-Solid Survey Telemetry Logging
+  const playersRef = useRef(players);
+  const activePlayerIndexRef = useRef(activePlayerIndex);
   const turnStartTimeRef = useRef(Date.now());
   const moveNumberRef = useRef(1);
+
+  // Sync refs on every state change
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
+  useEffect(() => {
+    activePlayerIndexRef.current = activePlayerIndex;
+  }, [activePlayerIndex]);
 
   // Modals state
   const [selectedInfoPlayer, setSelectedInfoPlayer] = useState(null);
@@ -130,25 +142,29 @@ export const LiveCompanionPage = () => {
   const [webhookUrlInput, setWebhookUrlInput] = useState(getGoogleSheetsWebhook());
   const [webhookSaved, setWebhookSaved] = useState(false);
 
-  // Helper to log move telemetry timestamp
-  const logCurrentTurnTelemetry = (actionType = 'Manual Pass') => {
+  // Core function to log a player's move telemetry
+  const logPlayerMove = (playerIdx, actionType = 'Manual Pass') => {
+    const playerList = playersRef.current;
+    const player = playerList[playerIdx] || playerList[0];
+    if (!player) return;
+
     const now = Date.now();
-    const currPlayer = players[activePlayerIndex];
-    if (currPlayer) {
-      recordMoveTelemetry({
-        sessionId: sessionStorage.getItem('gameSessionId') || 'chowkabara_survey_session',
-        moveNumber: moveNumberRef.current,
-        playerUid: currPlayer.uid,
-        playerName: currPlayer.name,
-        heroName: currPlayer.heroName,
-        heroTitle: currPlayer.heroSecondaryTitle,
-        startTime: turnStartTimeRef.current,
-        endTime: now,
-        actionType,
-        mudras: currPlayer.points,
-      });
-      moveNumberRef.current += 1;
-    }
+    const start = turnStartTimeRef.current;
+
+    recordMoveTelemetry({
+      sessionId: sessionStorage.getItem('gameSessionId') || 'chowkabara_survey_session',
+      moveNumber: moveNumberRef.current,
+      playerUid: player.uid,
+      playerName: player.name,
+      heroName: player.heroName,
+      heroTitle: player.heroSecondaryTitle,
+      startTime: start,
+      endTime: now,
+      actionType,
+      mudras: player.points,
+    });
+
+    moveNumberRef.current += 1;
     turnStartTimeRef.current = now;
   };
 
@@ -177,20 +193,33 @@ export const LiveCompanionPage = () => {
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Time's up! Record timeout telemetry & pass turn
-          logCurrentTurnTelemetry('Timeout (60s)');
-          const nextIdx = (activePlayerIndex + 1) % players.length;
-          const nextPlayer = players[nextIdx];
-          setActivePlayerIndex(nextIdx);
-          showTurnDropdown(nextPlayer, true);
-          return 60; // Reset to 60s
+          // Timeout! Pass turn to next player
+          return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activePlayerIndex, isTimerPaused, players]);
+  }, [isTimerPaused]);
+
+  // Handle Timeout (when timer hits 0)
+  useEffect(() => {
+    if (timeLeft === 0) {
+      const currentIdx = activePlayerIndexRef.current;
+      const playerList = playersRef.current;
+      
+      // 1. Log previous player's move as Timeout
+      logPlayerMove(currentIdx, 'Timeout (60s)');
+
+      // 2. Advance to next player
+      const nextIdx = (currentIdx + 1) % playerList.length;
+      const nextPlayer = playerList[nextIdx];
+      setActivePlayerIndex(nextIdx);
+      setTimeLeft(60);
+      showTurnDropdown(nextPlayer, true);
+    }
+  }, [timeLeft]);
 
   useEffect(() => {
     // Read configured players from setup & hero assignment
@@ -225,6 +254,7 @@ export const LiveCompanionPage = () => {
             };
           });
           setPlayers(mapped);
+          playersRef.current = mapped;
         }
       } catch (e) {
         console.error('Error parsing stored players:', e);
@@ -253,6 +283,7 @@ export const LiveCompanionPage = () => {
     setPlayers((prev) => {
       const updated = typeof updater === 'function' ? updater(prev) : updater;
       sessionStorage.setItem('activeGamePlayers', JSON.stringify(updated));
+      playersRef.current = updated;
       return updated;
     });
   };
@@ -260,7 +291,10 @@ export const LiveCompanionPage = () => {
   // Handle Player Banner Tap: Directly switches turn to that player
   const handlePlayerTap = (index) => {
     if (index !== activePlayerIndex) {
-      logCurrentTurnTelemetry('Manual Switch');
+      // 1. Log previous player's move
+      logPlayerMove(activePlayerIndexRef.current, 'Manual Switch');
+
+      // 2. Set new active player
       setActivePlayerIndex(index);
       setTimeLeft(60);
       showTurnDropdown(players[index], false);
@@ -271,8 +305,12 @@ export const LiveCompanionPage = () => {
   // Next Turn Button Action
   const handleNextTurn = async () => {
     await nextTurn('chowkabara_live_session');
-    logCurrentTurnTelemetry('Manual Pass');
-    const nextIdx = (activePlayerIndex + 1) % players.length;
+    
+    // 1. Log previous player's move
+    logPlayerMove(activePlayerIndexRef.current, 'Manual Pass');
+
+    // 2. Advance to next player
+    const nextIdx = (activePlayerIndexRef.current + 1) % players.length;
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
     setTimeLeft(60);
@@ -288,6 +326,11 @@ export const LiveCompanionPage = () => {
 
   // Open Survey Analytics Modal
   const handleOpenSurveyModal = () => {
+    // If the active player has spent at least 1s on their move, log it so the survey shows the ongoing turn
+    const thinkingTime = (Date.now() - turnStartTimeRef.current) / 1000;
+    if (thinkingTime >= 1.0) {
+      logPlayerMove(activePlayerIndexRef.current, 'Current Turn Check');
+    }
     setSurveyLogs(getAllSurveyRecords());
     setIsSurveyModalOpen(true);
   };
@@ -325,7 +368,7 @@ export const LiveCompanionPage = () => {
 
   // Riddle Reward Handlers
   const handleSolveSuccess = async (rewardPts, advantage) => {
-    logCurrentTurnTelemetry('Riddle Solved');
+    logPlayerMove(activePlayerIndexRef.current, 'Riddle Solved');
     await addPoints(activePlayer.id, rewardPts);
     updatePlayersState((prev) =>
       prev.map((p, idx) =>
@@ -343,7 +386,7 @@ export const LiveCompanionPage = () => {
   };
 
   const handleSolveFail = async (penalty) => {
-    logCurrentTurnTelemetry('Riddle Failed');
+    logPlayerMove(activePlayerIndexRef.current, 'Riddle Failed');
     if (penalty > 0) {
       await deductPoints(activePlayer.id, penalty);
       updatePlayersState((prev) =>
@@ -361,7 +404,7 @@ export const LiveCompanionPage = () => {
   const handleConfirmUseAdvantage = () => {
     if (!advantageToConfirm) return;
 
-    logCurrentTurnTelemetry('Hero Advantage Activated');
+    logPlayerMove(activePlayerIndexRef.current, 'Hero Advantage Activated');
 
     updatePlayersState((prev) =>
       prev.map((p) =>
@@ -388,16 +431,16 @@ export const LiveCompanionPage = () => {
     return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // Compute analytics statistics per player
+  // Compute analytics statistics per player (ensuring EVERY player is represented)
   const computePlayerStats = () => {
     const stats = {};
     players.forEach((p) => {
-      stats[p.name] = { count: 0, totalSeconds: 0 };
+      stats[p.name] = { count: 0, totalSeconds: 0, uid: p.uid, hero: p.heroSecondaryTitle };
     });
 
     surveyLogs.forEach((log) => {
       if (!stats[log.playerName]) {
-        stats[log.playerName] = { count: 0, totalSeconds: 0 };
+        stats[log.playerName] = { count: 0, totalSeconds: 0, uid: log.playerUid, hero: log.heroTitle };
       }
       stats[log.playerName].count += 1;
       stats[log.playerName].totalSeconds += log.durationSeconds || 0;
@@ -861,14 +904,14 @@ export const LiveCompanionPage = () => {
               <div>
                 <h3 className="survey-modal-title">Move Timestamps & Analysis</h3>
                 <span className="survey-modal-sub">
-                  Survey telemetry for research & Google Sheets sync
+                  Full survey move telemetry across all {players.length} players
                 </span>
               </div>
             </div>
 
-            {/* Quick Stats Grid */}
+            {/* Quick Stats Grid: Guaranteed entry for ALL players in match */}
             <div className="survey-stats-summary-grid">
-              <div className="survey-stat-card">
+              <div className="survey-stat-card survey-stat-card--total">
                 <span className="stat-label">Total Moves</span>
                 <strong className="stat-value">{surveyLogs.length}</strong>
               </div>
@@ -878,7 +921,7 @@ export const LiveCompanionPage = () => {
                   <strong className="stat-value">
                     {stat.count > 0 ? `${(stat.totalSeconds / stat.count).toFixed(1)}s avg` : '0s'}
                   </strong>
-                  <span className="stat-sub">({stat.count} moves)</span>
+                  <span className="stat-sub">{stat.count} moves logged</span>
                 </div>
               ))}
             </div>
@@ -923,7 +966,7 @@ export const LiveCompanionPage = () => {
               </label>
             </form>
 
-            {/* Move Records Telemetry Table */}
+            {/* Move Records Telemetry Table for All Players */}
             <div className="survey-table-wrap">
               <table className="survey-telemetry-table">
                 <thead>
@@ -944,10 +987,10 @@ export const LiveCompanionPage = () => {
                       </td>
                     </tr>
                   ) : (
-                    surveyLogs.slice(-15).reverse().map((log) => (
+                    surveyLogs.slice(-25).reverse().map((log) => (
                       <tr key={log.id}>
                         <td><strong>#{log.moveNumber}</strong></td>
-                        <td>{log.playerName}</td>
+                        <td><strong className="table-player-name">{log.playerName}</strong></td>
                         <td><span className="table-hero-tag">{log.heroTitle}</span></td>
                         <td><strong className="time-highlight">{log.durationFormatted}</strong></td>
                         <td className="time-sub-cell">{log.startFormatted} → {log.endFormatted}</td>
@@ -962,7 +1005,7 @@ export const LiveCompanionPage = () => {
             {/* Footer with Clear Button */}
             <div className="survey-modal-footer">
               <span className="survey-count-note">
-                Showing recent {Math.min(15, surveyLogs.length)} of {surveyLogs.length} moves
+                Showing recent {Math.min(25, surveyLogs.length)} of {surveyLogs.length} moves
               </span>
               {surveyLogs.length > 0 && (
                 <button
