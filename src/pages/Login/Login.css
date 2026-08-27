@@ -502,3 +502,66 @@
   color: #FAF5E8;
   border-color: #8C642B;
 }
+
+/* Unauthorized Domain Warning Card */
+.unauthorized-domain-card {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1.5px solid #E74C3C;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.unauth-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-heading);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #C0392B;
+}
+
+.unauth-text {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  color: #6B4F3A;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.unauth-text code {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.guest-bypass-btn {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2ECC71 0%, #27AE60 100%);
+  border: 1px solid #58D68D;
+  color: #0E2F1A;
+  font-family: var(--font-heading);
+  font-size: 0.74rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+  transition: all 0.2s ease;
+}
+
+.guest-bypass-btn:hover {
+  background: #58D68D;
+  transform: translateY(-1px);
+}

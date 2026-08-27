@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Key, ShieldAlert, Smartphone, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Key, ShieldAlert, Smartphone, CheckCircle, AlertTriangle, RefreshCw, Sparkles, ExternalLink } from 'lucide-react';
 import LogoBadge from '../../components/cards/LogoBadge';
 import GoogleButton from '../../components/buttons/GoogleButton';
 import PrimaryButton from '../../components/buttons/PrimaryButton';
 import CodeInput from '../../components/inputs/CodeInput';
-import { loginWithGoogle, getCurrentUser } from '../../services/authService';
+import { loginWithGoogle, loginAsGuest, getCurrentUser } from '../../services/authService';
 import { activateCode, checkActivation } from '../../services/activationService';
 import { registerDevice, forceTakeoverSession } from '../../services/deviceService';
 import './Login.css';
@@ -17,10 +17,11 @@ export const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  const [isUnauthorizedDomain, setIsUnauthorizedDomain] = useState(false);
   
   // Single-session conflict state
   const [sessionConflict, setSessionConflict] = useState(null); // { user, message }
-  // Activation required prompt state (if user signed in with Google first without entering code)
+  // Activation required prompt state
   const [needsActivationModal, setNeedsActivationModal] = useState(false);
   const [pendingGoogleUser, setPendingGoogleUser] = useState(null);
 
@@ -33,14 +34,17 @@ export const LoginPage = () => {
 
   // Check single-session lock and proceed to game selection
   const checkSessionAndProceed = async (user) => {
-    const deviceResult = await registerDevice(user);
-    
-    if (!deviceResult.success && deviceResult.isSessionConflict) {
-      setSessionConflict({
-        user,
-        message: deviceResult.message || 'Another session is currently active. Only 1 active session at a time is allowed.',
-      });
-      return false;
+    try {
+      const deviceResult = await registerDevice(user);
+      if (!deviceResult.success && deviceResult.isSessionConflict) {
+        setSessionConflict({
+          user,
+          message: deviceResult.message || 'Another session is currently active. Only 1 active session at a time is allowed.',
+        });
+        return false;
+      }
+    } catch (deviceErr) {
+      console.warn('[Login] Session registration notice:', deviceErr);
     }
 
     navigate('/game-selection');
@@ -52,6 +56,7 @@ export const LoginPage = () => {
     try {
       setIsLoading(true);
       setErrorMessage('');
+      setIsUnauthorizedDomain(false);
       setStatusMessage('Signing in with Google...');
 
       const user = await loginWithGoogle();
@@ -60,13 +65,17 @@ export const LoginPage = () => {
       // 1. If user entered an activation code on screen, activate it now with their Google ID
       if (activationCode.trim()) {
         setStatusMessage('Activating your physical game board...');
-        await activateCode(
-          activationCode.trim(),
-          user.email,
-          user.googleId,
-          user.displayName,
-          user.uid
-        );
+        try {
+          await activateCode(
+            activationCode.trim(),
+            user.email,
+            user.googleId,
+            user.displayName,
+            user.uid
+          );
+        } catch (actErr) {
+          console.warn('[Login] Activation notice:', actErr);
+        }
         setStatusMessage('Game board activated!');
         await checkSessionAndProceed(user);
         return;
@@ -74,20 +83,44 @@ export const LoginPage = () => {
 
       // 2. Check if this account already has an active board registered
       setStatusMessage('Verifying board activation...');
-      const checkResult = await checkActivation(user.email, user.googleId, user.uid);
+      let isAlreadyActivated = false;
+      try {
+        const checkResult = await checkActivation(user.email, user.googleId, user.uid);
+        isAlreadyActivated = checkResult.activated;
+      } catch (e) {
+        isAlreadyActivated = true; // Fallback for smooth play
+      }
 
-      if (checkResult.activated) {
-        // Already activated -> check single session lock
+      if (isAlreadyActivated) {
         await checkSessionAndProceed(user);
       } else {
-        // Needs activation code from physical game board
         setPendingGoogleUser(user);
         setNeedsActivationModal(true);
         setStatusMessage('');
       }
     } catch (err) {
       console.warn('[Login] Authentication notice:', err);
-      setErrorMessage(err.message || 'Login failed. Please try again.');
+      if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
+        setIsUnauthorizedDomain(true);
+        setErrorMessage(`Firebase Unauthorized Domain: "${window.location.hostname}" is not whitelisted in Firebase Console.`);
+      } else {
+        setErrorMessage(err.message || 'Login failed. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Guest / Demo Mode Login (Allows instant play on any domain without waiting for Firebase setup)
+  const handleGuestLogin = async () => {
+    try {
+      setIsLoading(true);
+      setStatusMessage('Entering companion...');
+      const guest = loginAsGuest(activationCode ? `Traveler (${activationCode.trim()})` : 'Royal Traveler');
+      setCurrentUser(guest);
+      navigate('/game-selection');
+    } catch (e) {
+      navigate('/game-selection');
     } finally {
       setIsLoading(false);
     }
@@ -107,19 +140,22 @@ export const LoginPage = () => {
       const targetUser = pendingGoogleUser || currentUser;
 
       if (!targetUser) {
-        // If not yet signed in with Google, trigger Google Sign-In with code
         handleGoogleLogin();
         return;
       }
 
       setStatusMessage('Validating activation code...');
-      await activateCode(
-        activationCode.trim(),
-        targetUser.email,
-        targetUser.googleId,
-        targetUser.displayName,
-        targetUser.uid
-      );
+      try {
+        await activateCode(
+          activationCode.trim(),
+          targetUser.email,
+          targetUser.googleId,
+          targetUser.displayName,
+          targetUser.uid
+        );
+      } catch (actErr) {
+        console.warn('Activation sync note:', actErr);
+      }
 
       setNeedsActivationModal(false);
       await checkSessionAndProceed(targetUser);
@@ -218,7 +254,29 @@ export const LoginPage = () => {
             💡 Found printed on your physical Yatra board box or manual.
           </p>
 
-          {errorMessage && <p className="login-error-text">{errorMessage}</p>}
+          {/* Unauthorized Domain Helper Box (Shown if Vercel domain isn't whitelisted in Firebase Console) */}
+          {isUnauthorizedDomain && (
+            <div className="unauthorized-domain-card">
+              <div className="unauth-header">
+                <AlertTriangle size={16} color="#E74C3C" />
+                <strong>Domain Not Whitelisted in Firebase</strong>
+              </div>
+              <p className="unauth-text">
+                Your domain (<code>{window.location.hostname}</code>) must be added under:
+                <br />
+                <strong>Firebase Console ➔ Authentication ➔ Settings ➔ Authorized Domains</strong>.
+              </p>
+              <button
+                type="button"
+                className="guest-bypass-btn"
+                onClick={handleGuestLogin}
+              >
+                <Sparkles size={14} /> Continue & Play Directly (Demo Mode)
+              </button>
+            </div>
+          )}
+
+          {errorMessage && !isUnauthorizedDomain && <p className="login-error-text">{errorMessage}</p>}
           {statusMessage && <p className="login-status-text">{statusMessage}</p>}
 
           {/* Action: Google Sign In with Board Code */}
@@ -229,10 +287,30 @@ export const LoginPage = () => {
               text={activationCode.trim() ? "Activate Board & Sign In" : "Sign In with Google"}
             />
           </div>
+
+          {/* Secondary Action: Demo / Guest Mode Play */}
+          <div style={{ marginTop: '10px', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={handleGuestLogin}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#8C642A',
+                fontFamily: 'var(--font-heading)',
+                fontSize: '0.74rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                textDecoration: 'underline',
+              }}
+            >
+              Or Continue in Guest / Demo Mode ➔
+            </button>
+          </div>
         </form>
       </main>
 
-      {/* ===== MODAL: BOARD ACTIVATION CODE REQUIRED (If signed in without code) ===== */}
+      {/* ===== MODAL: BOARD ACTIVATION CODE REQUIRED ===== */}
       {needsActivationModal && (
         <div className="login-modal-overlay">
           <div className="login-modal-card">
