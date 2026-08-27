@@ -164,7 +164,7 @@
   max-width: 105px;
 }
 
-/* Individual Player Card */
+/* Individual Player Card - Staggered entrance */
 .player-side-card {
   background: linear-gradient(180deg, #FAF5EA 0%, #F1E5D2 100%);
   border: 1.8px solid #A87A2C;
@@ -176,13 +176,23 @@
   text-align: center;
   position: relative;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(74, 46, 27, 0.15);
-  transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 4px 12px rgba(74, 46, 27, 0.12);
+  opacity: 0;
+  animation: cardStaggerPopIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  will-change: transform, box-shadow;
 }
 
+.players-column--left .player-side-card:nth-child(1) { animation-delay: 80ms; }
+.players-column--right .player-side-card:nth-child(1) { animation-delay: 160ms; }
+.players-column--left .player-side-card:nth-child(2) { animation-delay: 240ms; }
+.players-column--right .player-side-card:nth-child(2) { animation-delay: 320ms; }
+
+/* Gentle rise and scale on hover with soft shadow */
 .player-side-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.025);
   border-color: #D9A441;
+  box-shadow: 0 10px 22px rgba(74, 46, 27, 0.2), 0 0 12px rgba(217, 164, 65, 0.25);
 }
 
 /* ACTIVE TURN GLOW */
@@ -192,7 +202,13 @@
   box-shadow: 
     0 6px 18px rgba(217, 164, 65, 0.4),
     0 0 12px rgba(217, 164, 65, 0.35);
-  transform: scale(1.03);
+}
+
+.player-side-card--active:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 
+    0 10px 24px rgba(217, 164, 65, 0.5),
+    0 0 16px rgba(217, 164, 65, 0.4);
 }
 
 /* Info (i) Button */
@@ -355,6 +371,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  opacity: 0;
+  animation: cardStaggerPopIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) 180ms forwards;
 }
 
 /* =========================================
@@ -369,7 +387,7 @@
   z-index: 20;
 }
 
-/* CURRENT TURN BANNER */
+/* CURRENT TURN BANNER - Staggered slide up */
 .current-turn-banner {
   background: linear-gradient(180deg, #FFFFFF 0%, #F7EFE2 100%);
   border: 1.5px solid #D5C2A5;
@@ -378,11 +396,16 @@
   text-align: center;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(60, 40, 20, 0.08);
-  transition: all 0.2s ease;
+  opacity: 0;
+  animation: cardStaggerSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 320ms forwards;
+  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  will-change: transform, box-shadow;
 }
 
 .current-turn-banner:hover {
+  transform: translateY(-3px) scale(1.012);
   border-color: #D9A441;
+  box-shadow: 0 8px 22px rgba(217, 164, 65, 0.28), 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .turn-banner-header {
@@ -428,6 +451,16 @@
   justify-content: space-between;
   gap: 10px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 0 8px rgba(217, 164, 65, 0.15);
+  opacity: 0;
+  animation: cardStaggerSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 400ms forwards;
+  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  will-change: transform, box-shadow;
+}
+
+.use-advantage-banner:hover {
+  transform: translateY(-3px) scale(1.012);
+  border-color: #F9D77E;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 16px rgba(217, 164, 65, 0.35);
 }
 
 .use-adv-content-wrap {
