@@ -27,13 +27,28 @@
   box-sizing: border-box;
 }
 
-/* Active Center Glow */
+/* Active Center Glow & Hover */
 .game-slide-card--active .game-card-frame {
   border-color: #D9A441;
   box-shadow: 
     0 16px 36px rgba(15, 8, 4, 0.8),
     0 0 24px rgba(217, 164, 65, 0.4),
     inset 0 0 16px rgba(217, 164, 65, 0.15);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.game-slide-card--active:hover .game-card-frame {
+  border-color: #FAF5EA;
+  box-shadow: 
+    0 20px 44px rgba(15, 8, 4, 0.9),
+    0 0 32px rgba(217, 164, 65, 0.6),
+    inset 0 0 20px rgba(217, 164, 65, 0.25);
+  transform: translateY(-3px);
+}
+
+.game-slide-card--active:active .game-card-frame {
+  transform: scale(0.98);
 }
 
 /* Top Center Lotus Medallion */

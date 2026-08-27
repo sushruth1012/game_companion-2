@@ -14,6 +14,7 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
         filter: 'none',
         opacity: 1,
         touchAction: 'manipulation',
+        cursor: isPlayable ? 'pointer' : 'default',
       };
     }
 
@@ -30,22 +31,24 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
       zIndex: 10 - absOffset,
       filter: `blur(${blurAmount}px) brightness(${brightness})`,
       opacity: Math.max(0.4, 1 - absOffset * 0.25),
-      pointerEvents: absOffset > 1 ? 'none' : 'auto',
+      pointerEvents: 'auto',
+      cursor: 'pointer',
     };
   };
 
-  const handleAction = (e) => {
-    e.stopPropagation();
-    if (isPlayable && onSelect) {
-      onSelect(game);
-    }
-  };
-
+  // Clicking anywhere on the playable card opens theme selection
   const handleCardClick = (e) => {
-    if (isCenter && isPlayable && onSelect) {
+    if (isPlayable && onSelect) {
       onSelect(game);
     } else if (onClick) {
       onClick(e);
+    }
+  };
+
+  const handleButtonClick = (e) => {
+    e.stopPropagation();
+    if (isPlayable && onSelect) {
+      onSelect(game);
     }
   };
 
@@ -56,6 +59,7 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
+      title={isPlayable ? "Click to play Chowkabara" : `${game.title} (Coming Soon)`}
     >
       <div className="game-card-frame">
         {/* Top Center Lotus Medallion */}
@@ -90,16 +94,16 @@ export const GameCard = ({ game, isCenter, offset, onClick, onSelect }) => {
           <p className="card-game-tagline">{game.description}</p>
         </div>
 
-        {/* Action Button - Only interactive when active and playable */}
+        {/* Action Button - Interactive on active card */}
         {isCenter && (
           <div className="game-card-action">
             {isPlayable ? (
               <button
                 type="button"
                 className="select-game-btn"
-                onClick={handleAction}
+                onClick={handleButtonClick}
               >
-                <span className="select-btn-text">Select</span>
+                <span className="select-btn-text">Select & Play</span>
                 <div className="select-btn-arrow-circle">
                   <ChevronRight size={16} strokeWidth={3} />
                 </div>
