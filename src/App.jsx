@@ -5,6 +5,7 @@ import SplashPage from './pages/Splash';
 import GameSelectionPage from './pages/GameSelection';
 import ThemeSelectionPage from './pages/ThemeSelection';
 import PlayerSetupPage from './pages/PlayerSetup';
+import HeroAssignmentPage from './pages/HeroAssignment';
 import LiveCompanionPage from './pages/LiveCompanion';
 import LeaderboardPage from './pages/Leaderboard';
 import ProfilePage from './pages/Profile';
@@ -23,6 +24,7 @@ export function App() {
           <Route path="/game-selection" element={<GameSelectionPage />} />
           <Route path="/theme-selection" element={<ThemeSelectionPage />} />
           <Route path="/player-setup" element={<PlayerSetupPage />} />
+          <Route path="/hero-assignment" element={<HeroAssignmentPage />} />
           <Route path="/live-game" element={<LiveCompanionPage />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
