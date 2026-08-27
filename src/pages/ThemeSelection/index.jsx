@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Crown, Sparkles, Flame, Music, Landmark, ChevronLeft, Settings } from 'lucide-react';
 import ThemeCard from '../../components/cards/ThemeCard';
 import { setTheme } from '../../services/themeService';
-import rajyaImg from '../../assets/themes/rajya.jpg';
+import mahabharathaImg from '../../assets/themes/mahabharatha.jpg';
 import navarasaImg from '../../assets/themes/navarasa.jpg';
 import panchaboothaImg from '../../assets/themes/panchabootha.jpg';
 import kalaYugaImg from '../../assets/themes/kala_yuga.jpg';
@@ -12,14 +12,14 @@ import './ThemeSelection.css';
 
 export const ThemeSelectionPage = () => {
   const navigate = useNavigate();
-  const [selectedThemeId, setSelectedThemeId] = useState('rajya');
+  const [selectedThemeId, setSelectedThemeId] = useState('mahabharatha');
 
   const themes = [
     {
-      id: 'rajya',
-      name: 'RAJYA',
-      description: 'Lead mighty realms, build your legacy and shape history.',
-      image: rajyaImg,
+      id: 'mahabharatha',
+      name: 'MAHABHARATHA',
+      description: 'Step onto the sacred battlefield of Kurukshetra, wield divine astras and uphold eternal dharma.',
+      image: mahabharathaImg,
       accentColor: '#D9A441',
       badgeBg: 'radial-gradient(circle, #543714 0%, #2A1A08 100%)',
       buttonGradient: 'linear-gradient(180deg, #9E6C28 0%, #6E4515 100%)',
