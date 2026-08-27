@@ -45,7 +45,7 @@
   justify-content: space-between;
   padding: 10px 14px;
   position: relative;
-  z-index: 10;
+  z-index: 500;
   border-bottom: 1.5px solid #8C642A;
   background: linear-gradient(180deg, rgba(239, 228, 210, 0.95) 0%, rgba(226, 210, 187, 0.95) 100%);
   box-shadow: 0 4px 12px rgba(107, 79, 58, 0.1);
@@ -144,29 +144,41 @@
 
 .settings-menu-anchor {
   position: relative;
+  z-index: 510;
 }
 
 .settings-gear-btn--active {
   background: #D9A441 !important;
   color: #1A0F08 !important;
   border-color: #FAF5EA !important;
+  transform: rotate(45deg);
+}
+
+.settings-backdrop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 505;
+  backdrop-filter: blur(1px);
 }
 
 .live-settings-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   right: 0;
-  width: 220px;
-  background: radial-gradient(circle at 50% 10%, #24140B 0%, #120A05 100%);
-  border: 1.5px solid #D9A441;
-  border-radius: 14px;
+  width: 235px;
+  background: radial-gradient(circle at 50% 10%, #26150B 0%, #140A05 85%, #0A0502 100%);
+  border: 1.8px solid #D9A441;
+  border-radius: 16px;
   padding: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 15px rgba(217, 164, 65, 0.2);
-  z-index: 99;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.85),
+    0 0 20px rgba(217, 164, 65, 0.35);
+  z-index: 510;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  animation: modalPopIn 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  gap: 5px;
+  animation: modalPopIn 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .dropdown-menu-item {
