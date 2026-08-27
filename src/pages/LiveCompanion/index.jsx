@@ -280,13 +280,17 @@ export const LiveCompanionPage = () => {
     if (storedTheme) {
       setThemeKey(storedTheme);
       const names = {
-        rajya: 'KINGDOMS',
+        mahabharatha: 'MAHABHARATHA',
+        rajya: 'MAHABHARATHA',
         navarasa: 'NAVARASA',
         panchabootha: 'PANCHABOOTHA',
         kala_yuga: 'KALA & YUGA',
         kshetra_devalaya: 'KSHETRA & DEVALAYA',
       };
-      setWorldThemeName(names[storedTheme] || 'KINGDOMS');
+      setWorldThemeName(names[storedTheme] || 'MAHABHARATHA');
+    } else {
+      setThemeKey('mahabharatha');
+      setWorldThemeName('MAHABHARATHA');
     }
   }, []);
 

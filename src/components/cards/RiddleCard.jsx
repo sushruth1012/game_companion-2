@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Sparkles, CheckCircle, HelpCircle, Coins, Lock, RotateCw, Shuffle } from 'lucide-react';
 import { buyRiddle, submitAnswer, getRandomRiddle, STARTING_MUDRAS, RIDDLE_COSTS } from '../../services/riddleService';
+import mahabharathaImg from '../../assets/themes/mahabharatha.jpg';
 import wiseAdvisorImg from '../../assets/wise_advisor.jpg';
 import kshetraImg from '../../assets/themes/kshetra_devalaya.jpg';
 import navarasaImg from '../../assets/themes/navarasa.jpg';
@@ -10,7 +11,7 @@ import './RiddleCard.css';
 
 export const RiddleCard = ({
   activePlayer,
-  themeKey = 'rajya',
+  themeKey = 'mahabharatha',
   hasAnsweredRiddleThisTurn = false,
   onRiddleAnswered,
   onPointsDeducted,
@@ -27,14 +28,15 @@ export const RiddleCard = ({
 
   // Map theme images
   const themeImages = {
-    rajya: wiseAdvisorImg,
+    mahabharatha: mahabharathaImg,
+    rajya: mahabharathaImg,
     kshetra_devalaya: kshetraImg,
     navarasa: navarasaImg,
     panchabootha: panchaboothaImg,
     kala_yuga: kalaYugaImg,
   };
 
-  const storyImage = themeImages[themeKey] || wiseAdvisorImg;
+  const storyImage = themeImages[themeKey] || mahabharathaImg;
 
   // Load / Shuffle Riddle when theme, difficulty, or activePlayer changes
   useEffect(() => {

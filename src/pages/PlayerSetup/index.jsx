@@ -5,7 +5,7 @@ import PlayerCard from '../../components/cards/PlayerCard';
 import PrimaryButton from '../../components/buttons/PrimaryButton';
 import { addPlayer } from '../../services/playerService';
 import { startGame } from '../../services/gameService';
-import rajyaImg from '../../assets/themes/rajya.jpg';
+import mahabharathaImg from '../../assets/themes/mahabharatha.jpg';
 import navarasaImg from '../../assets/themes/navarasa.jpg';
 import panchaboothaImg from '../../assets/themes/panchabootha.jpg';
 import kalaYugaImg from '../../assets/themes/kala_yuga.jpg';
@@ -16,7 +16,7 @@ export const PlayerSetupPage = () => {
   const navigate = useNavigate();
 
   // Selected Theme state
-  const [selectedThemeKey, setSelectedThemeKey] = useState('rajya');
+  const [selectedThemeKey, setSelectedThemeKey] = useState('mahabharatha');
 
   // Player count selection (2, 3, or 4)
   const [playerCount, setPlayerCount] = useState(2);
@@ -25,11 +25,20 @@ export const PlayerSetupPage = () => {
 
   // Theme Metadata mapping
   const themeDetailsMap = {
+    mahabharatha: {
+      id: 'mahabharatha',
+      name: 'MAHABHARATHA',
+      tag: 'Epic Kurukshetra',
+      image: mahabharathaImg,
+      color: '#D9A441',
+      badgeBg: 'radial-gradient(circle, #543714 0%, #2A1A08 100%)',
+      icon: <Crown size={18} color="#F9D77E" />,
+    },
     rajya: {
-      id: 'rajya',
-      name: 'RAJYA',
-      tag: 'Royal Realm',
-      image: rajyaImg,
+      id: 'mahabharatha',
+      name: 'MAHABHARATHA',
+      tag: 'Epic Kurukshetra',
+      image: mahabharathaImg,
       color: '#D9A441',
       badgeBg: 'radial-gradient(circle, #543714 0%, #2A1A08 100%)',
       icon: <Crown size={18} color="#F9D77E" />,
