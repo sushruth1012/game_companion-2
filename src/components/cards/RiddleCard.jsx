@@ -36,26 +36,31 @@ export const RiddleCard = ({
 
   const storyImage = themeImages[themeKey] || wiseAdvisorImg;
 
-  // Load / Shuffle Riddle when theme or difficulty changes
+  // Load / Shuffle Riddle when theme, difficulty, or activePlayer changes
   useEffect(() => {
-    const riddle = getRandomRiddle(themeKey, difficulty);
+    const playerAge = activePlayer?.ageGroup || activePlayer?.age || '8-12';
+    const riddle = getRandomRiddle(themeKey, difficulty, playerAge);
     setCurrentRiddle(riddle);
     setIsFlipped(false);
     setSelectedOption(null);
     setOutcome(null);
-  }, [themeKey, difficulty]);
+  }, [themeKey, difficulty, activePlayer?.id, activePlayer?.ageGroup, activePlayer?.age]);
 
   const handleDifficultyChange = (newDiff) => {
     if (isFlipped || hasAnsweredRiddleThisTurn) return;
     setDifficulty(newDiff);
+    const playerAge = activePlayer?.ageGroup || activePlayer?.age || '8-12';
+    const riddle = getRandomRiddle(themeKey, newDiff, playerAge);
+    setCurrentRiddle(riddle);
     onEventLog?.(`Selected ${newDiff.toUpperCase()} difficulty (${RIDDLE_COSTS[newDiff]} Mudras).`);
   };
 
   const handleShuffle = () => {
     if (isFlipped || hasAnsweredRiddleThisTurn) return;
-    const riddle = getRandomRiddle(themeKey, difficulty);
+    const playerAge = activePlayer?.ageGroup || activePlayer?.age || '8-12';
+    const riddle = getRandomRiddle(themeKey, difficulty, playerAge);
     setCurrentRiddle(riddle);
-    onEventLog?.(`Drawn a new ${difficulty.toUpperCase()} riddle challenge.`);
+    onEventLog?.(`Drawn a new ${difficulty.toUpperCase()} riddle challenge for ${activePlayer?.name || 'Player'}.`);
   };
 
   // Handle Buying & Flipping Riddle via Member 2 Game Logic
@@ -149,7 +154,9 @@ export const RiddleCard = ({
 
           {/* Header Tag & Title */}
           <div className="riddle-header-text">
-            <span className="riddle-category-tag">THEMATIC RIDDLE EVENT</span>
+            <span className="riddle-category-tag">
+              AGE {activePlayer?.ageGroup || '8-12'} · {difficulty.toUpperCase()} RIDDLE
+            </span>
             <h2 className="riddle-title">{currentRiddle.title}</h2>
           </div>
 
@@ -263,7 +270,7 @@ export const RiddleCard = ({
           <div className="riddle-header-text">
             <div className="back-badge-row">
               <span className="difficulty-pill-tag">
-                {difficulty.toUpperCase()} • {currentRiddle.cost} MUDRAS
+                AGE {activePlayer?.ageGroup || '8-12'} · {difficulty.toUpperCase()} · {currentRiddle.cost} MUDRAS
               </span>
               <span className="reward-pill-tag">
                 <Sparkles size={11} color="#2ECC71" /> +{currentRiddle.reward || 1500}

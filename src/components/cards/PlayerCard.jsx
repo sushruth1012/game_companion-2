@@ -43,21 +43,20 @@ export const PlayerCard = ({
           </div>
         </div>
 
-        {/* Age Dropdown */}
+        {/* Age Dropdown - Never empty, strictly 8-12, 13-16, 17+ */}
         <div className="player-input-group player-input-group--age">
           <label className="player-input-label">
-            <Calendar size={13} className="age-calendar-icon" /> Age
+            <Calendar size={13} className="age-calendar-icon" /> Age Range
           </label>
           <div className="player-select-wrap">
             <select
-              value={playerData.age || ''}
+              value={playerData.age || '8-12'}
               onChange={(e) => onAgeChange(e.target.value)}
               className="player-select-input"
             >
-              <option value="" disabled>Enter age</option>
-              <option value="5-10">5 - 10</option>
-              <option value="10-15">10 - 15</option>
-              <option value="15+">15+</option>
+              <option value="8-12">8 - 12</option>
+              <option value="13-16">13 - 16</option>
+              <option value="17+">17+</option>
             </select>
             <ChevronDown size={16} className="select-chevron-icon" />
           </div>

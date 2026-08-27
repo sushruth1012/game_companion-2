@@ -96,12 +96,12 @@ export const PlayerSetupPage = () => {
 
   const currentTheme = themeDetailsMap[selectedThemeKey] || themeDetailsMap.rajya;
 
-  // Player details state
+  // Player details state (default age is strictly 8-12, never empty)
   const [playersData, setPlayersData] = useState([
-    { id: '1', uid: '', age: '' },
-    { id: '2', uid: '', age: '' },
-    { id: '3', uid: '', age: '' },
-    { id: '4', uid: '', age: '' },
+    { id: '1', uid: '', age: '8-12' },
+    { id: '2', uid: '', age: '8-12' },
+    { id: '3', uid: '', age: '8-12' },
+    { id: '4', uid: '', age: '8-12' },
   ]);
 
   // Color mappings per player
@@ -125,7 +125,7 @@ export const PlayerSetupPage = () => {
   const handleAgeChange = (index, value) => {
     setPlayersData((prev) => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], age: value };
+      updated[index] = { ...updated[index], age: value || '8-12' };
       return updated;
     });
   };
@@ -139,18 +139,20 @@ export const PlayerSetupPage = () => {
       // Call standard player service functions (integrated with Firebase and Member 2 game logic)
       for (let idx = 0; idx < playerCount; idx++) {
         const p = playersData[idx];
-        const ageNum = p.age === '5 - 10' ? 8 : p.age === '10 - 15' ? 12 : 20;
+        const ageGroup = p.age || '8-12';
+        const ageNum = ageGroup === '8-12' ? 10 : ageGroup === '13-16' ? 14 : 20;
         const enteredName = p.uid.trim();
         const createdPlayer = await addPlayer({
           id: `p_${idx + 1}`,
           name: enteredName || `Player ${idx + 1}`,
           uid: enteredName ? enteredName.toUpperCase().replace(/\s+/g, '_') : `CHB00${idx + 1}`,
           age: ageNum,
+          ageGroup: ageGroup,
           color: playerThemes[idx].color,
           pawnIndex: idx,
           gameId: 'chowkabara_live_session',
         });
-        activePlayers.push(createdPlayer);
+        activePlayers.push({ ...createdPlayer, ageGroup });
       }
 
       // Save active session for Live Companion
