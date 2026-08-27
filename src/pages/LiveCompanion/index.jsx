@@ -407,17 +407,14 @@ export const LiveCompanionPage = () => {
     recordGameActivity?.().catch(() => {});
   };
 
-  // Riddle Reward Handlers
-  const handleSolveSuccess = async (rewardPts, advantage) => {
+  // Riddle Reward Handlers - No points/Mudras added on solve, only earned advantage
+  const handleSolveSuccess = async (_rewardPts, advantage) => {
     logPlayerMove(activePlayerIndexRef.current, 'Riddle Solved');
-    await addPoints(activePlayer.id, rewardPts);
     updatePlayersState((prev) =>
       prev.map((p, idx) =>
         idx === activePlayerIndex
           ? {
               ...p,
-              points: p.points + rewardPts,
-              mudras: p.points + rewardPts,
               advantages: advantage ? [...(p.advantages || []), advantage] : p.advantages,
             }
           : p

@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Sparkles, CheckCircle, HelpCircle, Coins, Lock, RotateCw, Shuffle } from 'lucide-react';
-import { buyRiddle, submitAnswer, getRandomRiddle, STARTING_MUDRAS, RIDDLE_COSTS } from '../../services/riddleService';
+import {
+  buyRiddle,
+  submitAnswer,
+  getRandomRiddle,
+  STARTING_MUDRAS,
+  RIDDLE_COSTS,
+} from '../../services/riddleService';
 import mahabharathaImg from '../../assets/themes/mahabharatha.jpg';
 import wiseAdvisorImg from '../../assets/wise_advisor.jpg';
 import kshetraImg from '../../assets/themes/kshetra_devalaya.jpg';
@@ -25,6 +31,7 @@ export const RiddleCard = ({
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [outcome, setOutcome] = useState(null); // 'correct' | 'wrong' | null
+  const [awardedAdvantage, setAwardedAdvantage] = useState(null);
 
   // Map theme images
   const themeImages = {
@@ -46,6 +53,7 @@ export const RiddleCard = ({
     setIsFlipped(false);
     setSelectedOption(null);
     setOutcome(null);
+    setAwardedAdvantage(null);
   }, [themeKey, difficulty, activePlayer?.id, activePlayer?.ageGroup, activePlayer?.age]);
 
   const handleDifficultyChange = (newDiff) => {
@@ -54,6 +62,7 @@ export const RiddleCard = ({
     const playerAge = activePlayer?.ageGroup || activePlayer?.age || '8-12';
     const riddle = getRandomRiddle(themeKey, newDiff, playerAge);
     setCurrentRiddle(riddle);
+    setAwardedAdvantage(null);
     onEventLog?.(`Selected ${newDiff.toUpperCase()} difficulty (${RIDDLE_COSTS[newDiff]} Mudras).`);
   };
 
@@ -62,6 +71,7 @@ export const RiddleCard = ({
     const playerAge = activePlayer?.ageGroup || activePlayer?.age || '8-12';
     const riddle = getRandomRiddle(themeKey, difficulty, playerAge);
     setCurrentRiddle(riddle);
+    setAwardedAdvantage(null);
     onEventLog?.(`Drawn a new ${difficulty.toUpperCase()} riddle challenge for ${activePlayer?.name || 'Player'}.`);
   };
 
@@ -117,14 +127,18 @@ export const RiddleCard = ({
     // Mark that a riddle has been answered for this player's turn (1 riddle per move rule)
     onRiddleAnswered?.();
 
-    const submitResult = await submitAnswer(playerObj, isCorrect, currentRiddle.advantage);
+    // Submit answer: randomly awards a difficulty-matched advantage (NO points added)
+    const submitResult = await submitAnswer(playerObj, isCorrect, currentRiddle.difficulty || difficulty);
 
     if (submitResult.solved) {
       setOutcome('correct');
-      onSolveSuccess?.(currentRiddle.reward || 1500, currentRiddle.advantage);
+      setAwardedAdvantage(submitResult.advantage);
+      // Pass 0 points so no points/mudras are added to the player
+      onSolveSuccess?.(0, submitResult.advantage);
       onEventLog?.(`🎉 ${activePlayer.name}: ${submitResult.message}`);
     } else {
       setOutcome('wrong');
+      setAwardedAdvantage(null);
       onSolveFail?.(0);
       onEventLog?.(`❌ ${activePlayer.name}: ${submitResult.message}`);
     }
@@ -135,8 +149,9 @@ export const RiddleCard = ({
     setIsFlipped(false);
     setSelectedOption(null);
     setOutcome(null);
-    // Draw next random challenge
-    const nextRiddle = getRandomRiddle(themeKey, difficulty);
+    setAwardedAdvantage(null);
+    const playerAge = activePlayer?.ageGroup || activePlayer?.age || '8-12';
+    const nextRiddle = getRandomRiddle(themeKey, difficulty, playerAge);
     setCurrentRiddle(nextRiddle);
   };
 
@@ -146,12 +161,12 @@ export const RiddleCard = ({
     <div className={`riddle-3d-scene ${isFlipped ? 'riddle-3d-scene--flipped' : ''}`}>
       <div className="riddle-flipper-card">
         {/* =========================================
-            FRONT FACE (LOCKED STORY LORE & DIFFICULTY SELECTOR)
+            FRONT FACE (STORY & DIFFICULTY SELECTION)
             ========================================= */}
         <div className="riddle-card-face riddle-face--front">
           {/* Top Floating Medallion */}
           <div className="riddle-top-medallion">
-            <Lock size={15} color="#F9D77E" />
+            <BookOpen size={14} color="#D9A441" />
           </div>
 
           {/* Header Tag & Title */}
@@ -225,8 +240,8 @@ export const RiddleCard = ({
               <div className="riddle-hidden-prompt-box">
                 <Lock size={14} className="lock-icon-faint" />
                 <span className="hidden-prompt-hint">
-                  Unlock {difficulty.toUpperCase()} challenge for {currentRiddle.cost} Mudras to reveal question & win{' '}
-                  <strong>{typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : 'Advantage'}</strong>!
+                  Unlock {difficulty.toUpperCase()} challenge for {currentRiddle.cost} Mudras to reveal question & win a random{' '}
+                  <strong>{difficulty.toUpperCase()} Advantage</strong>!
                 </span>
               </div>
             )}
@@ -275,7 +290,7 @@ export const RiddleCard = ({
                 AGE {activePlayer?.ageGroup || '8-12'} · {difficulty.toUpperCase()} · {currentRiddle.cost} MUDRAS
               </span>
               <span className="reward-pill-tag">
-                <Sparkles size={11} color="#2ECC71" /> +{currentRiddle.reward || 1500}
+                <Sparkles size={11} color="#2ECC71" /> {difficulty.toUpperCase()} PERK
               </span>
             </div>
             <h2 className="riddle-title riddle-title--back">{currentRiddle.title}</h2>
@@ -290,7 +305,7 @@ export const RiddleCard = ({
           <div className="riddle-perk-ribbon">
             <span className="perk-label">REWARD:</span>
             <span className="perk-name">
-              {typeof currentRiddle.advantage === 'object' ? currentRiddle.advantage.name : 'Divine Advantage'}
+              {awardedAdvantage ? `${awardedAdvantage.name}` : `Random ${difficulty.toUpperCase()} Advantage`}
             </span>
           </div>
 
@@ -331,9 +346,14 @@ export const RiddleCard = ({
             <div className={`riddle-outcome-banner outcome--${outcome}`}>
               <span className="outcome-text">
                 {outcome === 'correct'
-                  ? `🎉 Solved! +${currentRiddle.reward || 1500} Mudras awarded!`
-                  : `❌ Incorrect! No advantage awarded.`}
+                  ? `🎉 Correct! Earned: ${awardedAdvantage?.name || 'Advantage'}`
+                  : `❌ Incorrect! No advantage earned.`}
               </span>
+              {outcome === 'correct' && awardedAdvantage && (
+                <small style={{ fontSize: '0.54rem', color: '#EBF7EE', textAlign: 'center', lineHeight: 1.2 }}>
+                  {awardedAdvantage.description}
+                </small>
+              )}
               <button
                 type="button"
                 className="riddle-flipback-btn"
