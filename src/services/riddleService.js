@@ -540,6 +540,82 @@ export const getRandomRiddle = (themeKey = 'rajya', difficulty = 'medium', playe
 };
 
 /**
+ * Difficulty-Specific Advantages Pool (Randomly awarded on correct riddle solve)
+ * Easy:
+ *   1. Move your pawn by +/-1
+ *   2. Reroll and use the *new* result
+ *   3. Move your pawn backward (acc to the result)
+ * Medium:
+ *   1. Add 2 to the result
+ *   2. Split the result between 2 pawns
+ *   3. Hold the result and use it in the next turn
+ * Hard:
+ *   1. Move your pawn twice with the same result (if you get 3 you can move 6 places)
+ *   2. Reroll and *add* it to the earlier result and use it
+ *   3. Choose to move your pawn forward or backward (acc to the result)
+ */
+export const DIFFICULTY_ADVANTAGES = {
+  easy: [
+    {
+      id: 'adv_easy_1',
+      name: 'Shift ±1',
+      description: 'Move your pawn by +/-1 space',
+    },
+    {
+      id: 'adv_easy_2',
+      name: 'Reroll (New Result)',
+      description: 'Reroll and use the *new* result',
+    },
+    {
+      id: 'adv_easy_3',
+      name: 'Backward Move',
+      description: 'Move your pawn backward (acc to the result)',
+    },
+  ],
+  medium: [
+    {
+      id: 'adv_med_1',
+      name: 'Add +2',
+      description: 'Add 2 to the result',
+    },
+    {
+      id: 'adv_med_2',
+      name: 'Split Result',
+      description: 'Split the result between 2 pawns',
+    },
+    {
+      id: 'adv_med_3',
+      name: 'Hold Result',
+      description: 'Hold the result and use it in the next turn',
+    },
+  ],
+  hard: [
+    {
+      id: 'adv_hard_1',
+      name: 'Double Move (2x)',
+      description: 'Move your pawn twice with the same result (if you get 3, move 6 places)',
+    },
+    {
+      id: 'adv_hard_2',
+      name: 'Reroll & Add',
+      description: 'Reroll and *add* it to the earlier result and use it',
+    },
+    {
+      id: 'adv_hard_3',
+      name: 'Flexible Direction',
+      description: 'Choose to move your pawn forward or backward (acc to the result)',
+    },
+  ],
+};
+
+export const getRandomAdvantageForDifficulty = (diff = 'medium') => {
+  const normalizedDiff = diff?.toLowerCase() || 'medium';
+  const pool = DIFFICULTY_ADVANTAGES[normalizedDiff] || DIFFICULTY_ADVANTAGES.medium;
+  const randomIndex = Math.floor(Math.random() * pool.length);
+  return pool[randomIndex];
+};
+
+/**
  * Buy a riddle via Member 2 Game Logic
  */
 export const buyRiddle = async (player, riddle) => {
@@ -547,10 +623,27 @@ export const buyRiddle = async (player, riddle) => {
 };
 
 /**
- * Submit answer via Member 2 Game Logic
+ * Submit answer - Awards a randomly chosen difficulty advantage on solve (NO points added)
  */
-export const submitAnswer = async (player, isCorrect, advantage) => {
-  return member2SubmitAnswer(player, isCorrect, advantage);
+export const submitAnswer = async (player, isCorrect, riddleDifficulty = 'medium') => {
+  if (!isCorrect) {
+    return {
+      player,
+      solved: false,
+      advantage: null,
+      message: 'Riddle not solved.',
+    };
+  }
+
+  // Randomly pick one of the 3 advantages matching this difficulty tier
+  const awardedAdvantage = getRandomAdvantageForDifficulty(riddleDifficulty);
+
+  return {
+    player,
+    solved: true,
+    advantage: awardedAdvantage,
+    message: `Riddle solved! Advantage earned: ${awardedAdvantage.name} (${awardedAdvantage.description})`,
+  };
 };
 
 /**
