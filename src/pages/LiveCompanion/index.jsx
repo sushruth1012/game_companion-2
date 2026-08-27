@@ -4,13 +4,14 @@ import { Crown, Settings, Shield, Scroll, Coins, Sparkles, Zap } from 'lucide-re
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
 import { addPoints, deductPoints } from '../../services/pointService';
+import { recordGameActivity } from '../../services/gameService';
 import { STARTING_MUDRAS } from '../../lib/gameLogic';
 import './LiveCompanion.css';
 
 export const LiveCompanionPage = () => {
   const navigate = useNavigate();
 
-  // Initialize 4 players with Member 2 STARTING_MUDRAS (6000)
+  // Initialize 4 players with Member 2 STARTING_MUDRAS (8000)
   const defaultPlayers = [
     { id: 'p_1', name: 'Arjun', uid: 'CHB001', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#2ECC71', avatar: '👦', num: 1, advantages: [] },
     { id: 'p_2', name: 'Diya', uid: 'CHB002', points: STARTING_MUDRAS, mudras: STARTING_MUDRAS, shieldColor: '#3498DB', avatar: '👧', num: 2, advantages: [] },
@@ -71,6 +72,7 @@ export const LiveCompanionPage = () => {
     setActivePlayerIndex(index);
     const selected = players[index];
     setEventLogText(`Turn switched to ${selected.name}.`);
+    recordGameActivity?.().catch(() => {});
   };
 
   // Next Turn Button Action
@@ -81,6 +83,7 @@ export const LiveCompanionPage = () => {
       setEventLogText(`Turn passed to ${players[nextIdx].name}.`);
       return nextIdx;
     });
+    recordGameActivity?.().catch(() => {});
   };
 
   // Point/Mudras updates when buying riddle
@@ -95,6 +98,7 @@ export const LiveCompanionPage = () => {
         idx === activePlayerIndex ? { ...p, points: updatedPoints, mudras: updatedPoints } : p
       )
     );
+    recordGameActivity?.().catch(() => {});
   };
 
   // Riddle Reward Handlers: Update points & attach unlocked Advantage
@@ -112,6 +116,7 @@ export const LiveCompanionPage = () => {
           : p
       )
     );
+    recordGameActivity?.().catch(() => {});
   };
 
   const handleSolveFail = async (penalty) => {
@@ -125,6 +130,7 @@ export const LiveCompanionPage = () => {
         )
       );
     }
+    recordGameActivity?.().catch(() => {});
   };
 
   return (

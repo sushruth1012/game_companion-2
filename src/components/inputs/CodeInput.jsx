@@ -7,7 +7,7 @@ export const CodeInput = ({
   onChange,
   placeholder = 'Enter code',
   disabled = false,
-  maxLength = 12,
+  maxLength = 15,
   id = 'game-code-input',
   autoComplete = 'off',
 }) => {
@@ -23,6 +23,7 @@ export const CodeInput = ({
         <div className="code-input__icon-box">
           <Ticket size={20} className="code-input__icon" />
         </div>
+
         <input
           id={id}
           type="text"

@@ -1,49 +1,256 @@
-// Standard Authentication Service (Frontend Stubs per Integration Contract)
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+} from "firebase/auth";
 
-export const loginWithGoogle = async () => {
-  console.log('[Auth Service] Calling standard function: loginWithGoogle()');
-  // Simulated frontend response until Member 3 (Backend) connects Firebase
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mockUser = {
-        uid: 'usr_g_' + Math.random().toString(36).substring(2, 9),
-        displayName: 'Royal Voyager',
-        email: 'player@heritagegames.in',
-        photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+
+import {
+  auth,
+  db,
+} from "../lib/firebase";
+
+const googleProvider =
+  new GoogleAuthProvider();
+
+
+// ============================================================
+// GOOGLE LOGIN
+// ============================================================
+
+export const loginWithGoogle =
+  async () => {
+
+    try {
+
+      const result =
+        await signInWithPopup(
+          auth,
+          googleProvider
+        );
+
+      const user =
+        result.user;
+
+
+      const googleId =
+        user.providerData?.find(
+          (provider) =>
+            provider.providerId ===
+            "google.com"
+        )?.uid || "";
+
+
+      await setDoc(
+        doc(
+          db,
+          "users",
+          user.uid
+        ),
+        {
+          uid:
+            user.uid,
+
+          name:
+            user.displayName || "",
+
+          email:
+            user.email || "",
+
+          photo:
+            user.photoURL || "",
+
+          googleId,
+
+          lastLoginAt:
+            serverTimestamp(),
+        },
+        {
+          merge: true,
+        }
+      );
+
+
+      const userData = {
+
+        uid:
+          user.uid,
+
+        displayName:
+          user.displayName || "",
+
+        email:
+          user.email || "",
+
+        photoURL:
+          user.photoURL || "",
+
+        googleId,
+
       };
-      sessionStorage.setItem('currentUser', JSON.stringify(mockUser));
-      resolve(mockUser);
-    }, 600);
-  });
-};
 
-export const logoutUser = async () => {
-  console.log('[Auth Service] Calling standard function: logoutUser()');
-  sessionStorage.removeItem('currentUser');
-  return true;
-};
 
-export const joinGame = async (gameCode) => {
-  console.log(`[Auth Service] Calling standard function: joinGame("${gameCode}")`);
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (!gameCode || gameCode.trim().length === 0) {
-        reject(new Error('Please enter a valid activation code.'));
-        return;
-      }
-      const session = {
-        gameCode: gameCode.toUpperCase(),
-        joinedAt: new Date().toISOString(),
-        gameName: 'Chowkabara Heritage Edition',
+      sessionStorage.setItem(
+        "currentUser",
+        JSON.stringify(
+          userData
+        )
+      );
+
+
+      return userData;
+
+    } catch (error) {
+
+      console.error(
+        "[Auth Service] Google login failed:",
+        error
+      );
+
+      throw error;
+    }
+  };
+
+
+// ============================================================
+// LOGOUT
+// ============================================================
+
+export const logoutUser =
+  async () => {
+
+    try {
+
+      await signOut(
+        auth
+      );
+
+
+      sessionStorage.removeItem(
+        "currentUser"
+      );
+
+      sessionStorage.removeItem(
+        "currentGameSession"
+      );
+
+      sessionStorage.removeItem(
+        "yatraSessionId"
+      );
+
+
+      return true;
+
+    } catch (error) {
+
+      console.error(
+        "[Auth Service] Logout failed:",
+        error
+      );
+
+      throw error;
+    }
+  };
+
+
+// ============================================================
+// CURRENT USER
+// ============================================================
+
+export const getCurrentUser =
+  () => {
+
+    const user =
+      auth.currentUser;
+
+
+    if (user) {
+
+      return {
+
+        uid:
+          user.uid,
+
+        displayName:
+          user.displayName || "",
+
+        email:
+          user.email || "",
+
+        photoURL:
+          user.photoURL || "",
+
+        googleId:
+          user.providerData?.find(
+            (provider) =>
+              provider.providerId ===
+              "google.com"
+          )?.uid || "",
+
       };
-      sessionStorage.setItem('currentGameSession', JSON.stringify(session));
-      resolve(session);
-    }, 500);
-  });
-};
 
-export const getCurrentUser = () => {
-  console.log('[Auth Service] Calling standard function: getCurrentUser()');
-  const stored = sessionStorage.getItem('currentUser');
-  return stored ? JSON.parse(stored) : null;
-};
+    }
+
+
+    const stored =
+      sessionStorage.getItem(
+        "currentUser"
+      );
+
+
+    return stored
+      ? JSON.parse(stored)
+      : null;
+  };
+
+
+// ============================================================
+// JOIN GAME
+// ============================================================
+
+export const joinGame =
+  async (
+    gameCode
+  ) => {
+
+    if (
+      !gameCode?.trim()
+    ) {
+
+      throw new Error(
+        "Please enter a valid game code."
+      );
+
+    }
+
+
+    const session = {
+
+      gameCode:
+        gameCode
+          .trim()
+          .toUpperCase(),
+
+      joinedAt:
+        new Date()
+          .toISOString(),
+
+    };
+
+
+    sessionStorage.setItem(
+      "currentGameSession",
+      JSON.stringify(
+        session
+      )
+    );
+
+
+    return session;
+
+  };
