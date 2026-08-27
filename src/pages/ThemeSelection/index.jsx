@@ -115,23 +115,23 @@ export const ThemeSelectionPage = () => {
         {/* Left Back Button */}
         <button
           type="button"
-          className="theme-back-btn"
+          className="app-back-btn"
           onClick={() => navigate('/game-selection')}
           aria-label="Back to Game Selection"
         >
-          <Home size={18} />
+          <ChevronLeft size={20} />
         </button>
 
         {/* Right Action / Emblem Badge */}
         <div className="theme-top-right-badge">
-          <div className="top-banner-pendant">
-            <svg viewBox="0 0 38 48" width="34" height="44" fill="#1C3827">
-              <path d="M0,0 H38 V38 L19,46 L0,38 Z" stroke="#D9A441" strokeWidth="1.2" />
-              {/* Star and Lotus */}
-              <circle cx="19" cy="12" r="1.8" fill="#D9A441" />
-              <path d="M19,16 C21,21 25,23 28,24 C25,26 21,28 19,32 C17,28 13,26 10,24 C13,23 17,21 19,16 Z" fill="#D9A441" />
-            </svg>
-          </div>
+          <button
+            type="button"
+            className="app-back-btn"
+            onClick={() => navigate('/settings')}
+            aria-label="Settings"
+          >
+            <Settings size={18} />
+          </button>
         </div>
       </header>
 

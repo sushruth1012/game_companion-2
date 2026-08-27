@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Medal } from 'lucide-react';
+import { ChevronLeft, Trophy, Medal } from 'lucide-react';
 
 export const LeaderboardPage = () => {
   const navigate = useNavigate();
@@ -14,8 +14,13 @@ export const LeaderboardPage = () => {
   return (
     <div style={{ minHeight: '100vh', padding: '20px', backgroundColor: 'var(--color-background)' }}>
       <header style={{ display: 'flex', alignItems: 'center', marginBottom: '24px', gap: '12px' }}>
-        <button onClick={() => navigate('/live-game')} style={{ background: 'none', color: '#6B4F3A' }}>
-          <ArrowLeft size={22} />
+        <button
+          type="button"
+          className="app-back-btn"
+          onClick={() => navigate(-1)}
+          aria-label="Back"
+        >
+          <ChevronLeft size={20} />
         </button>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.35rem', color: '#6B4F3A' }}>Leaderboard</h1>
       </header>

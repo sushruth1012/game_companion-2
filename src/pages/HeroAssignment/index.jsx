@@ -46,9 +46,10 @@ export const HeroAssignmentPage = () => {
 
       {/* ===== TOP NAVIGATION & HEADER ===== */}
       <header className="heroes-top-header">
+        {/* Constant Back Button */}
         <button
           type="button"
-          className="heroes-back-btn"
+          className="app-back-btn"
           onClick={() => navigate('/player-setup')}
           aria-label="Back to Player Setup"
         >

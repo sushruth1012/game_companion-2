@@ -149,11 +149,45 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.02em;
 }
 
+/* =========================================
+   STANDARDIZED CONSTANT APP BACK BUTTON
+   ========================================= */
+.app-back-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  background: #FAF5EA;
+  border: 1.5px solid #8C642A;
+  color: #382416;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.app-back-btn:hover {
+  background: #D9A441;
+  color: #1A0F08;
+  transform: scale(1.08);
+  border-color: #FAF5EA;
+  box-shadow: 0 4px 10px rgba(217, 164, 65, 0.3);
+}
+
+.app-back-btn:active {
+  transform: scale(0.94);
+}
+
 button {
-  font-family: var(--font-body);
   cursor: pointer;
   border: none;
-  outline: none;
+  background: none;
+  font-family: var(--font-body);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
