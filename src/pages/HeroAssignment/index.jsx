@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Volume2, VolumeX, ArrowRight, Shuffle, Crown, ChevronLeft } from 'lucide-react';
+import { Volume2, VolumeX, ArrowRight, Crown, ChevronLeft } from 'lucide-react';
 import PrimaryButton from '../../components/buttons/PrimaryButton';
 import { HEROES_DATABASE, assignRandomHeroes } from '../../services/heroService';
 import './HeroAssignment.css';
@@ -30,22 +30,11 @@ export const HeroAssignmentPage = () => {
       ];
     }
 
-    // Randomly assign heroes on load
+    // Random fate assignment locked on page entry
     const updated = assignRandomHeroes(players);
     setAssignedPlayers(updated);
     sessionStorage.setItem('activeGamePlayers', JSON.stringify(updated));
   }, []);
-
-  // Re-shuffle heroes randomly
-  const handleReshuffle = () => {
-    window.speechSynthesis?.cancel();
-    setSpeakingHeroId(null);
-    setAssignedPlayers((prev) => {
-      const updated = assignRandomHeroes(prev);
-      sessionStorage.setItem('activeGamePlayers', JSON.stringify(updated));
-      return updated;
-    });
-  };
 
   // Speaker audio narration for character lore
   const handlePlayLore = (hero) => {
@@ -113,15 +102,8 @@ export const HeroAssignmentPage = () => {
           </div>
         </div>
 
-        <button
-          type="button"
-          className="heroes-shuffle-top-btn"
-          onClick={handleReshuffle}
-          title="Re-assign heroes randomly"
-        >
-          <Shuffle size={15} />
-          <span>Shuffle</span>
-        </button>
+        {/* Right Symmetrical Spacer */}
+        <div className="heroes-header-spacer" />
       </header>
 
       {/* ===== HERO ASSIGNMENT LIST ===== */}
@@ -165,7 +147,7 @@ export const HeroAssignmentPage = () => {
                   <p className="advantage-box-text">{hero.advantage}</p>
                 </div>
 
-                {/* Speaker Lore Button (Replaces Story Paragraph) */}
+                {/* Speaker Lore Button */}
                 <div className="hero-audio-action-row">
                   <button
                     type="button"

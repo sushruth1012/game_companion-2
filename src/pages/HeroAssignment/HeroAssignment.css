@@ -35,8 +35,7 @@
   box-shadow: 0 4px 12px rgba(107, 79, 58, 0.15);
 }
 
-.heroes-back-btn,
-.heroes-shuffle-top-btn {
+.heroes-back-btn {
   background: #FAF5E8;
   border: 1.2px solid #8C642A;
   border-radius: 8px;
@@ -53,10 +52,13 @@
   transition: all 0.2s ease;
 }
 
-.heroes-back-btn:hover,
-.heroes-shuffle-top-btn:hover {
+.heroes-back-btn:hover {
   background: #D9A441;
   color: #2D1C13;
+}
+
+.heroes-header-spacer {
+  width: 36px;
 }
 
 .heroes-title-container {
