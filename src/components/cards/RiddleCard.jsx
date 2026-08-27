@@ -287,7 +287,7 @@ export const RiddleCard = ({
 
           {/* 4 Interactive Options */}
           <div className="riddle-options-container">
-            {currentRiddle.options.map((opt) => {
+            {currentRiddle.options.map((opt, idx) => {
               const isSelected = selectedOption === opt.id;
               let optionClass = 'riddle-option-choice';
 
@@ -297,6 +297,8 @@ export const RiddleCard = ({
                 optionClass += ' option--show-correct';
               }
 
+              const letter = String.fromCharCode(65 + idx); // A, B, C, D
+
               return (
                 <button
                   key={opt.id}
@@ -305,10 +307,10 @@ export const RiddleCard = ({
                   onClick={() => !outcome && handleOptionSelect(opt)}
                   disabled={outcome !== null}
                 >
-                  <span className="option-letter">{opt.id.toUpperCase()}</span>
+                  <span className="option-letter">{letter}</span>
                   <span className="option-text">{opt.text}</span>
                   {outcome && opt.isCorrect && (
-                    <CheckCircle size={15} className="option-status-icon" color="#2ECC71" />
+                    <CheckCircle size={14} className="option-status-icon" color="#2ECC71" />
                   )}
                 </button>
               );

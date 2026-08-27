@@ -362,31 +362,31 @@
 }
 
 .player-emoji-avatar {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
 }
 
 .player-side-name {
   font-family: var(--font-heading);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #382416;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #2E1A0E;
   line-height: 1.1;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 /* Hero Secondary Title Tag */
 .player-hero-title-tag {
   background: linear-gradient(135deg, #3D2616 0%, #1A0F08 100%);
-  border: 1px solid #D9A441;
-  border-radius: 4px;
-  padding: 1px 4px;
+  border: 1.2px solid #D9A441;
+  border-radius: 5px;
+  padding: 2px 6px;
   font-family: var(--font-heading);
-  font-size: 0.5rem;
+  font-size: 0.54rem;
   font-weight: 800;
   color: #F9D77E;
   letter-spacing: 0.04em;
-  margin-bottom: 2px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  margin-bottom: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .turn-hero-title {
@@ -398,9 +398,10 @@
 
 .player-side-uid {
   font-family: var(--font-body);
-  font-size: 0.5rem;
+  font-size: 0.52rem;
   color: #7A6652;
   margin-bottom: 2px;
+  font-weight: 600;
 }
 
 .player-side-points {
@@ -408,8 +409,8 @@
   align-items: center;
   gap: 3px;
   font-family: var(--font-body);
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   color: #9C6E20;
 }
 
@@ -418,34 +419,35 @@
 }
 
 .points-label {
-  font-size: 0.5rem;
+  font-size: 0.52rem;
   color: #8C7864;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
+  font-weight: 600;
 }
 
 /* Advantage Status Pill */
 .player-hero-status-pill {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 1px 5px;
-  border-radius: 10px;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 12px;
   font-family: var(--font-heading);
-  font-size: 0.48rem;
-  font-weight: 700;
+  font-size: 0.52rem;
+  font-weight: 800;
   margin-bottom: 2px;
 }
 
 .player-hero-status-pill--ready {
   background: rgba(46, 204, 113, 0.2);
-  border: 1px solid #2ECC71;
-  color: #1E6B37;
+  border: 1.2px solid #2ECC71;
+  color: #166534;
 }
 
 .player-hero-status-pill--used {
   background: rgba(140, 120, 100, 0.2);
-  border: 1px solid #8C7864;
-  color: #8C7864;
+  border: 1.2px solid #8C7864;
+  color: #6B5744;
 }
 
 .player-shield-wrap {
