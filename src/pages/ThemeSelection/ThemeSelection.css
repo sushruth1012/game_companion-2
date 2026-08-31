@@ -9,7 +9,7 @@
   position: relative;
   overflow-x: hidden;
   user-select: none;
-  padding-bottom: 18px;
+  padding-bottom: 24px;
 }
 
 /* Background Atmosphere */
@@ -29,9 +29,9 @@
    ========================================= */
 .theme-top-bar {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  padding: 14px 16px 6px;
+  padding: 12px 16px 6px;
   position: relative;
   z-index: 20;
 }
@@ -45,7 +45,7 @@
    ========================================= */
 .theme-heading-section {
   text-align: center;
-  padding: 8px 16px 12px;
+  padding: 6px 16px 12px;
   position: relative;
   z-index: 10;
 }
@@ -55,7 +55,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .theme-flourish-wing {
@@ -69,32 +69,34 @@
 
 .theme-main-title {
   font-family: var(--font-heading);
-  font-size: 1.55rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: #2F1A0E;
   letter-spacing: 0.05em;
+  margin: 0;
 }
 
 .theme-subtitle {
   font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: #4A3A2F;
   font-weight: 500;
+  margin: 2px 0 0;
   padding: 0 10px;
 }
 
 /* =========================================
-   THEME CARDS UNIFIED GRID (EXACT EQUAL SIZE)
+   THEME CARDS 2-COLUMN BALANCED GRID
    ========================================= */
 .theme-cards-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 9px;
-  padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 14px;
+  max-width: 440px;
+  margin: 0 auto;
   position: relative;
   z-index: 10;
-  flex: 1;
   width: 100%;
   box-sizing: border-box;
 }
@@ -103,7 +105,7 @@
    BOTTOM LOTUS FLOURISH
    ========================================= */
 .theme-bottom-flourish {
-  margin-top: 14px;
+  margin-top: 18px;
   display: flex;
   justify-content: center;
   align-items: center;
