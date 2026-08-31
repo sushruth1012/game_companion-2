@@ -128,15 +128,14 @@ export const LiveCompanionPage = () => {
   // 1 Riddle Per Move Rule State
   const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
 
-  // Fullscreen Riddle Experience State
+  // Fullscreen Riddle Experience & 3D Flip State
   const [isRiddleFullscreenOpen, setIsRiddleFullscreenOpen] = useState(false);
   const [riddleModalPlayer, setRiddleModalPlayer] = useState(null);
+  const [flippingCardIndex, setFlippingCardIndex] = useState(null);
   const [riddleTimeLeft, setRiddleTimeLeft] = useState(60);
   const [isRiddleTimerPaused, setIsRiddleTimerPaused] = useState(false);
 
-  // 1-Minute Chess Turn Timer State
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [isTimerPaused, setIsTimerPaused] = useState(false);
+  // Turn Dropdown Banner State
   const [turnDropdown, setTurnDropdown] = useState(null);
 
   // Settings & Survey Header Dropdown State
@@ -196,11 +195,10 @@ export const LiveCompanionPage = () => {
   };
 
   // Show dropdown notification when turn changes
-  const showTurnDropdown = (player, isTimeout = false) => {
+  const showTurnDropdown = (player) => {
     setTurnDropdown({
       playerName: player.name,
       heroTitle: player.heroSecondaryTitle,
-      isTimeout,
     });
   };
 
@@ -212,44 +210,6 @@ export const LiveCompanionPage = () => {
     }, 2600);
     return () => clearTimeout(timer);
   }, [turnDropdown]);
-
-  // 1-Minute Turn Countdown Interval
-  useEffect(() => {
-    if (isTimerPaused) return;
-
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isTimerPaused]);
-
-  // Handle Turn Timeout (when main turn timer hits 0)
-  useEffect(() => {
-    if (timeLeft === 0) {
-      const currentIdx = activePlayerIndexRef.current;
-      const playerList = playersRef.current;
-      
-      // 1. Log previous player's move as Timeout
-      logPlayerMove(currentIdx, 'Timeout (60s)');
-
-      // 2. Close riddle modal if open on timeout
-      setIsRiddleFullscreenOpen(false);
-
-      // 3. Advance to next player and reset 1-riddle-per-move rule
-      const nextIdx = (currentIdx + 1) % playerList.length;
-      const nextPlayer = playerList[nextIdx];
-      setActivePlayerIndex(nextIdx);
-      setTimeLeft(60);
-      setHasAnsweredRiddleThisTurn(false);
-      showTurnDropdown(nextPlayer, true);
-    }
-  }, [timeLeft]);
 
   // Dedicated 1-Minute Riddle Session Countdown Timer
   useEffect(() => {
@@ -343,12 +303,17 @@ export const LiveCompanionPage = () => {
     });
   };
 
-  // Open Fullscreen Riddle for a specific player card tap
+  // Open Fullscreen Riddle with 3D zoom & flip backwards animation
   const handleOpenRiddleFullscreen = (player, index) => {
     setActivePlayerIndex(index);
     setRiddleModalPlayer(player);
-    setRiddleTimeLeft(60);
-    setIsRiddleFullscreenOpen(true);
+    setFlippingCardIndex(index);
+
+    setTimeout(() => {
+      setRiddleTimeLeft(60);
+      setIsRiddleFullscreenOpen(true);
+      setFlippingCardIndex(null);
+    }, 320);
   };
 
   // Manual Turn Advancement
@@ -364,31 +329,14 @@ export const LiveCompanionPage = () => {
     const nextIdx = (activePlayerIndex + 1) % players.length;
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
-    setTimeLeft(60);
     setHasAnsweredRiddleThisTurn(false);
     setIsRiddleFullscreenOpen(false);
-    showTurnDropdown(nextPlayer, false);
+    showTurnDropdown(nextPlayer);
   };
 
-  // Tap Player Side Card to Switch Turn
+  // Tap Player Card to Trigger Cinematic Flip into Riddle
   const handlePlayerTap = (index) => {
-    if (index === activePlayerIndex) {
-      // Tap on active player card -> Open Fullscreen Riddle
-      handleOpenRiddleFullscreen(players[index], index);
-      return;
-    }
-
-    logPlayerMove(activePlayerIndexRef.current, `Switched to ${players[index].name}`);
-    setActivePlayerIndex(index);
-    setTimeLeft(60);
-    setHasAnsweredRiddleThisTurn(false);
-    showTurnDropdown(players[index], false);
-  };
-
-  // Toggle Timer Pause / Resume
-  const handleTogglePause = (e) => {
-    e.stopPropagation();
-    setIsTimerPaused((prev) => !prev);
+    handleOpenRiddleFullscreen(players[index], index);
   };
 
   // Format seconds to mm:ss
@@ -519,11 +467,9 @@ export const LiveCompanionPage = () => {
             <Crown size={16} color="#261509" />
           </div>
           <div className="dropdown-banner-text">
-            <span className="dropdown-banner-tag">
-              {turnDropdown.isTimeout ? '⏱️ Turn Timed Out' : '✦ Turn Passed'}
-            </span>
+            <span className="dropdown-banner-tag">✦ Turn Changed</span>
             <h4 className="dropdown-banner-title">
-              {turnDropdown.playerName}’s Turn{' '}
+              {turnDropdown.playerName}’s Move{' '}
               {turnDropdown.heroTitle && <small>({turnDropdown.heroTitle})</small>}
             </h4>
           </div>
@@ -554,7 +500,7 @@ export const LiveCompanionPage = () => {
 
         {/* Chapter Title */}
         <div className="chapter-banner">
-          <span className="chapter-title">Chapter 1: The Kurukshetra Trial 📜</span>
+          <span className="chapter-title">The Kurukshetra Trial 📜</span>
         </div>
 
         {/* Right Settings & Survey Dropdown Menu */}
@@ -644,11 +590,12 @@ export const LiveCompanionPage = () => {
         <div className={`players-arena-grid players-arena-grid--${players.length}`}>
           {players.map((player, idx) => {
             const isActive = idx === activePlayerIndex;
+            const isFlipping = flippingCardIndex === idx;
 
             return (
               <div
                 key={player.id}
-                className={`arena-player-card ${isActive ? 'arena-player-card--active' : ''}`}
+                className={`arena-player-card ${isActive ? 'arena-player-card--active' : ''} ${isFlipping ? 'arena-player-card--zooming-flip' : ''}`}
                 onClick={() => handlePlayerTap(idx)}
                 role="button"
                 tabIndex={0}
@@ -717,16 +664,10 @@ export const LiveCompanionPage = () => {
 
                 {/* Tap to Play Riddle Interactive Callout */}
                 <div className="tap-riddle-callout">
-                  {isActive ? (
-                    <div className="tap-riddle-prompt tap-riddle-prompt--active">
-                      <Sparkles size={13} color="#D9A441" />
-                      <span>Tap Card to Open Riddle ➔</span>
-                    </div>
-                  ) : (
-                    <div className="tap-riddle-prompt">
-                      <span>Tap to switch turn</span>
-                    </div>
-                  )}
+                  <div className={`tap-riddle-prompt ${isActive ? 'tap-riddle-prompt--active' : ''}`}>
+                    <Sparkles size={13} color="#D9A441" />
+                    <span>Tap to Open Riddle ➔</span>
+                  </div>
                 </div>
               </div>
             );
@@ -734,9 +675,9 @@ export const LiveCompanionPage = () => {
         </div>
       </main>
 
-      {/* ===== BOTTOM COMPANION CONTROLS (Intact) ===== */}
+      {/* ===== BOTTOM COMPANION CONTROLS (TIMER REMOVED FROM TURN SECTION) ===== */}
       <footer className="live-bottom-panel">
-        {/* 1. CURRENT TURN BANNER WITH 1-MINUTE CHESS TIMER */}
+        {/* 1. CURRENT TURN BANNER (CLEAN & ELEGANT, NO TIMER) */}
         <div
           className="current-turn-banner"
           onClick={handleNextTurn}
@@ -744,48 +685,23 @@ export const LiveCompanionPage = () => {
         >
           <div className="turn-banner-header">
             <div className="turn-header-left">
-              <Crown size={17} color="#D9A441" />
+              <Crown size={16} color="#D9A441" />
               <span className="turn-label">CURRENT TURN</span>
             </div>
-
-            {/* CHESS-STYLE 1-MINUTE TIMER WIDGET */}
-            <div
-              className={`turn-chess-timer ${timeLeft <= 10 ? 'turn-chess-timer--warning' : ''}`}
-              onClick={(e) => e.stopPropagation()}
-              title="1-Minute Turn Timer (Auto-passes on timeout)"
-            >
-              <Clock size={13} className={timeLeft <= 10 ? 'timer-pulse-icon' : ''} />
-              <span className="timer-countdown-digits">{formatTime(timeLeft)}</span>
-              
-              <button
-                type="button"
-                className="timer-pause-toggle-btn"
-                onClick={handleTogglePause}
-                title={isTimerPaused ? "Resume Timer" : "Pause Timer"}
-                aria-label="Pause or Resume Timer"
-              >
-                {isTimerPaused ? <Play size={11} fill="currentColor" /> : <Pause size={11} fill="currentColor" />}
-              </button>
+            <div className="turn-pass-action-pill">
+              <span>Pass Turn ➔</span>
             </div>
-          </div>
-
-          {/* Timer Progress Track Bar */}
-          <div className="turn-timer-progress-track">
-            <div
-              className={`turn-timer-progress-fill ${timeLeft <= 10 ? 'progress-fill--warning' : ''}`}
-              style={{ width: `${(timeLeft / 60) * 100}%` }}
-            />
           </div>
 
           <h2 className="active-turn-player-name">
-            {activePlayer.name}’s Turn
+            {activePlayer.name}’s Move
             {activePlayer.heroSecondaryTitle && (
               <span className="turn-hero-title"> · {activePlayer.heroSecondaryTitle}</span>
             )}
           </h2>
 
           <p className="turn-sub-instruction">
-            ⏳ 1 min per turn · Tap banner to pass turn early ➔
+            ✦ Active player move · Tap banner anytime to pass turn ➔
           </p>
         </div>
 
