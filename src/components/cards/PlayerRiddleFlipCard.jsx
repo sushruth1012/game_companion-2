@@ -11,14 +11,12 @@ import {
   Clock,
   CheckCircle,
   BookOpen,
-  Shuffle,
 } from 'lucide-react';
 import {
   buyRiddle,
   submitAnswer,
   getRandomRiddle,
   STARTING_MUDRAS,
-  RIDDLE_COSTS,
 } from '../../services/riddleService';
 import './PlayerRiddleFlipCard.css';
 
@@ -82,13 +80,6 @@ export const PlayerRiddleFlipCard = ({
     if (isUnlocked || hasAnsweredRiddleThisTurn) return;
     setDifficulty(newDiff);
     const riddle = getRandomRiddle(themeKey, newDiff, player.ageGroup || '8-12');
-    setCurrentRiddle(riddle);
-  };
-
-  const handleShuffle = (e) => {
-    e.stopPropagation();
-    if (isUnlocked || hasAnsweredRiddleThisTurn) return;
-    const riddle = getRandomRiddle(themeKey, difficulty, player.ageGroup || '8-12');
     setCurrentRiddle(riddle);
   };
 
@@ -169,42 +160,43 @@ export const PlayerRiddleFlipCard = ({
             FRONT FACE: THE PLAYER HERO & GAME STATUS CARD
             ========================================================= */}
         <div className={`player-card-face card-face--front ${isActiveTurn ? 'card-face--active-turn' : ''}`}>
-          {/* Active Turn Pulsing Crown Banner */}
-          {isActiveTurn && (
-            <div className="card-active-crown-badge">
-              <Crown size={12} />
-              <span>ACTIVE TURN</span>
-            </div>
-          )}
+          {/* Top Control Bar: Active Badge, Player Num & Info */}
+          <div className="card-top-control-bar">
+            <div className="card-num-badge">P{player.num}</div>
 
-          {/* Info (i) Button */}
-          <button
-            type="button"
-            className="card-info-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onInfoClick?.(player);
-            }}
-            title={`View ${player.name}'s hero advantages`}
-            aria-label="Player info"
-          >
-            <Info size={13} />
-          </button>
+            {isActiveTurn && (
+              <div className="card-active-crown-badge">
+                <Crown size={11} />
+                <span>ACTIVE TURN</span>
+              </div>
+            )}
 
-          {/* Player Number Pill */}
-          <div className="card-num-pill">{player.num}</div>
+            <button
+              type="button"
+              className="card-info-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onInfoClick?.(player);
+              }}
+              title={`View ${player.name}'s hero advantages`}
+              aria-label="Player info"
+            >
+              <Info size={13} />
+            </button>
+          </div>
 
-          {/* Card Top Avatar & Identity Row */}
-          <div className="card-header-identity-row">
+          {/* Card Avatar & Identity Row */}
+          <div className="card-identity-block">
             <div className="card-avatar-circle" style={{ borderColor: player.shieldColor }}>
               <span className="card-emoji-avatar">{player.avatar}</span>
             </div>
 
             <div className="card-name-column">
               <h3 className="card-player-fullname">{player.name}</h3>
-              <span className="card-player-meta">
-                UID: {player.uid} · <strong style={{ color: '#D9A441' }}>Age {player.ageGroup || '8-12'}</strong>
-              </span>
+              <div className="card-meta-chips">
+                <span className="meta-chip-uid">UID: {player.uid}</span>
+                <span className="meta-chip-age">Age {player.ageGroup || '8-12'}</span>
+              </div>
             </div>
           </div>
 
@@ -215,7 +207,7 @@ export const PlayerRiddleFlipCard = ({
             <span className="hero-badge-title">{player.heroSecondaryTitle}</span>
           </div>
 
-          {/* Points and Status Row */}
+          {/* Points & Skill Stats Row */}
           <div className="card-stats-footer-row">
             <div className="card-mudras-counter">
               <Coins size={14} className="points-coin-icon" />
@@ -226,16 +218,16 @@ export const PlayerRiddleFlipCard = ({
             <div
               className={`card-skill-status-pill ${player.isHeroAdvantageUsed ? 'skill-pill--used' : 'skill-pill--ready'}`}
             >
-              <Zap size={10} />
-              <span>{player.isHeroAdvantageUsed ? 'Skill Used' : 'Skill Ready'}</span>
+              <Zap size={11} />
+              <span>{player.isHeroAdvantageUsed ? 'Used' : 'Skill Ready'}</span>
             </div>
           </div>
 
           {/* Tap to Flip Prompt Ribbon */}
           <div className="card-tap-flip-ribbon">
             <div className={`flip-prompt-pill ${isActiveTurn ? 'flip-prompt-pill--active' : ''}`}>
-              <Sparkles size={13} color="#D9A441" />
-              <span>Tap to Flip for Riddle ➔</span>
+              <Sparkles size={12} />
+              <span>Tap Card to Solve Riddle ➔</span>
             </div>
           </div>
         </div>
@@ -244,22 +236,19 @@ export const PlayerRiddleFlipCard = ({
             BACK FACE: THE PHYSICAL 3D RIDDLE CHALLENGE FOR THIS PLAYER
             ========================================================= */}
         <div className="player-card-face card-face--back">
-          {/* Top Floating Medallion */}
-          <div className="back-top-medallion">
-            <BookOpen size={14} color="#2ECC71" />
-          </div>
-
           {/* Top Bar: Player identity, 1-min timer & Flip Back button */}
           <div className="back-top-bar">
             <div className="back-player-tag">
-              <span>{player.avatar}</span>
-              <strong>{player.name}</strong>
-              <small>(Age {player.ageGroup || '8-12'})</small>
+              <span className="back-player-avatar">{player.avatar}</span>
+              <div className="back-player-info-text">
+                <strong>{player.name}</strong>
+                <small>Age {player.ageGroup || '8-12'}</small>
+              </div>
             </div>
 
             {/* 1-Minute Dedicated Riddle Timer */}
             <div className={`back-riddle-timer-pill ${riddleTimer <= 10 ? 'timer-pill--danger' : ''}`}>
-              <Clock size={12} className={riddleTimer <= 10 ? 'timer-pulse-icon' : ''} />
+              <Clock size={12} />
               <span>{formatTimer(riddleTimer)}</span>
             </div>
 
@@ -271,8 +260,8 @@ export const PlayerRiddleFlipCard = ({
                 e.stopPropagation();
                 onFlipBack?.();
               }}
-              title="Flip back to player"
-              aria-label="Flip back to player"
+              title="Flip back to board"
+              aria-label="Flip back to board"
             >
               <X size={15} />
             </button>
@@ -303,7 +292,7 @@ export const PlayerRiddleFlipCard = ({
               onClick={(e) => handleDifficultyChange(e, 'medium')}
               disabled={isUnlocked || hasAnsweredRiddleThisTurn}
             >
-              <span>Med</span>
+              <span>Medium</span>
               <small>1000</small>
             </button>
             <button
@@ -323,19 +312,25 @@ export const PlayerRiddleFlipCard = ({
               {!isUnlocked ? (
                 /* LOCKED STATE: Lore Teaser & Unlock Button */
                 <div className="back-locked-pane">
-                  <h4 className="back-riddle-title">{currentRiddle.title}</h4>
-                  <p className="back-lore-paragraph">{currentRiddle.lore}</p>
+                  <div className="back-lore-header-group">
+                    <div className="lore-book-badge">
+                      <BookOpen size={13} color="#D9A441" />
+                      <span>{difficulty.toUpperCase()} TRIAL</span>
+                    </div>
+                    <h4 className="back-riddle-title">{currentRiddle.title}</h4>
+                    <p className="back-lore-paragraph">{currentRiddle.lore}</p>
+                  </div>
 
                   <div className="back-unlock-teaser">
-                    <Lock size={13} color="#D9A441" />
+                    <Lock size={14} color="#F9D77E" />
                     <span>
-                      Unlock <strong>{difficulty.toUpperCase()}</strong> riddle for {currentRiddle.cost} Mudras to win a random <strong>{difficulty.toUpperCase()} Advantage</strong>!
+                      Unlock for <strong>{currentRiddle.cost} Mudras</strong> to win a random <strong>{difficulty.toUpperCase()} Advantage</strong>!
                     </span>
                   </div>
 
                   {hasAnsweredRiddleThisTurn ? (
                     <div className="back-limit-box">
-                      <span>🔒 1 Riddle per move limit reached for this turn.</span>
+                      <span>🔒 1 Riddle per turn already answered!</span>
                     </div>
                   ) : (
                     <button
@@ -381,7 +376,7 @@ export const PlayerRiddleFlipCard = ({
                           <span className="opt-badge">{letter}</span>
                           <span className="opt-txt">{opt.text}</span>
                           {outcome && opt.isCorrect && (
-                            <CheckCircle size={13} color="#2ECC71" className="opt-check" />
+                            <CheckCircle size={14} color="#2ECC71" className="opt-check" />
                           )}
                         </button>
                       );
@@ -418,8 +413,8 @@ export const PlayerRiddleFlipCard = ({
               onFlipBack?.();
             }}
           >
-            <RotateCw size={12} />
-            <span>Flip Back to Board</span>
+            <RotateCw size={13} />
+            <span>Return to Board</span>
           </button>
         </div>
       </div>
