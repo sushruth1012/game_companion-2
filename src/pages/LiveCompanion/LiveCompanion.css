@@ -226,14 +226,33 @@
   box-sizing: border-box;
 }
 
-/* Dimming backdrop overlay when a card is flipped */
-.flipper-backdrop-overlay {
+/* =========================================
+   FULLSCREEN 3D TWO-SIDED RIDDLE STAGE OVERLAY (DEAD CENTER)
+   ========================================= */
+.riddle-flip-stage-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 5, 2, 0.85);
-  backdrop-filter: blur(6px);
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
+  background: rgba(10, 5, 2, 0.9);
+  backdrop-filter: blur(8px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  animation: fadeIn 0.22s ease-out;
+}
+
+.riddle-flip-stage-content {
+  width: 100%;
+  max-width: 360px;
+  height: 550px;
+  max-height: 88vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: auto;
 }
 
 /* Dynamic Grid Layouts */

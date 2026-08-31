@@ -121,8 +121,8 @@ export const LiveCompanionPage = () => {
   // 1 Riddle Per Move Rule State
   const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
 
-  // Active Flipped Card Player ID (null or player id e.g. 'p_1')
-  const [flippedCardPlayerId, setFlippedCardPlayerId] = useState(null);
+  // Active Flipped Player Object for 3D Stage (null or player object)
+  const [flippedPlayer, setFlippedPlayer] = useState(null);
 
   // Turn Dropdown Banner State
   const [turnDropdown, setTurnDropdown] = useState(null);
@@ -288,7 +288,7 @@ export const LiveCompanionPage = () => {
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
     setHasAnsweredRiddleThisTurn(false);
-    setFlippedCardPlayerId(null);
+    setFlippedPlayer(null);
     showTurnDropdown(nextPlayer);
   };
 
@@ -402,14 +402,6 @@ export const LiveCompanionPage = () => {
     <div className="live-companion-screen">
       {/* Background Texture Overlay */}
       <div className="live-companion-bg" />
-
-      {/* Backdrop overlay when a card is flipped and centered */}
-      {flippedCardPlayerId && (
-        <div
-          className="flipper-backdrop-overlay"
-          onClick={() => setFlippedCardPlayerId(null)}
-        />
-      )}
 
       {/* ===== TOP SLIDE DROPDOWN NOTIFICATION BANNER ===== */}
       {turnDropdown && (
@@ -539,33 +531,22 @@ export const LiveCompanionPage = () => {
         </div>
       </header>
 
-      {/* ===== MAIN ARENA: TWO-SIDED 3D FLIPPER PLAYER CARDS GRID ===== */}
-      <main className={`live-main-arena ${flippedCardPlayerId ? 'live-main-arena--has-flipped-card' : ''}`}>
+      {/* ===== MAIN ARENA: 4 PLAYER CARDS GRID ===== */}
+      <main className="live-main-arena">
         <div className={`players-arena-grid players-arena-grid--${players.length}`}>
           {players.map((player, idx) => {
             const isActive = idx === activePlayerIndex;
-            const isFlipped = flippedCardPlayerId === player.id;
-            const isOtherCardDimmed = flippedCardPlayerId !== null && !isFlipped;
 
             return (
-              <div
-                key={player.id}
-                className={`arena-card-slot ${isOtherCardDimmed ? 'arena-card-slot--dimmed' : ''}`}
-              >
+              <div key={player.id} className="arena-card-slot">
                 <PlayerRiddleFlipCard
                   player={player}
                   isActiveTurn={isActive}
-                  isFlipped={isFlipped}
-                  onTapCard={() => {
+                  isStageFlipped={false}
+                  onTapCard={(p) => {
                     setActivePlayerIndex(idx);
-                    setFlippedCardPlayerId(player.id);
+                    setFlippedPlayer(p);
                   }}
-                  onFlipBack={() => setFlippedCardPlayerId(null)}
-                  hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
-                  onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
-                  onPointsDeducted={handlePointsDeducted}
-                  onSolveSuccess={handleSolveSuccess}
-                  onSolveFail={handleSolveFail}
                   themeKey={themeKey}
                   onInfoClick={(p) => setSelectedInfoPlayer(p)}
                 />
@@ -917,6 +898,33 @@ export const LiveCompanionPage = () => {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== FULLSCREEN 3D TWO-SIDED RIDDLE STAGE (DEAD CENTER) ===== */}
+      {flippedPlayer && (
+        <div
+          className="riddle-flip-stage-overlay"
+          onClick={() => setFlippedPlayer(null)}
+        >
+          <div
+            className="riddle-flip-stage-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <PlayerRiddleFlipCard
+              player={flippedPlayer}
+              isActiveTurn={flippedPlayer.id === activePlayer.id}
+              isStageFlipped={true}
+              onFlipBack={() => setFlippedPlayer(null)}
+              hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
+              onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
+              onPointsDeducted={handlePointsDeducted}
+              onSolveSuccess={handleSolveSuccess}
+              onSolveFail={handleSolveFail}
+              themeKey={themeKey}
+              onInfoClick={(p) => setSelectedInfoPlayer(p)}
+            />
           </div>
         </div>
       )}
