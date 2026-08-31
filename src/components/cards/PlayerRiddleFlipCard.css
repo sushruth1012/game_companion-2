@@ -27,7 +27,7 @@
 .player-stage-3d-wrapper {
   width: 100%;
   max-width: 360px;
-  height: 550px;
+  height: 560px;
   max-height: 88vh;
   perspective: 1600px;
   user-select: none;
@@ -44,38 +44,38 @@
   transform-style: preserve-3d;
 }
 
-/* Flip Forward (0deg -> -180deg) */
+/* Flip Forward (0deg -> 180deg) */
 .player-3d-flipper-card--flipped {
-  animation: flipCardToBackFace 0.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: flipCardToBack 0.62s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-@keyframes flipCardToBackFace {
+@keyframes flipCardToBack {
   0% {
     transform: perspective(1600px) rotateY(0deg) scale(0.92);
-    opacity: 0.7;
+    opacity: 0.8;
   }
   50% {
-    transform: perspective(1600px) rotateY(-90deg) scale(1.05);
+    transform: perspective(1600px) rotateY(90deg) scale(1.05);
     opacity: 0.95;
   }
   100% {
-    transform: perspective(1600px) rotateY(-180deg) scale(1);
+    transform: perspective(1600px) rotateY(180deg) scale(1);
     opacity: 1;
   }
 }
 
-/* Flip Backwards (-180deg -> 0deg) */
+/* Flip Backwards (180deg -> 0deg) */
 .player-3d-flipper-card--flipping-back {
-  animation: flipCardToFrontFace 0.45s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: flipCardToFront 0.45s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-@keyframes flipCardToFrontFace {
+@keyframes flipCardToFront {
   0% {
-    transform: perspective(1600px) rotateY(-180deg) scale(1);
+    transform: perspective(1600px) rotateY(180deg) scale(1);
     opacity: 1;
   }
   50% {
-    transform: perspective(1600px) rotateY(-90deg) scale(1.05);
+    transform: perspective(1600px) rotateY(90deg) scale(1.05);
     opacity: 0.95;
   }
   100% {
@@ -112,7 +112,6 @@
   padding: 10px 12px 10px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
   transform: rotateY(0deg);
-  z-index: 2;
 }
 
 .card-face--active-turn {
@@ -373,9 +372,9 @@
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* =========================================
+/* =========================================================
    BACK FACE: THE PHYSICAL RIDDLE PAGE
-   ========================================= */
+   ========================================================= */
 .card-face--back {
   background: radial-gradient(circle at 50% 10%, #162B1E 0%, #0E1C13 75%, #070E0A 100%);
   border: 2px solid #2ECC71;
@@ -383,10 +382,9 @@
   box-shadow: 
     0 20px 48px rgba(0, 0, 0, 0.9),
     0 0 28px rgba(46, 204, 113, 0.45);
-  transform: rotateY(-180deg);
+  transform: rotateY(180deg);
   color: #FAF5E8;
   gap: 8px;
-  z-index: 1;
 }
 
 /* Top Bar */
@@ -558,122 +556,27 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 8px;
   width: 100%;
   overflow-y: auto;
   min-height: 220px;
 }
 
-/* Locked Pane */
-.back-locked-pane {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  height: 100%;
-  text-align: center;
-  gap: 8px;
-}
-
-.back-lore-header-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.lore-book-badge {
+.back-riddle-header-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: rgba(217, 164, 65, 0.15);
   border: 1px solid rgba(217, 164, 65, 0.4);
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-family: var(--font-heading);
-  font-size: 0.54rem;
-  font-weight: 800;
-  color: #F9D77E;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.back-riddle-title {
-  font-family: var(--font-heading);
-  font-size: 0.95rem;
-  color: #FAF5E8;
-  margin: 2px 0 4px;
-}
-
-.back-lore-paragraph {
-  font-family: var(--font-body);
-  font-size: 0.68rem;
-  color: #D2E8D9;
-  line-height: 1.38;
-  margin: 0;
-  max-height: 80px;
-  overflow-y: auto;
-}
-
-.back-unlock-teaser {
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px dashed rgba(217, 164, 65, 0.5);
-  border-radius: 10px;
-  padding: 8px 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-body);
-  font-size: 0.62rem;
-  color: #F9D77E;
-  text-align: left;
-  line-height: 1.3;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.back-unlock-action-btn {
-  width: 100%;
-  background: linear-gradient(180deg, #C28B2F 0%, #8C5C18 100%);
-  border: 1px solid #F5D37E;
-  color: #FFFDF8;
-  border-radius: 12px;
-  padding: 9px 14px;
-  font-family: var(--font-heading);
-  font-size: 0.78rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  transition: all 0.2s ease;
-}
-
-.back-unlock-action-btn:hover {
-  background: linear-gradient(180deg, #D9A441 0%, #A87522 100%);
-  transform: translateY(-1px);
-}
-
-.back-limit-box {
-  background: rgba(217, 164, 65, 0.15);
-  border: 1px dashed #D9A441;
   border-radius: 8px;
-  padding: 6px;
-  font-family: var(--font-body);
-  font-size: 0.62rem;
+  padding: 3px 8px;
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 800;
   color: #F9D77E;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Unlocked Pane */
-.back-unlocked-pane {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  height: 100%;
+  letter-spacing: 0.04em;
+  align-self: flex-start;
 }
 
 .back-question-box {
@@ -685,7 +588,7 @@
 
 .back-question-text {
   font-family: var(--font-body);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   color: #EBF7EE;
   font-weight: 600;
   line-height: 1.35;
@@ -776,6 +679,7 @@
   align-items: center;
   text-align: center;
   gap: 3px;
+  margin-top: 4px;
 }
 
 .outcome--correct {
@@ -813,6 +717,17 @@
   font-size: 0.58rem;
   color: #EBF7EE;
   line-height: 1.25;
+}
+
+.back-loading-riddle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 30px 10px;
+  color: #C8B9A6;
+  font-size: 0.7rem;
 }
 
 /* Bottom Flip Return Button */

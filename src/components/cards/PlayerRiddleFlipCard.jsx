@@ -5,18 +5,18 @@ import {
   Coins,
   Zap,
   Sparkles,
-  Lock,
   RotateCw,
   X,
   Clock,
   CheckCircle,
   BookOpen,
+  HelpCircle,
 } from 'lucide-react';
 import {
-  buyRiddle,
   submitAnswer,
   getRandomRiddle,
   STARTING_MUDRAS,
+  spreadsheetRiddles,
 } from '../../services/riddleService';
 import './PlayerRiddleFlipCard.css';
 
@@ -36,8 +36,6 @@ export const PlayerRiddleFlipCard = ({
 }) => {
   const [difficulty, setDifficulty] = useState('medium');
   const [currentRiddle, setCurrentRiddle] = useState(null);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [isPurchasing, setIsPurchasing] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
   const [outcome, setOutcome] = useState(null); // 'correct' | 'wrong' | null
   const [awardedAdvantage, setAwardedAdvantage] = useState(null);
@@ -46,15 +44,15 @@ export const PlayerRiddleFlipCard = ({
 
   // Load riddle when player age, theme, or difficulty changes
   useEffect(() => {
-    const riddle = getRandomRiddle(themeKey, difficulty, player.ageGroup || '8-12');
+    const ageGroup = player?.ageGroup || '8-12';
+    const riddle = getRandomRiddle(themeKey, difficulty, ageGroup) || spreadsheetRiddles['8-12']['medium'][0];
     setCurrentRiddle(riddle);
-    setIsUnlocked(false);
     setSelectedOption(null);
     setOutcome(null);
     setAwardedAdvantage(null);
     setRiddleTimer(60);
     setIsFlippingBack(false);
-  }, [themeKey, difficulty, player.id, player.ageGroup, isStageFlipped]);
+  }, [themeKey, difficulty, player?.id, player?.ageGroup, isStageFlipped]);
 
   // 1-Minute Riddle Countdown Timer when flipped on stage
   useEffect(() => {
@@ -78,49 +76,23 @@ export const PlayerRiddleFlipCard = ({
 
   const handleDifficultyChange = (e, newDiff) => {
     e.stopPropagation();
-    if (isUnlocked || hasAnsweredRiddleThisTurn) return;
+    if (outcome !== null || hasAnsweredRiddleThisTurn) return;
     setDifficulty(newDiff);
-    const riddle = getRandomRiddle(themeKey, newDiff, player.ageGroup || '8-12');
+    const ageGroup = player?.ageGroup || '8-12';
+    const riddle = getRandomRiddle(themeKey, newDiff, ageGroup);
     setCurrentRiddle(riddle);
-  };
-
-  // Buy and Unlock Riddle on the back of the card
-  const handleUnlockRiddle = async (e) => {
-    e.stopPropagation();
-    if (!currentRiddle || hasAnsweredRiddleThisTurn) return;
-
-    const playerObj = {
-      uid: player.uid || 'CHB001',
-      age: typeof player.age === 'number' ? player.age : 20,
-      mudras: player.points ?? STARTING_MUDRAS,
-    };
-    const riddleObj = {
-      id: currentRiddle.id,
-      difficulty: currentRiddle.difficulty || difficulty,
-      question: currentRiddle.question,
-    };
-
-    try {
-      setIsPurchasing(true);
-      const result = await buyRiddle(playerObj, riddleObj);
-      if (!result.success) return;
-
-      onPointsDeducted?.(result.player.mudras);
-      setIsUnlocked(true);
-    } catch (err) {
-      console.error('Error unlocking riddle:', err);
-    } finally {
-      setIsPurchasing(false);
-    }
+    setSelectedOption(null);
+    setOutcome(null);
+    setAwardedAdvantage(null);
   };
 
   // Submit Answer Option
   const handleSelectOption = async (e, opt) => {
     e.stopPropagation();
-    if (!currentRiddle || outcome) return;
+    if (!currentRiddle || outcome !== null) return;
 
     setSelectedOption(opt.id);
-    const isCorrect = opt.isCorrect;
+    const isCorrect = Boolean(opt.isCorrect);
 
     const playerObj = {
       uid: player.uid || 'CHB001',
@@ -312,7 +284,7 @@ export const PlayerRiddleFlipCard = ({
 
             {/* 1-Minute Dedicated Riddle Timer */}
             <div className={`back-riddle-timer-pill ${riddleTimer <= 10 ? 'timer-pill--danger' : ''}`}>
-              <Clock size={12} />
+              <Clock size={13} />
               <span>{formatTimer(riddleTimer)}</span>
             </div>
 
@@ -324,7 +296,7 @@ export const PlayerRiddleFlipCard = ({
               title="Flip back to board"
               aria-label="Flip back to board"
             >
-              <X size={15} />
+              <X size={16} />
             </button>
           </div>
 
@@ -342,126 +314,98 @@ export const PlayerRiddleFlipCard = ({
               type="button"
               className={`diff-pill-btn diff-pill--easy ${difficulty === 'easy' ? 'diff-pill--active' : ''}`}
               onClick={(e) => handleDifficultyChange(e, 'easy')}
-              disabled={isUnlocked || hasAnsweredRiddleThisTurn}
+              disabled={outcome !== null}
             >
               <span>Easy</span>
-              <small>500</small>
+              <small>Advantage</small>
             </button>
             <button
               type="button"
               className={`diff-pill-btn diff-pill--med ${difficulty === 'medium' ? 'diff-pill--active' : ''}`}
               onClick={(e) => handleDifficultyChange(e, 'medium')}
-              disabled={isUnlocked || hasAnsweredRiddleThisTurn}
+              disabled={outcome !== null}
             >
               <span>Medium</span>
-              <small>1000</small>
+              <small>Advantage</small>
             </button>
             <button
               type="button"
               className={`diff-pill-btn diff-pill--hard ${difficulty === 'hard' ? 'diff-pill--active' : ''}`}
               onClick={(e) => handleDifficultyChange(e, 'hard')}
-              disabled={isUnlocked || hasAnsweredRiddleThisTurn}
+              disabled={outcome !== null}
             >
               <span>Hard</span>
-              <small>1500</small>
+              <small>Advantage</small>
             </button>
           </div>
 
-          {/* Riddle Body: Locked Story vs Revealed Question */}
-          {currentRiddle && (
+          {/* Riddle Body: Direct Question & 4 Interactive Options */}
+          {currentRiddle ? (
             <div className="back-riddle-main-content">
-              {!isUnlocked ? (
-                /* LOCKED STATE: Lore Teaser & Unlock Button */
-                <div className="back-locked-pane">
-                  <div className="back-lore-header-group">
-                    <div className="lore-book-badge">
-                      <BookOpen size={13} color="#D9A441" />
-                      <span>{difficulty.toUpperCase()} TRIAL</span>
-                    </div>
-                    <h4 className="back-riddle-title">{currentRiddle.title}</h4>
-                    <p className="back-lore-paragraph">{currentRiddle.lore}</p>
-                  </div>
+              {/* Question Header Lore */}
+              <div className="back-riddle-header-badge">
+                <BookOpen size={13} color="#D9A441" />
+                <span>{currentRiddle.title}</span>
+              </div>
 
-                  <div className="back-unlock-teaser">
-                    <Lock size={14} color="#F9D77E" />
-                    <span>
-                      Unlock for <strong>{currentRiddle.cost} Mudras</strong> to win a random <strong>{difficulty.toUpperCase()} Advantage</strong>!
-                    </span>
-                  </div>
+              {/* Question Prompt */}
+              <div className="back-question-box">
+                <p className="back-question-text">{currentRiddle.question}</p>
+              </div>
 
-                  {hasAnsweredRiddleThisTurn ? (
-                    <div className="back-limit-box">
-                      <span>🔒 1 Riddle per turn already answered!</span>
-                    </div>
-                  ) : (
+              {/* 4 Interactive Choice Buttons */}
+              <div className="back-options-grid">
+                {currentRiddle.options && currentRiddle.options.map((opt, oIdx) => {
+                  const isSelected = selectedOption === opt.id;
+                  let btnClass = 'back-opt-btn';
+
+                  if (outcome && isSelected) {
+                    btnClass += outcome === 'correct' ? ' opt--correct' : ' opt--wrong';
+                  } else if (outcome && opt.isCorrect) {
+                    btnClass += ' opt--show-correct';
+                  }
+
+                  const letter = String.fromCharCode(65 + oIdx); // A, B, C, D
+
+                  return (
                     <button
+                      key={opt.id}
                       type="button"
-                      className="back-unlock-action-btn"
-                      onClick={handleUnlockRiddle}
-                      disabled={isPurchasing}
+                      className={btnClass}
+                      onClick={(e) => handleSelectOption(e, opt)}
+                      disabled={outcome !== null}
                     >
-                      <Coins size={15} />
-                      <span>{isPurchasing ? 'Unlocking...' : `Unlock Riddle (${currentRiddle.cost} Mudras)`}</span>
-                    </button>
-                  )}
-                </div>
-              ) : (
-                /* UNLOCKED STATE: Question Prompt, 4 Options & Outcome */
-                <div className="back-unlocked-pane">
-                  <div className="back-question-box">
-                    <p className="back-question-text">{currentRiddle.question}</p>
-                  </div>
-
-                  {/* 4 Interactive Choice Buttons */}
-                  <div className="back-options-grid">
-                    {currentRiddle.options.map((opt, oIdx) => {
-                      const isSelected = selectedOption === opt.id;
-                      let btnClass = 'back-opt-btn';
-
-                      if (outcome && isSelected) {
-                        btnClass += outcome === 'correct' ? ' opt--correct' : ' opt--wrong';
-                      } else if (outcome && opt.isCorrect) {
-                        btnClass += ' opt--show-correct';
-                      }
-
-                      const letter = String.fromCharCode(65 + oIdx); // A, B, C, D
-
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          className={btnClass}
-                          onClick={(e) => handleSelectOption(e, opt)}
-                          disabled={outcome !== null}
-                        >
-                          <span className="opt-badge">{letter}</span>
-                          <span className="opt-txt">{opt.text}</span>
-                          {outcome && opt.isCorrect && (
-                            <CheckCircle size={14} color="#2ECC71" className="opt-check" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Outcome Result & Advantage Display */}
-                  {outcome && (
-                    <div className={`back-outcome-banner outcome--${outcome}`}>
-                      <span className="outcome-headline">
-                        {outcome === 'correct'
-                          ? `🎉 Correct! Won Advantage:`
-                          : `❌ Incorrect! No advantage earned.`}
-                      </span>
-                      {outcome === 'correct' && awardedAdvantage && (
-                        <div className="won-advantage-detail">
-                          <strong>{awardedAdvantage.name}</strong>
-                          <small>{awardedAdvantage.description}</small>
-                        </div>
+                      <span className="opt-badge">{letter}</span>
+                      <span className="opt-txt">{opt.text}</span>
+                      {outcome && opt.isCorrect && (
+                        <CheckCircle size={14} color="#2ECC71" className="opt-check" />
                       )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Outcome Result & Advantage Display */}
+              {outcome && (
+                <div className={`back-outcome-banner outcome--${outcome}`}>
+                  <span className="outcome-headline">
+                    {outcome === 'correct'
+                      ? `🎉 Correct! Won ${difficulty.toUpperCase()} Advantage:`
+                      : `❌ Incorrect! No advantage earned.`}
+                  </span>
+                  {outcome === 'correct' && awardedAdvantage && (
+                    <div className="won-advantage-detail">
+                      <strong>{awardedAdvantage.name}</strong>
+                      <small>{awardedAdvantage.description}</small>
                     </div>
                   )}
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="back-loading-riddle">
+              <HelpCircle size={28} color="#D9A441" />
+              <p>Loading riddle for Age {player.ageGroup || '8-12'}...</p>
             </div>
           )}
 
