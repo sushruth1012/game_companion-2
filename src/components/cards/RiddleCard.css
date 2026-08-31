@@ -1,7 +1,7 @@
 .riddle-3d-scene {
   width: 100%;
-  max-width: 260px;
-  height: 430px;
+  max-width: 320px;
+  height: 450px;
   perspective: 1200px;
   user-select: none;
   z-index: 10;

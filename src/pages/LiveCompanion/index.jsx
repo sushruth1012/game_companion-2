@@ -24,6 +24,8 @@ import {
   Calendar,
   ChevronLeft,
   LogOut,
+  RotateCw,
+  BookOpen,
 } from 'lucide-react';
 import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
@@ -46,12 +48,14 @@ import './LiveCompanion.css';
 export const LiveCompanionPage = () => {
   const navigate = useNavigate();
 
-  // Initialize 4 players with Member 2 STARTING_MUDRAS (8000), secondary hero titles & hero advantage
+  // Initialize 4 players with Member 2 STARTING_MUDRAS (6000), secondary hero titles & hero advantage
   const defaultPlayers = [
     {
       id: 'p_1',
-      name: 'Arjun',
+      name: 'Player 1',
       uid: 'CHB001',
+      age: 10,
+      ageGroup: '8-12',
       heroName: 'ARJUNA',
       heroSecondaryTitle: 'GANDIVA',
       heroAdvantage: 'Target any one pawn of the opponent and move it back to their house.',
@@ -65,8 +69,10 @@ export const LiveCompanionPage = () => {
     },
     {
       id: 'p_2',
-      name: 'Diya',
+      name: 'Player 2',
       uid: 'CHB002',
+      age: 10,
+      ageGroup: '8-12',
       heroName: 'KARNA',
       heroSecondaryTitle: 'SURYAKAVACHA',
       heroAdvantage: 'Shield your pawn by moving it to the nearest safe house.',
@@ -80,8 +86,10 @@ export const LiveCompanionPage = () => {
     },
     {
       id: 'p_3',
-      name: 'Kabir',
+      name: 'Player 3',
       uid: 'CHB003',
+      age: 10,
+      ageGroup: '8-12',
       heroName: 'SHAKUNI',
       heroSecondaryTitle: 'DYUTA MAYA',
       heroAdvantage: 'Can choose any result for his dice roll.',
@@ -95,8 +103,10 @@ export const LiveCompanionPage = () => {
     },
     {
       id: 'p_4',
-      name: 'Myra',
+      name: 'Player 4',
       uid: 'CHB004',
+      age: 10,
+      ageGroup: '8-12',
       heroName: 'GHATOTKACHA',
       heroSecondaryTitle: 'MAYA SHAKTI',
       heroAdvantage: 'Move one’s pawn to any space on the board.',
@@ -112,13 +122,19 @@ export const LiveCompanionPage = () => {
 
   const [players, setPlayers] = useState(defaultPlayers);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
-  const [themeKey, setThemeKey] = useState('rajya');
-  const [worldThemeName, setWorldThemeName] = useState('KINGDOMS');
+  const [themeKey, setThemeKey] = useState('mahabharatha');
+  const [worldThemeName, setWorldThemeName] = useState('MAHABHARATHA');
 
   // 1 Riddle Per Move Rule State
   const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
 
-  // 1-Minute Chess Timer State
+  // Fullscreen Riddle Experience State
+  const [isRiddleFullscreenOpen, setIsRiddleFullscreenOpen] = useState(false);
+  const [riddleModalPlayer, setRiddleModalPlayer] = useState(null);
+  const [riddleTimeLeft, setRiddleTimeLeft] = useState(60);
+  const [isRiddleTimerPaused, setIsRiddleTimerPaused] = useState(false);
+
+  // 1-Minute Chess Turn Timer State
   const [timeLeft, setTimeLeft] = useState(60);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [turnDropdown, setTurnDropdown] = useState(null);
@@ -213,7 +229,7 @@ export const LiveCompanionPage = () => {
     return () => clearInterval(interval);
   }, [isTimerPaused]);
 
-  // Handle Timeout (when timer hits 0)
+  // Handle Turn Timeout (when main turn timer hits 0)
   useEffect(() => {
     if (timeLeft === 0) {
       const currentIdx = activePlayerIndexRef.current;
@@ -222,7 +238,10 @@ export const LiveCompanionPage = () => {
       // 1. Log previous player's move as Timeout
       logPlayerMove(currentIdx, 'Timeout (60s)');
 
-      // 2. Advance to next player and reset 1-riddle-per-move rule
+      // 2. Close riddle modal if open on timeout
+      setIsRiddleFullscreenOpen(false);
+
+      // 3. Advance to next player and reset 1-riddle-per-move rule
       const nextIdx = (currentIdx + 1) % playerList.length;
       const nextPlayer = playerList[nextIdx];
       setActivePlayerIndex(nextIdx);
@@ -231,6 +250,24 @@ export const LiveCompanionPage = () => {
       showTurnDropdown(nextPlayer, true);
     }
   }, [timeLeft]);
+
+  // Dedicated 1-Minute Riddle Session Countdown Timer
+  useEffect(() => {
+    if (!isRiddleFullscreenOpen || isRiddleTimerPaused) return;
+
+    const riddleInterval = setInterval(() => {
+      setRiddleTimeLeft((prev) => {
+        if (prev <= 1) {
+          // 1-Minute Riddle Time Out: Automatically close riddle modal and return to board
+          setIsRiddleFullscreenOpen(false);
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(riddleInterval);
+  }, [isRiddleFullscreenOpen, isRiddleTimerPaused]);
 
   useEffect(() => {
     // Read configured players from setup & hero assignment
@@ -306,77 +343,78 @@ export const LiveCompanionPage = () => {
     });
   };
 
-  // Handle Player Banner Tap: Directly switches turn to that player
-  const handlePlayerTap = (index) => {
-    if (index !== activePlayerIndex) {
-      // 1. Log previous player's move
-      logPlayerMove(activePlayerIndexRef.current, 'Manual Switch');
-
-      // 2. Set new active player and reset 1-riddle-per-move rule
-      setActivePlayerIndex(index);
-      setTimeLeft(60);
-      setHasAnsweredRiddleThisTurn(false);
-      showTurnDropdown(players[index], false);
-      recordGameActivity?.().catch(() => {});
-    }
+  // Open Fullscreen Riddle for a specific player card tap
+  const handleOpenRiddleFullscreen = (player, index) => {
+    setActivePlayerIndex(index);
+    setRiddleModalPlayer(player);
+    setRiddleTimeLeft(60);
+    setIsRiddleFullscreenOpen(true);
   };
 
-  // Next Turn Button Action
+  // Manual Turn Advancement
   const handleNextTurn = async () => {
-    await nextTurn('chowkabara_live_session');
-    
-    // 1. Log previous player's move
     logPlayerMove(activePlayerIndexRef.current, 'Manual Pass');
 
-    // 2. Advance to next player and reset 1-riddle-per-move rule
-    const nextIdx = (activePlayerIndexRef.current + 1) % players.length;
+    try {
+      await nextTurn();
+    } catch (e) {
+      console.warn('Local turn advance:', e);
+    }
+
+    const nextIdx = (activePlayerIndex + 1) % players.length;
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
     setTimeLeft(60);
     setHasAnsweredRiddleThisTurn(false);
+    setIsRiddleFullscreenOpen(false);
     showTurnDropdown(nextPlayer, false);
-    recordGameActivity?.().catch(() => {});
   };
 
-  // Toggle Timer Pause
+  // Tap Player Side Card to Switch Turn
+  const handlePlayerTap = (index) => {
+    if (index === activePlayerIndex) {
+      // Tap on active player card -> Open Fullscreen Riddle
+      handleOpenRiddleFullscreen(players[index], index);
+      return;
+    }
+
+    logPlayerMove(activePlayerIndexRef.current, `Switched to ${players[index].name}`);
+    setActivePlayerIndex(index);
+    setTimeLeft(60);
+    setHasAnsweredRiddleThisTurn(false);
+    showTurnDropdown(players[index], false);
+  };
+
+  // Toggle Timer Pause / Resume
   const handleTogglePause = (e) => {
     e.stopPropagation();
     setIsTimerPaused((prev) => !prev);
   };
 
+  // Format seconds to mm:ss
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   // Open Survey Analytics Modal
   const handleOpenSurveyModal = () => {
-    const thinkingTime = (Date.now() - turnStartTimeRef.current) / 1000;
-    if (thinkingTime >= 1.0) {
-      logPlayerMove(activePlayerIndexRef.current, 'Current Turn Check');
-    }
-    setGroupedSurveyData(getPlayerGroupedSurveyData(playersRef.current));
+    const grouped = getPlayerGroupedSurveyData(playersRef.current);
+    setGroupedSurveyData(grouped);
+    setWebhookUrlInput(getGoogleSheetsWebhook());
     setIsSurveyModalOpen(true);
   };
 
-  // Handle Log Out
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to log out? This will end the active game session.')) {
-      sessionStorage.clear();
-      localStorage.removeItem('active_device_session');
-      localStorage.removeItem('activated_box_code');
-      navigate('/login');
-    }
-  };
-
-  // Copy Survey Summary Text to Clipboard
-  const handleCopySummary = async () => {
+  // Copy Survey Data to Clipboard
+  const handleCopySurveyText = () => {
     const text = generateSurveyTextSummary(playersRef.current);
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedText(true);
-      setTimeout(() => setCopiedText(false), 2500);
-    } catch (e) {
-      console.warn('Clipboard write notice:', e);
-    }
+    navigator.clipboard.writeText(text);
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2500);
   };
 
-  // Save Google Sheets Webhook
+  // Save Custom Webhook URL
   const handleSaveWebhook = (e) => {
     e.preventDefault();
     setGoogleSheetsWebhook(webhookUrlInput);
@@ -445,58 +483,48 @@ export const LiveCompanionPage = () => {
     logPlayerMove(activePlayerIndexRef.current, 'Hero Advantage Activated');
 
     updatePlayersState((prev) =>
-      prev.map((p) =>
-        p.id === advantageToConfirm.id
-          ? { ...p, isHeroAdvantageUsed: true }
-          : p
+      prev.map((p, idx) =>
+        idx === activePlayerIndex ? { ...p, isHeroAdvantageUsed: true } : p
       )
     );
 
     setActiveRewardNotification({
-      playerName: advantageToConfirm.name,
-      heroTitle: advantageToConfirm.heroSecondaryTitle,
-      advantage: advantageToConfirm.heroAdvantage,
+      title: `${advantageToConfirm.heroName} · ${advantageToConfirm.heroSecondaryTitle}`,
+      description: advantageToConfirm.heroAdvantage,
     });
 
     setAdvantageToConfirm(null);
-    recordGameActivity?.().catch(() => {});
   };
 
-  // Format seconds to MM:SS
-  const formatTime = (secs) => {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out and return to the main entrance?')) {
+      sessionStorage.clear();
+      localStorage.removeItem('active_device_session');
+      navigate('/login');
+    }
   };
 
   return (
-    <div className="live-companion-screen page-transition-fade" onClick={() => isSettingsMenuOpen && setIsSettingsMenuOpen(false)}>
-      {/* Dynamic Atmospheric Blurred Background */}
-      <div className="live-ambient-blurred-bg" />
-      <div className="live-bg-board-watermark" />
+    <div className="live-companion-screen">
+      {/* Background Texture Overlay */}
+      <div className="live-companion-bg" />
 
       {/* ===== TOP SLIDE DROPDOWN NOTIFICATION BANNER ===== */}
       {turnDropdown && (
         <div
-          className={`turn-dropdown-banner ${turnDropdown.isTimeout ? 'turn-dropdown-banner--timeout' : ''}`}
+          className="turn-dropdown-banner page-dropdown-slide"
           onClick={() => setTurnDropdown(null)}
         >
-          <div className="dropdown-icon-pill">
-            {turnDropdown.isTimeout ? (
-              <TimerReset size={16} color="#E74C3C" />
-            ) : (
-              <Crown size={16} color="#D9A441" />
-            )}
+          <div className="dropdown-icon-disc">
+            <Crown size={16} color="#261509" />
           </div>
-          <div className="dropdown-text-wrap">
-            <span className="dropdown-badge-label">
-              {turnDropdown.isTimeout ? "⏳ TIME'S UP! TURN PASSED" : "⚔️ CURRENT TURN"}
+          <div className="dropdown-banner-text">
+            <span className="dropdown-banner-tag">
+              {turnDropdown.isTimeout ? '⏱️ Turn Timed Out' : '✦ Turn Passed'}
             </span>
-            <h4 className="dropdown-player-turn">
-              {turnDropdown.playerName}’s Turn
-              {turnDropdown.heroTitle && (
-                <span className="dropdown-hero-sub"> · {turnDropdown.heroTitle}</span>
-              )}
+            <h4 className="dropdown-banner-title">
+              {turnDropdown.playerName}’s Turn{' '}
+              {turnDropdown.heroTitle && <small>({turnDropdown.heroTitle})</small>}
             </h4>
           </div>
           <span className="dropdown-dismiss-hint">✕</span>
@@ -526,7 +554,7 @@ export const LiveCompanionPage = () => {
 
         {/* Chapter Title */}
         <div className="chapter-banner">
-          <span className="chapter-title">Chapter 1: The Young Heir 📜</span>
+          <span className="chapter-title">Chapter 1: The Kurukshetra Trial 📜</span>
         </div>
 
         {/* Right Settings & Survey Dropdown Menu */}
@@ -611,21 +639,28 @@ export const LiveCompanionPage = () => {
         </div>
       </header>
 
-      {/* ===== MAIN PLAY AREA: 2 COLUMNS OF PLAYERS + CENTER RIDDLE CARD ===== */}
+      {/* ===== MAIN ARENA: FULL-SCREEN PLAYER CARDS GRID ===== */}
       <main className="live-main-arena">
-        {/* LEFT COLUMN: Player 1 & Player 3 */}
-        <div className="players-column players-column--left">
-          {players.filter((_, idx) => idx % 2 === 0).map((player, filteredIdx) => {
-            const originalIndex = filteredIdx * 2;
-            const isActive = originalIndex === activePlayerIndex;
+        <div className={`players-arena-grid players-arena-grid--${players.length}`}>
+          {players.map((player, idx) => {
+            const isActive = idx === activePlayerIndex;
 
             return (
               <div
                 key={player.id}
-                className={`player-side-card ${isActive ? 'player-side-card--active' : ''}`}
-                onClick={() => handlePlayerTap(originalIndex)}
-                title="Tap to make active turn"
+                className={`arena-player-card ${isActive ? 'arena-player-card--active' : ''}`}
+                onClick={() => handlePlayerTap(idx)}
+                role="button"
+                tabIndex={0}
               >
+                {/* Active Player Crown Glow Banner */}
+                {isActive && (
+                  <div className="active-turn-pulse-badge">
+                    <Crown size={12} />
+                    <span>ACTIVE TURN</span>
+                  </div>
+                )}
+
                 {/* Info (i) Button */}
                 <button
                   type="button"
@@ -634,132 +669,64 @@ export const LiveCompanionPage = () => {
                     e.stopPropagation();
                     setSelectedInfoPlayer(player);
                   }}
-                  title={`View ${player.name}'s hero advantages`}
-                  aria-label="Player advantages info"
+                  title={`View ${player.name}'s hero powers & inventory`}
+                  aria-label="Player info"
                 >
-                  <Info size={12} />
+                  <Info size={13} />
                 </button>
 
-                {/* Number Badge */}
+                {/* Number Badge Pill */}
                 <div className="player-num-pill">{player.num}</div>
 
-                {/* Avatar */}
-                <div className="player-avatar-circle">
-                  <span className="player-emoji-avatar">{player.avatar}</span>
+                {/* Card Top Avatar & Identity Row */}
+                <div className="player-card-header-row">
+                  <div className="player-avatar-circle" style={{ borderColor: player.shieldColor }}>
+                    <span className="player-emoji-avatar">{player.avatar}</span>
+                  </div>
+
+                  <div className="player-name-block">
+                    <h3 className="arena-player-name">{player.name}</h3>
+                    <span className="arena-player-meta">
+                      UID: {player.uid} · <strong style={{ color: '#D9A441' }}>Age {player.ageGroup || '8-12'}</strong>
+                    </span>
+                  </div>
                 </div>
 
-                {/* Player Name */}
-                <h3 className="player-side-name">{player.name}</h3>
-
-                {/* Hero Secondary Title */}
-                <div className="player-hero-title-tag">
-                  <span>{player.heroSecondaryTitle}</span>
+                {/* Hero Power Secondary Title Badge */}
+                <div className="arena-hero-badge">
+                  <span className="hero-char-name">{player.heroName}</span>
+                  <span className="hero-title-divider">·</span>
+                  <span className="hero-power-title">{player.heroSecondaryTitle}</span>
                 </div>
 
-                <span className="player-side-uid">UID: {player.uid} · Age {player.ageGroup || '8-12'}</span>
+                {/* Points and Status Footer */}
+                <div className="player-card-stats-row">
+                  <div className="player-mudras-badge">
+                    <Coins size={14} className="points-coin-icon" />
+                    <strong>{player.points}</strong>
+                    <small>Mudras</small>
+                  </div>
 
-                {/* Points / Mudras */}
-                <div className="player-side-points">
-                  <Coins size={12} className="points-coin-icon" />
-                  <span>{player.points}</span>
-                </div>
-                <span className="points-label">Mudras</span>
-
-                {/* Advantage Status Tag */}
-                <div
-                  className={`player-hero-status-pill ${player.isHeroAdvantageUsed ? 'player-hero-status-pill--used' : 'player-hero-status-pill--ready'}`}
-                  title={player.isHeroAdvantageUsed ? 'Hero advantage already used' : 'Hero advantage available'}
-                >
-                  <Zap size={9} />
-                  <span>{player.isHeroAdvantageUsed ? 'Adv Used' : 'Adv Ready'}</span>
+                  <div
+                    className={`player-hero-status-pill ${player.isHeroAdvantageUsed ? 'player-hero-status-pill--used' : 'player-hero-status-pill--ready'}`}
+                  >
+                    <Zap size={10} />
+                    <span>{player.isHeroAdvantageUsed ? 'Skill Used' : 'Skill Ready'}</span>
+                  </div>
                 </div>
 
-                {/* Shield / Pawn Icon */}
-                <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
-                  <Shield size={16} fill="currentColor" fillOpacity={0.25} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* CENTER COLUMN: 3D Flip Riddle Card (1 Riddle Per Move Limit) */}
-        <div className="arena-center-card">
-          <RiddleCard
-            activePlayer={activePlayer}
-            themeKey={themeKey}
-            hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
-            onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
-            onPointsDeducted={handlePointsDeducted}
-            onSolveSuccess={handleSolveSuccess}
-            onSolveFail={handleSolveFail}
-          />
-        </div>
-
-        {/* RIGHT COLUMN: Player 2 & Player 4 */}
-        <div className="players-column players-column--right">
-          {players.filter((_, idx) => idx % 2 !== 0).map((player, filteredIdx) => {
-            const originalIndex = filteredIdx * 2 + 1;
-            const isActive = originalIndex === activePlayerIndex;
-
-            return (
-              <div
-                key={player.id}
-                className={`player-side-card ${isActive ? 'player-side-card--active' : ''}`}
-                onClick={() => handlePlayerTap(originalIndex)}
-                title="Tap to make active turn"
-              >
-                {/* Info (i) Button */}
-                <button
-                  type="button"
-                  className="player-info-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedInfoPlayer(player);
-                  }}
-                  title={`View ${player.name}'s hero advantages`}
-                  aria-label="Player advantages info"
-                >
-                  <Info size={12} />
-                </button>
-
-                {/* Number Badge */}
-                <div className="player-num-pill">{player.num}</div>
-
-                {/* Avatar */}
-                <div className="player-avatar-circle">
-                  <span className="player-emoji-avatar">{player.avatar}</span>
-                </div>
-
-                {/* Player Name */}
-                <h3 className="player-side-name">{player.name}</h3>
-
-                {/* Hero Secondary Title */}
-                <div className="player-hero-title-tag">
-                  <span>{player.heroSecondaryTitle}</span>
-                </div>
-
-                <span className="player-side-uid">UID: {player.uid} · Age {player.ageGroup || '8-12'}</span>
-
-                {/* Points / Mudras */}
-                <div className="player-side-points">
-                  <Coins size={12} className="points-coin-icon" />
-                  <span>{player.points}</span>
-                </div>
-                <span className="points-label">Mudras</span>
-
-                {/* Advantage Status Tag */}
-                <div
-                  className={`player-hero-status-pill ${player.isHeroAdvantageUsed ? 'player-hero-status-pill--used' : 'player-hero-status-pill--ready'}`}
-                  title={player.isHeroAdvantageUsed ? 'Hero advantage already used' : 'Hero advantage available'}
-                >
-                  <Zap size={9} />
-                  <span>{player.isHeroAdvantageUsed ? 'Adv Used' : 'Adv Ready'}</span>
-                </div>
-
-                {/* Shield / Pawn Icon */}
-                <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
-                  <Shield size={16} fill="currentColor" fillOpacity={0.25} />
+                {/* Tap to Play Riddle Interactive Callout */}
+                <div className="tap-riddle-callout">
+                  {isActive ? (
+                    <div className="tap-riddle-prompt tap-riddle-prompt--active">
+                      <Sparkles size={13} color="#D9A441" />
+                      <span>Tap Card to Open Riddle ➔</span>
+                    </div>
+                  ) : (
+                    <div className="tap-riddle-prompt">
+                      <span>Tap to switch turn</span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -767,7 +734,7 @@ export const LiveCompanionPage = () => {
         </div>
       </main>
 
-      {/* ===== BOTTOM COMPANION CONTROLS ===== */}
+      {/* ===== BOTTOM COMPANION CONTROLS (Intact) ===== */}
       <footer className="live-bottom-panel">
         {/* 1. CURRENT TURN BANNER WITH 1-MINUTE CHESS TIMER */}
         <div
@@ -861,6 +828,72 @@ export const LiveCompanionPage = () => {
         </div>
       </footer>
 
+      {/* ===== FULLSCREEN 180° FLIPPED RIDDLE EXPERIENCE MODAL ===== */}
+      {isRiddleFullscreenOpen && (
+        <div className="riddle-fullscreen-overlay page-transition-fade">
+          <div className="riddle-fullscreen-container">
+            {/* Top Bar with 1-Minute Riddle Session Countdown */}
+            <div className="riddle-modal-top-bar">
+              <div className="riddle-player-info-pill">
+                <span className="riddle-player-avatar">{riddleModalPlayer?.avatar || activePlayer.avatar}</span>
+                <div className="riddle-player-text">
+                  <strong>{riddleModalPlayer?.name || activePlayer.name}</strong>
+                  <small>Age {riddleModalPlayer?.ageGroup || activePlayer.ageGroup || '8-12'}</small>
+                </div>
+              </div>
+
+              {/* 1-Minute Riddle Session Countdown Widget */}
+              <div className={`riddle-session-timer-badge ${riddleTimeLeft <= 10 ? 'timer-badge--alert' : ''}`}>
+                <Clock size={14} className={riddleTimeLeft <= 10 ? 'timer-pulse-icon' : ''} />
+                <span className="timer-digits">{formatTime(riddleTimeLeft)}</span>
+              </div>
+
+              {/* Close / Return to Board Button */}
+              <button
+                type="button"
+                className="riddle-fullscreen-close-btn"
+                onClick={() => setIsRiddleFullscreenOpen(false)}
+                aria-label="Return to Board"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Session Timer Progress Line */}
+            <div className="riddle-timer-bar-track">
+              <div
+                className={`riddle-timer-bar-fill ${riddleTimeLeft <= 10 ? 'fill--alert' : ''}`}
+                style={{ width: `${(riddleTimeLeft / 60) * 100}%` }}
+              />
+            </div>
+
+            {/* Center 3D Flipped Riddle Card */}
+            <div className="riddle-fullscreen-card-stage">
+              <RiddleCard
+                activePlayer={riddleModalPlayer || activePlayer}
+                themeKey={themeKey}
+                hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
+                onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
+                onPointsDeducted={handlePointsDeducted}
+                onSolveSuccess={handleSolveSuccess}
+                onSolveFail={handleSolveFail}
+              />
+            </div>
+
+            {/* Bottom Done Button */}
+            <div className="riddle-modal-bottom-bar">
+              <button
+                type="button"
+                className="return-to-arena-btn"
+                onClick={() => setIsRiddleFullscreenOpen(false)}
+              >
+                <span>Return to Player Grid</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ===== MODAL 1: PLAYER INFO (i) ADVANTAGES DETAIL POPUP ===== */}
       {selectedInfoPlayer && (
         <div className="live-modal-overlay" onClick={() => setSelectedInfoPlayer(null)}>
@@ -880,77 +913,74 @@ export const LiveCompanionPage = () => {
               </div>
               <div className="info-header-titles">
                 <h3 className="info-player-name">{selectedInfoPlayer.name}</h3>
-                <span className="info-hero-badge">
-                  {selectedInfoPlayer.heroName} · {selectedInfoPlayer.heroSecondaryTitle}
+                <span className="info-player-hero">
+                  Hero: <strong>{selectedInfoPlayer.heroName}</strong> ({selectedInfoPlayer.heroSecondaryTitle})
+                </span>
+                <span className="info-player-age">
+                  Age Range: <strong>{selectedInfoPlayer.ageGroup || '8-12'}</strong>
                 </span>
               </div>
             </div>
 
-            <div className="info-advantage-section">
-              <div className="info-section-title">
-                <Zap size={15} color="#D9A441" />
-                <span>HERO ADVANTAGE</span>
-              </div>
-              <div className="info-advantage-card">
-                <h4 className="info-adv-name">{selectedInfoPlayer.heroSecondaryTitle}</h4>
-                <p className="info-adv-text">{selectedInfoPlayer.heroAdvantage}</p>
-                <div className="info-adv-status">
-                  {selectedInfoPlayer.isHeroAdvantageUsed ? (
-                    <span className="status-badge status-badge--used">
-                      <CheckCircle2 size={13} /> Already Used in This Game
-                    </span>
-                  ) : (
-                    <span className="status-badge status-badge--ready">
-                      <Sparkles size={13} /> Available to Use (1 Time)
-                    </span>
-                  )}
-                </div>
+            <div className="info-divider" />
+
+            <div className="info-section">
+              <h4 className="info-sec-title">
+                <Zap size={14} color="#D9A441" /> Assigned Hero Advantage
+              </h4>
+              <div className="info-hero-adv-box">
+                <strong className="info-hero-adv-name">{selectedInfoPlayer.heroSecondaryTitle}</strong>
+                <p className="info-hero-adv-desc">{selectedInfoPlayer.heroAdvantage}</p>
+                <span className="info-hero-status">
+                  Status: <strong>{selectedInfoPlayer.isHeroAdvantageUsed ? 'Used' : 'Ready to activate'}</strong>
+                </span>
               </div>
             </div>
 
-            {selectedInfoPlayer.advantages && selectedInfoPlayer.advantages.length > 0 && (
-              <div className="info-riddle-advantages">
-                <div className="info-section-title">
-                  <Sparkles size={14} color="#2ECC71" />
-                  <span>EARNED RIDDLE ADVANTAGES ({selectedInfoPlayer.advantages.length})</span>
-                </div>
-                <div className="info-riddle-list">
-                  {selectedInfoPlayer.advantages.map((adv, i) => (
-                    <div key={i} className="riddle-adv-item">
-                      <strong>{typeof adv === 'object' ? adv.name : adv}</strong>
-                      {typeof adv === 'object' && adv.description && (
-                        <p>{adv.description}</p>
-                      )}
+            <div className="info-section" style={{ marginTop: '12px' }}>
+              <h4 className="info-sec-title">
+                <Sparkles size={14} color="#2ECC71" /> Earned Riddle Advantages ({selectedInfoPlayer.advantages?.length || 0})
+              </h4>
+              {selectedInfoPlayer.advantages && selectedInfoPlayer.advantages.length > 0 ? (
+                <div className="info-earned-adv-list">
+                  {selectedInfoPlayer.advantages.map((adv, aIdx) => (
+                    <div key={aIdx} className="earned-adv-item">
+                      <span className="earned-adv-dot">✦</span>
+                      <div className="earned-adv-text">
+                        <strong>{adv.name}</strong>
+                        <small>{adv.description}</small>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <p className="no-adv-text">No riddle advantages earned yet. Solve riddles during your turn to win advantages!</p>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* ===== MODAL 2: CONFIRM USE ADVANTAGE ===== */}
+      {/* ===== MODAL 2: CONFIRM HERO ADVANTAGE ACTIVATION ===== */}
       {advantageToConfirm && (
         <div className="live-modal-overlay">
           <div className="live-confirm-modal-card">
-            <div className="confirm-icon-disc">
-              <Zap size={24} color="#D9A441" />
+            <div className="confirm-modal-icon-badge">
+              <Zap size={26} color="#D9A441" />
             </div>
 
-            <h3 className="confirm-title">Use Hero Advantage?</h3>
-            <div className="confirm-hero-chip">
-              {advantageToConfirm.name} ({advantageToConfirm.heroSecondaryTitle})
+            <h3 className="confirm-modal-title">Activate Hero Advantage?</h3>
+            <p className="confirm-hero-name">
+              {advantageToConfirm.heroName} · <strong>{advantageToConfirm.heroSecondaryTitle}</strong>
+            </p>
+
+            <div className="confirm-adv-desc-box">
+              <p>{advantageToConfirm.heroAdvantage}</p>
             </div>
 
-            <div className="confirm-effect-box">
-              <p className="confirm-effect-text">{advantageToConfirm.heroAdvantage}</p>
-            </div>
-
-            <div className="confirm-warning-note">
-              <AlertCircle size={14} color="#E74C3C" />
-              <span>This hero advantage can only be used <strong>once</strong> per entire match!</span>
-            </div>
+            <p className="confirm-warning-text">
+              ⚠️ Note: This hero power is <strong>single-use</strong> per game session!
+            </p>
 
             <div className="confirm-actions-row">
               <button
@@ -958,7 +988,7 @@ export const LiveCompanionPage = () => {
                 className="confirm-activate-btn"
                 onClick={handleConfirmUseAdvantage}
               >
-                <Sparkles size={15} /> Confirm & Activate
+                <Sparkles size={15} /> Activate Power Now
               </button>
               <button
                 type="button"
@@ -972,144 +1002,172 @@ export const LiveCompanionPage = () => {
         </div>
       )}
 
-      {/* ===== MODAL 3: SURVEY TELEMETRY - PLAYER BY PLAYER WITH RECORDING DATE ===== */}
-      {isSurveyModalOpen && (
-        <div className="live-modal-overlay" onClick={() => setIsSurveyModalOpen(false)}>
-          <div className="survey-modal-card" onClick={(e) => e.stopPropagation()}>
+      {/* ===== MODAL 3: ACTIVE REWARD ANNOUNCEMENT ===== */}
+      {activeRewardNotification && (
+        <div className="live-modal-overlay" onClick={() => setActiveRewardNotification(null)}>
+          <div className="live-reward-announcement-card" onClick={(e) => e.stopPropagation()}>
+            <div className="reward-glow-badge">
+              <Sparkles size={30} color="#FAF5EA" />
+            </div>
+            <h2 className="reward-headline">DIVINE POWER UNLEASHED!</h2>
+            <h3 className="reward-power-title">{activeRewardNotification.title}</h3>
+            <p className="reward-power-desc">{activeRewardNotification.description}</p>
             <button
               type="button"
-              className="modal-close-icon-btn"
-              onClick={() => setIsSurveyModalOpen(false)}
-              aria-label="Close"
+              className="reward-dismiss-btn"
+              onClick={() => setActiveRewardNotification(null)}
             >
-              <X size={18} />
+              Execute on Physical Board ➔
             </button>
-
-            {/* Modal Title */}
-            <div className="survey-modal-title-row">
-              <FileSpreadsheet size={22} color="#2ECC71" />
-              <div>
-                <h3 className="survey-modal-title">Move Timestamps Survey</h3>
-                <span className="survey-modal-sub">
-                  Organized by player with timestamps & total time
-                </span>
-              </div>
-            </div>
-
-            {/* Quick Action Export Bar */}
-            <div className="survey-actions-panel">
-              <button
-                type="button"
-                className="survey-export-btn survey-export-btn--csv"
-                onClick={() => downloadSurveyCSV(playersRef.current)}
-                title="Download CSV formatted by Player"
-              >
-                <Download size={14} />
-                <span>Download CSV (Sheets)</span>
-              </button>
-
-              <button
-                type="button"
-                className="survey-export-btn survey-export-btn--copy"
-                onClick={handleCopySummary}
-                title="Copy all player timestamps to clipboard"
-              >
-                {copiedText ? <Check size={14} color="#2ECC71" /> : <Copy size={14} />}
-                <span>{copiedText ? 'Copied!' : 'Copy Text'}</span>
-              </button>
-
-              <button
-                type="button"
-                className="survey-export-btn survey-export-btn--sheets"
-                onClick={openGoogleSheets}
-                title="Open Google Sheets"
-              >
-                <ExternalLink size={14} />
-                <span>Open Sheets</span>
-              </button>
-            </div>
-
-            {/* PLAYER-BY-PLAYER TIMESTAMPS & TOTAL TIME SECTION */}
-            <div className="survey-players-grouped-container">
-              {groupedSurveyData.map((player) => (
-                <div key={player.name} className="survey-player-group-card">
-                  {/* Player Header */}
-                  <div className="group-card-header">
-                    <div className="group-header-left">
-                      <span className="group-num-pill">Player {player.playerIndex}</span>
-                      <strong className="group-player-name">{player.name}</strong>
-                      <span className="group-hero-tag">{player.heroTitle || 'HERO'}</span>
-                    </div>
-                    <div className="group-header-right">
-                      <span className="group-total-time-badge">
-                        ⏱️ Total: <strong>{player.totalSeconds}s</strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Moves Timestamps List */}
-                  <div className="group-moves-list">
-                    {player.moves.length === 0 ? (
-                      <div className="group-empty-hint">No moves played yet in this session</div>
-                    ) : (
-                      player.moves.map((m, idx) => (
-                        <div key={m.id || idx} className="group-move-row">
-                          <span className="move-number-badge">Move #{idx + 1}</span>
-                          <span className="move-timestamps-text">
-                            {m.startFormatted} → {m.endFormatted}
-                          </span>
-                          <strong className="move-duration-highlight">{m.durationSeconds}s</strong>
-                          <span className="move-action-type-tag">{m.actionType}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Player Footer Summary */}
-                  <div className="group-card-footer">
-                    <span>Total Moves: <strong>{player.totalMoves}</strong></span>
-                    <span>Average per Move: <strong>{player.averageSeconds}s</strong></span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* DATE OF RECORDING AT THE END */}
-            <div className="survey-recording-date-footer">
-              <div className="date-banner-content">
-                <Calendar size={15} color="#D9A441" />
-                <span>
-                  Date of Recording: <strong>{new Date().toLocaleString()}</strong>
-                </span>
-              </div>
-
-              {groupedSurveyData.some((p) => p.moves.length > 0) && (
-                <button
-                  type="button"
-                  className="survey-clear-btn"
-                  onClick={handleClearSurveyData}
-                  title="Clear all recorded moves"
-                >
-                  <Trash2 size={12} />
-                  <span>Clear</span>
-                </button>
-              )}
-            </div>
           </div>
         </div>
       )}
 
-      {/* ===== REWARD NOTIFICATION TOAST ===== */}
-      {activeRewardNotification && (
-        <div className="reward-toast-banner" onClick={() => setActiveRewardNotification(null)}>
-          <div className="reward-toast-icon">
-            <Sparkles size={18} color="#D9A441" />
+      {/* ===== MODAL 4: SURVEY TELEMETRY & GOOGLE SHEETS POPUP ===== */}
+      {isSurveyModalOpen && (
+        <div className="live-modal-overlay" onClick={() => setIsSurveyModalOpen(false)}>
+          <div className="survey-modal-card page-dropdown-slide" onClick={(e) => e.stopPropagation()}>
+            <div className="survey-modal-header">
+              <div className="survey-header-title-group">
+                <div className="survey-icon-disc">
+                  <FileSpreadsheet size={20} color="#2ECC71" />
+                </div>
+                <div>
+                  <h3 className="survey-modal-title">Survey Move Telemetry</h3>
+                  <p className="survey-modal-subtitle">Time taken per player & timestamps</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-icon-btn"
+                onClick={() => setIsSurveyModalOpen(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="survey-modal-body">
+              {/* Quick 1-Click Action Bar */}
+              <div className="survey-action-bar">
+                <button
+                  type="button"
+                  className="survey-action-btn survey-action-btn--csv"
+                  onClick={() => downloadSurveyCSV(players)}
+                >
+                  <Download size={14} /> Download CSV (Sheets)
+                </button>
+                <button
+                  type="button"
+                  className={`survey-action-btn survey-action-btn--copy ${copiedText ? 'btn-copied' : ''}`}
+                  onClick={handleCopySurveyText}
+                >
+                  {copiedText ? <Check size={14} /> : <Copy size={14} />}
+                  {copiedText ? 'Copied to Clipboard!' : 'Copy Text Summary'}
+                </button>
+                <button
+                  type="button"
+                  className="survey-action-btn survey-action-btn--open"
+                  onClick={openGoogleSheets}
+                >
+                  <ExternalLink size={14} /> Open Google Sheets
+                </button>
+              </div>
+
+              {/* Player-by-Player Clean Grouped Breakdown */}
+              <div className="survey-players-container">
+                {groupedSurveyData && groupedSurveyData.length > 0 ? (
+                  groupedSurveyData.map((pData, pIdx) => (
+                    <div key={pIdx} className="survey-player-card">
+                      <div className="survey-player-header">
+                        <div className="survey-player-name-row">
+                          <span className="survey-player-num-tag">Player {pData.playerIndex + 1}</span>
+                          <h4 className="survey-player-fullname">
+                            {pData.playerName} <small>({pData.heroTitle || pData.heroName})</small>
+                          </h4>
+                        </div>
+                        <div className="survey-player-total-pill">
+                          <span>Total: <strong>{pData.totalDurationFormatted}</strong> ({pData.totalMoves} moves)</span>
+                        </div>
+                      </div>
+
+                      <div className="survey-moves-table-wrap">
+                        <table className="survey-moves-table">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Start ➔ End</th>
+                              <th>Duration</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pData.moves.map((m, mIdx) => (
+                              <tr key={mIdx}>
+                                <td>{m.moveNumber}</td>
+                                <td className="timestamp-cell">{m.startFormatted} ➔ {m.endFormatted}</td>
+                                <td className="duration-cell"><strong>{m.durationSeconds}s</strong></td>
+                                <td className="action-cell">{m.actionType}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="survey-empty-state">
+                    <Clock size={28} color="#D9A441" />
+                    <p>No moves recorded yet. Play moves in the game to generate telemetry!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* End of Recording Date Banner */}
+              <div className="survey-recording-date-banner">
+                <Calendar size={15} color="#D9A441" />
+                <span>
+                  <strong>Date of Recording:</strong> {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+
+              {/* Optional Webhook URL Input for Direct Automation */}
+              <form className="survey-webhook-form" onSubmit={handleSaveWebhook}>
+                <label className="webhook-label">
+                  🔗 Optional Google Apps Script / Webhook Endpoint:
+                </label>
+                <div className="webhook-input-row">
+                  <input
+                    type="url"
+                    className="webhook-text-input"
+                    placeholder="https://script.google.com/macros/s/.../exec"
+                    value={webhookUrlInput}
+                    onChange={(e) => setWebhookUrlInput(e.target.value)}
+                  />
+                  <button type="submit" className="webhook-save-btn">
+                    {webhookSaved ? 'Saved!' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="survey-modal-footer">
+              <button
+                type="button"
+                className="survey-clear-btn"
+                onClick={handleClearSurveyData}
+              >
+                <Trash2 size={14} /> Clear Telemetry
+              </button>
+              <button
+                type="button"
+                className="survey-close-btn"
+                onClick={() => setIsSurveyModalOpen(false)}
+              >
+                Done
+              </button>
+            </div>
           </div>
-          <div className="reward-toast-text">
-            <strong>Advantage Activated for {activeRewardNotification.playerName}!</strong>
-            <p>{activeRewardNotification.heroTitle}: {activeRewardNotification.advantage}</p>
-          </div>
-          <button type="button" className="toast-dismiss-btn">✕</button>
         </div>
       )}
     </div>
