@@ -10,11 +10,6 @@ import {
   Info,
   CheckCircle2,
   X,
-  AlertCircle,
-  Clock,
-  Play,
-  Pause,
-  TimerReset,
   FileSpreadsheet,
   Download,
   ExternalLink,
@@ -24,10 +19,8 @@ import {
   Calendar,
   ChevronLeft,
   LogOut,
-  RotateCw,
-  BookOpen,
 } from 'lucide-react';
-import RiddleCard from '../../components/cards/RiddleCard';
+import PlayerRiddleFlipCard from '../../components/cards/PlayerRiddleFlipCard';
 import { nextTurn } from '../../services/turnService';
 import { addPoints, deductPoints } from '../../services/pointService';
 import { recordGameActivity } from '../../services/gameService';
@@ -128,12 +121,8 @@ export const LiveCompanionPage = () => {
   // 1 Riddle Per Move Rule State
   const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
 
-  // Fullscreen Riddle Experience & 3D Center Flip State
-  const [isRiddleFullscreenOpen, setIsRiddleFullscreenOpen] = useState(false);
-  const [riddleModalPlayer, setRiddleModalPlayer] = useState(null);
-  const [activeAnimatingCardIndex, setActiveAnimatingCardIndex] = useState(null);
-  const [riddleTimeLeft, setRiddleTimeLeft] = useState(60);
-  const [isRiddleTimerPaused, setIsRiddleTimerPaused] = useState(false);
+  // Active Flipped Card Player ID (null or player id e.g. 'p_1')
+  const [flippedCardPlayerId, setFlippedCardPlayerId] = useState(null);
 
   // Turn Dropdown Banner State
   const [turnDropdown, setTurnDropdown] = useState(null);
@@ -211,24 +200,6 @@ export const LiveCompanionPage = () => {
     return () => clearTimeout(timer);
   }, [turnDropdown]);
 
-  // Dedicated 1-Minute Riddle Session Countdown Timer
-  useEffect(() => {
-    if (!isRiddleFullscreenOpen || isRiddleTimerPaused) return;
-
-    const riddleInterval = setInterval(() => {
-      setRiddleTimeLeft((prev) => {
-        if (prev <= 1) {
-          // 1-Minute Riddle Time Out: Automatically close riddle modal and return to board
-          setIsRiddleFullscreenOpen(false);
-          return 60;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(riddleInterval);
-  }, [isRiddleFullscreenOpen, isRiddleTimerPaused]);
-
   useEffect(() => {
     // Read configured players from setup & hero assignment
     const storedPlayers = sessionStorage.getItem('activeGamePlayers');
@@ -303,22 +274,6 @@ export const LiveCompanionPage = () => {
     });
   };
 
-  // Open Fullscreen Riddle: Tapped card moves to center, other cards vanish, card scales up & flips backwards 180°
-  const handlePlayerTap = (index) => {
-    if (activeAnimatingCardIndex !== null) return;
-
-    setActivePlayerIndex(index);
-    setRiddleModalPlayer(players[index]);
-    setActiveAnimatingCardIndex(index);
-
-    // After the center move, scale up, and 180° flip animation completes:
-    setTimeout(() => {
-      setRiddleTimeLeft(60);
-      setIsRiddleFullscreenOpen(true);
-      setActiveAnimatingCardIndex(null);
-    }, 580);
-  };
-
   // Manual Turn Advancement
   const handleNextTurn = async () => {
     logPlayerMove(activePlayerIndexRef.current, 'Manual Pass');
@@ -333,15 +288,8 @@ export const LiveCompanionPage = () => {
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
     setHasAnsweredRiddleThisTurn(false);
-    setIsRiddleFullscreenOpen(false);
+    setFlippedCardPlayerId(null);
     showTurnDropdown(nextPlayer);
-  };
-
-  // Format seconds to mm:ss
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   // Open Survey Analytics Modal
@@ -454,6 +402,14 @@ export const LiveCompanionPage = () => {
     <div className="live-companion-screen">
       {/* Background Texture Overlay */}
       <div className="live-companion-bg" />
+
+      {/* Backdrop overlay when a card is flipped and centered */}
+      {flippedCardPlayerId && (
+        <div
+          className="flipper-backdrop-overlay"
+          onClick={() => setFlippedCardPlayerId(null)}
+        />
+      )}
 
       {/* ===== TOP SLIDE DROPDOWN NOTIFICATION BANNER ===== */}
       {turnDropdown && (
@@ -583,105 +539,45 @@ export const LiveCompanionPage = () => {
         </div>
       </header>
 
-      {/* ===== MAIN ARENA: FULL-SCREEN PLAYER CARDS GRID ===== */}
-      <main className="live-main-arena">
+      {/* ===== MAIN ARENA: TWO-SIDED 3D FLIPPER PLAYER CARDS GRID ===== */}
+      <main className={`live-main-arena ${flippedCardPlayerId ? 'live-main-arena--has-flipped-card' : ''}`}>
         <div className={`players-arena-grid players-arena-grid--${players.length}`}>
           {players.map((player, idx) => {
             const isActive = idx === activePlayerIndex;
-            const isTargetCard = activeAnimatingCardIndex === idx;
-            const isOtherCardVanishing = activeAnimatingCardIndex !== null && activeAnimatingCardIndex !== idx;
-
-            let cardClasses = 'arena-player-card';
-            if (isActive) cardClasses += ' arena-player-card--active';
-            if (isTargetCard) cardClasses += ' arena-player-card--center-fly-flip';
-            if (isOtherCardVanishing) cardClasses += ' arena-player-card--vanished';
+            const isFlipped = flippedCardPlayerId === player.id;
+            const isOtherCardDimmed = flippedCardPlayerId !== null && !isFlipped;
 
             return (
               <div
                 key={player.id}
-                className={cardClasses}
-                onClick={() => handlePlayerTap(idx)}
-                role="button"
-                tabIndex={0}
+                className={`arena-card-slot ${isOtherCardDimmed ? 'arena-card-slot--dimmed' : ''}`}
               >
-                {/* Active Player Crown Glow Banner */}
-                {isActive && (
-                  <div className="active-turn-pulse-badge">
-                    <Crown size={12} />
-                    <span>ACTIVE TURN</span>
-                  </div>
-                )}
-
-                {/* Info (i) Button */}
-                <button
-                  type="button"
-                  className="player-info-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedInfoPlayer(player);
+                <PlayerRiddleFlipCard
+                  player={player}
+                  isActiveTurn={isActive}
+                  isFlipped={isFlipped}
+                  onTapCard={() => {
+                    setActivePlayerIndex(idx);
+                    setFlippedCardPlayerId(player.id);
                   }}
-                  title={`View ${player.name}'s hero powers & inventory`}
-                  aria-label="Player info"
-                >
-                  <Info size={13} />
-                </button>
-
-                {/* Number Badge Pill */}
-                <div className="player-num-pill">{player.num}</div>
-
-                {/* Card Top Avatar & Identity Row */}
-                <div className="player-card-header-row">
-                  <div className="player-avatar-circle" style={{ borderColor: player.shieldColor }}>
-                    <span className="player-emoji-avatar">{player.avatar}</span>
-                  </div>
-
-                  <div className="player-name-block">
-                    <h3 className="arena-player-name">{player.name}</h3>
-                    <span className="arena-player-meta">
-                      UID: {player.uid} · <strong style={{ color: '#D9A441' }}>Age {player.ageGroup || '8-12'}</strong>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Hero Power Secondary Title Badge */}
-                <div className="arena-hero-badge">
-                  <span className="hero-char-name">{player.heroName}</span>
-                  <span className="hero-title-divider">·</span>
-                  <span className="hero-power-title">{player.heroSecondaryTitle}</span>
-                </div>
-
-                {/* Points and Status Footer */}
-                <div className="player-card-stats-row">
-                  <div className="player-mudras-badge">
-                    <Coins size={14} className="points-coin-icon" />
-                    <strong>{player.points}</strong>
-                    <small>Mudras</small>
-                  </div>
-
-                  <div
-                    className={`player-hero-status-pill ${player.isHeroAdvantageUsed ? 'player-hero-status-pill--used' : 'player-hero-status-pill--ready'}`}
-                  >
-                    <Zap size={10} />
-                    <span>{player.isHeroAdvantageUsed ? 'Skill Used' : 'Skill Ready'}</span>
-                  </div>
-                </div>
-
-                {/* Tap to Play Riddle Interactive Callout */}
-                <div className="tap-riddle-callout">
-                  <div className={`tap-riddle-prompt ${isActive ? 'tap-riddle-prompt--active' : ''}`}>
-                    <Sparkles size={13} color="#D9A441" />
-                    <span>Tap to Open Riddle ➔</span>
-                  </div>
-                </div>
+                  onFlipBack={() => setFlippedCardPlayerId(null)}
+                  hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
+                  onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
+                  onPointsDeducted={handlePointsDeducted}
+                  onSolveSuccess={handleSolveSuccess}
+                  onSolveFail={handleSolveFail}
+                  themeKey={themeKey}
+                  onInfoClick={(p) => setSelectedInfoPlayer(p)}
+                />
               </div>
             );
           })}
         </div>
       </main>
 
-      {/* ===== BOTTOM COMPANION CONTROLS (TIMER REMOVED FROM TURN SECTION) ===== */}
+      {/* ===== BOTTOM COMPANION CONTROLS (CLEAN CURRENT TURN BANNER, NO TIMER) ===== */}
       <footer className="live-bottom-panel">
-        {/* 1. CURRENT TURN BANNER (CLEAN & ELEGANT, NO TIMER) */}
+        {/* 1. CURRENT TURN BANNER */}
         <div
           className="current-turn-banner"
           onClick={handleNextTurn}
@@ -705,7 +601,7 @@ export const LiveCompanionPage = () => {
           </h2>
 
           <p className="turn-sub-instruction">
-            ✦ Active player move · Tap banner anytime to pass turn ➔
+            ✦ Tap card to flip & answer riddle · Tap banner to pass move ➔
           </p>
         </div>
 
@@ -747,72 +643,6 @@ export const LiveCompanionPage = () => {
           </div>
         </div>
       </footer>
-
-      {/* ===== FULLSCREEN 180° FLIPPED RIDDLE EXPERIENCE MODAL ===== */}
-      {isRiddleFullscreenOpen && (
-        <div className="riddle-fullscreen-overlay page-transition-fade">
-          <div className="riddle-fullscreen-container">
-            {/* Top Bar with 1-Minute Riddle Session Countdown */}
-            <div className="riddle-modal-top-bar">
-              <div className="riddle-player-info-pill">
-                <span className="riddle-player-avatar">{riddleModalPlayer?.avatar || activePlayer.avatar}</span>
-                <div className="riddle-player-text">
-                  <strong>{riddleModalPlayer?.name || activePlayer.name}</strong>
-                  <small>Age {riddleModalPlayer?.ageGroup || activePlayer.ageGroup || '8-12'}</small>
-                </div>
-              </div>
-
-              {/* 1-Minute Riddle Session Countdown Widget */}
-              <div className={`riddle-session-timer-badge ${riddleTimeLeft <= 10 ? 'timer-badge--alert' : ''}`}>
-                <Clock size={14} className={riddleTimeLeft <= 10 ? 'timer-pulse-icon' : ''} />
-                <span className="timer-digits">{formatTime(riddleTimeLeft)}</span>
-              </div>
-
-              {/* Close / Return to Board Button */}
-              <button
-                type="button"
-                className="riddle-fullscreen-close-btn"
-                onClick={() => setIsRiddleFullscreenOpen(false)}
-                aria-label="Return to Board"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Session Timer Progress Line */}
-            <div className="riddle-timer-bar-track">
-              <div
-                className={`riddle-timer-bar-fill ${riddleTimeLeft <= 10 ? 'fill--alert' : ''}`}
-                style={{ width: `${(riddleTimeLeft / 60) * 100}%` }}
-              />
-            </div>
-
-            {/* Center 3D Flipped Riddle Card */}
-            <div className="riddle-fullscreen-card-stage">
-              <RiddleCard
-                activePlayer={riddleModalPlayer || activePlayer}
-                themeKey={themeKey}
-                hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
-                onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
-                onPointsDeducted={handlePointsDeducted}
-                onSolveSuccess={handleSolveSuccess}
-                onSolveFail={handleSolveFail}
-              />
-            </div>
-
-            {/* Bottom Done Button */}
-            <div className="riddle-modal-bottom-bar">
-              <button
-                type="button"
-                className="return-to-arena-btn"
-                onClick={() => setIsRiddleFullscreenOpen(false)}
-              >
-                <span>Return to Player Grid</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ===== MODAL 1: PLAYER INFO (i) ADVANTAGES DETAIL POPUP ===== */}
       {selectedInfoPlayer && (
