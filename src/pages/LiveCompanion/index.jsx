@@ -10,6 +10,11 @@ import {
   Info,
   CheckCircle2,
   X,
+  AlertCircle,
+  Clock,
+  Play,
+  Pause,
+  TimerReset,
   FileSpreadsheet,
   Download,
   ExternalLink,
@@ -20,7 +25,7 @@ import {
   ChevronLeft,
   LogOut,
 } from 'lucide-react';
-import PlayerRiddleFlipCard from '../../components/cards/PlayerRiddleFlipCard';
+import RiddleCard from '../../components/cards/RiddleCard';
 import { nextTurn } from '../../services/turnService';
 import { addPoints, deductPoints } from '../../services/pointService';
 import { recordGameActivity } from '../../services/gameService';
@@ -41,14 +46,12 @@ import './LiveCompanion.css';
 export const LiveCompanionPage = () => {
   const navigate = useNavigate();
 
-  // Initialize 4 players with Member 2 STARTING_MUDRAS (6000), secondary hero titles & hero advantage
+  // Initialize 4 players with Member 2 STARTING_MUDRAS (8000), secondary hero titles & hero advantage
   const defaultPlayers = [
     {
       id: 'p_1',
-      name: 'Player 1',
+      name: 'Arjun',
       uid: 'CHB001',
-      age: 10,
-      ageGroup: '8-12',
       heroName: 'ARJUNA',
       heroSecondaryTitle: 'GANDIVA',
       heroAdvantage: 'Target any one pawn of the opponent and move it back to their house.',
@@ -62,10 +65,8 @@ export const LiveCompanionPage = () => {
     },
     {
       id: 'p_2',
-      name: 'Player 2',
+      name: 'Diya',
       uid: 'CHB002',
-      age: 10,
-      ageGroup: '8-12',
       heroName: 'KARNA',
       heroSecondaryTitle: 'SURYAKAVACHA',
       heroAdvantage: 'Shield your pawn by moving it to the nearest safe house.',
@@ -79,10 +80,8 @@ export const LiveCompanionPage = () => {
     },
     {
       id: 'p_3',
-      name: 'Player 3',
+      name: 'Kabir',
       uid: 'CHB003',
-      age: 10,
-      ageGroup: '8-12',
       heroName: 'SHAKUNI',
       heroSecondaryTitle: 'DYUTA MAYA',
       heroAdvantage: 'Can choose any result for his dice roll.',
@@ -96,10 +95,8 @@ export const LiveCompanionPage = () => {
     },
     {
       id: 'p_4',
-      name: 'Player 4',
+      name: 'Myra',
       uid: 'CHB004',
-      age: 10,
-      ageGroup: '8-12',
       heroName: 'GHATOTKACHA',
       heroSecondaryTitle: 'MAYA SHAKTI',
       heroAdvantage: 'Move one’s pawn to any space on the board.',
@@ -115,16 +112,15 @@ export const LiveCompanionPage = () => {
 
   const [players, setPlayers] = useState(defaultPlayers);
   const [activePlayerIndex, setActivePlayerIndex] = useState(0);
-  const [themeKey, setThemeKey] = useState('mahabharatha');
-  const [worldThemeName, setWorldThemeName] = useState('MAHABHARATHA');
+  const [themeKey, setThemeKey] = useState('rajya');
+  const [worldThemeName, setWorldThemeName] = useState('KINGDOMS');
 
   // 1 Riddle Per Move Rule State
   const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
 
-  // Active Flipped Player Object for 3D Stage (null or player object)
-  const [flippedPlayer, setFlippedPlayer] = useState(null);
-
-  // Turn Dropdown Banner State
+  // 1-Minute Chess Timer State
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
   const [turnDropdown, setTurnDropdown] = useState(null);
 
   // Settings & Survey Header Dropdown State
@@ -184,10 +180,11 @@ export const LiveCompanionPage = () => {
   };
 
   // Show dropdown notification when turn changes
-  const showTurnDropdown = (player) => {
+  const showTurnDropdown = (player, isTimeout = false) => {
     setTurnDropdown({
       playerName: player.name,
       heroTitle: player.heroSecondaryTitle,
+      isTimeout,
     });
   };
 
@@ -199,6 +196,41 @@ export const LiveCompanionPage = () => {
     }, 2600);
     return () => clearTimeout(timer);
   }, [turnDropdown]);
+
+  // 1-Minute Turn Countdown Interval
+  useEffect(() => {
+    if (isTimerPaused) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isTimerPaused]);
+
+  // Handle Timeout (when timer hits 0)
+  useEffect(() => {
+    if (timeLeft === 0) {
+      const currentIdx = activePlayerIndexRef.current;
+      const playerList = playersRef.current;
+      
+      // 1. Log previous player's move as Timeout
+      logPlayerMove(currentIdx, 'Timeout (60s)');
+
+      // 2. Advance to next player and reset 1-riddle-per-move rule
+      const nextIdx = (currentIdx + 1) % playerList.length;
+      const nextPlayer = playerList[nextIdx];
+      setActivePlayerIndex(nextIdx);
+      setTimeLeft(60);
+      setHasAnsweredRiddleThisTurn(false);
+      showTurnDropdown(nextPlayer, true);
+    }
+  }, [timeLeft]);
 
   useEffect(() => {
     // Read configured players from setup & hero assignment
@@ -274,41 +306,77 @@ export const LiveCompanionPage = () => {
     });
   };
 
-  // Manual Turn Advancement
+  // Handle Player Banner Tap: Directly switches turn to that player
+  const handlePlayerTap = (index) => {
+    if (index !== activePlayerIndex) {
+      // 1. Log previous player's move
+      logPlayerMove(activePlayerIndexRef.current, 'Manual Switch');
+
+      // 2. Set new active player and reset 1-riddle-per-move rule
+      setActivePlayerIndex(index);
+      setTimeLeft(60);
+      setHasAnsweredRiddleThisTurn(false);
+      showTurnDropdown(players[index], false);
+      recordGameActivity?.().catch(() => {});
+    }
+  };
+
+  // Next Turn Button Action
   const handleNextTurn = async () => {
+    await nextTurn('chowkabara_live_session');
+    
+    // 1. Log previous player's move
     logPlayerMove(activePlayerIndexRef.current, 'Manual Pass');
 
-    try {
-      await nextTurn();
-    } catch (e) {
-      console.warn('Local turn advance:', e);
-    }
-
-    const nextIdx = (activePlayerIndex + 1) % players.length;
+    // 2. Advance to next player and reset 1-riddle-per-move rule
+    const nextIdx = (activePlayerIndexRef.current + 1) % players.length;
     const nextPlayer = players[nextIdx];
     setActivePlayerIndex(nextIdx);
+    setTimeLeft(60);
     setHasAnsweredRiddleThisTurn(false);
-    setFlippedPlayer(null);
-    showTurnDropdown(nextPlayer);
+    showTurnDropdown(nextPlayer, false);
+    recordGameActivity?.().catch(() => {});
+  };
+
+  // Toggle Timer Pause
+  const handleTogglePause = (e) => {
+    e.stopPropagation();
+    setIsTimerPaused((prev) => !prev);
   };
 
   // Open Survey Analytics Modal
   const handleOpenSurveyModal = () => {
-    const grouped = getPlayerGroupedSurveyData(playersRef.current);
-    setGroupedSurveyData(grouped);
-    setWebhookUrlInput(getGoogleSheetsWebhook());
+    const thinkingTime = (Date.now() - turnStartTimeRef.current) / 1000;
+    if (thinkingTime >= 1.0) {
+      logPlayerMove(activePlayerIndexRef.current, 'Current Turn Check');
+    }
+    setGroupedSurveyData(getPlayerGroupedSurveyData(playersRef.current));
     setIsSurveyModalOpen(true);
   };
 
-  // Copy Survey Data to Clipboard
-  const handleCopySurveyText = () => {
-    const text = generateSurveyTextSummary(playersRef.current);
-    navigator.clipboard.writeText(text);
-    setCopiedText(true);
-    setTimeout(() => setCopiedText(false), 2500);
+  // Handle Log Out
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out? This will end the active game session.')) {
+      sessionStorage.clear();
+      localStorage.removeItem('active_device_session');
+      localStorage.removeItem('activated_box_code');
+      navigate('/login');
+    }
   };
 
-  // Save Custom Webhook URL
+  // Copy Survey Summary Text to Clipboard
+  const handleCopySummary = async () => {
+    const text = generateSurveyTextSummary(playersRef.current);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedText(true);
+      setTimeout(() => setCopiedText(false), 2500);
+    } catch (e) {
+      console.warn('Clipboard write notice:', e);
+    }
+  };
+
+  // Save Google Sheets Webhook
   const handleSaveWebhook = (e) => {
     e.preventDefault();
     setGoogleSheetsWebhook(webhookUrlInput);
@@ -377,46 +445,58 @@ export const LiveCompanionPage = () => {
     logPlayerMove(activePlayerIndexRef.current, 'Hero Advantage Activated');
 
     updatePlayersState((prev) =>
-      prev.map((p, idx) =>
-        idx === activePlayerIndex ? { ...p, isHeroAdvantageUsed: true } : p
+      prev.map((p) =>
+        p.id === advantageToConfirm.id
+          ? { ...p, isHeroAdvantageUsed: true }
+          : p
       )
     );
 
     setActiveRewardNotification({
-      title: `${advantageToConfirm.heroName} · ${advantageToConfirm.heroSecondaryTitle}`,
-      description: advantageToConfirm.heroAdvantage,
+      playerName: advantageToConfirm.name,
+      heroTitle: advantageToConfirm.heroSecondaryTitle,
+      advantage: advantageToConfirm.heroAdvantage,
     });
 
     setAdvantageToConfirm(null);
+    recordGameActivity?.().catch(() => {});
   };
 
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to log out and return to the main entrance?')) {
-      sessionStorage.clear();
-      localStorage.removeItem('active_device_session');
-      navigate('/login');
-    }
+  // Format seconds to MM:SS
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
   return (
-    <div className="live-companion-screen">
-      {/* Background Texture Overlay */}
-      <div className="live-companion-bg" />
+    <div className="live-companion-screen page-transition-fade" onClick={() => isSettingsMenuOpen && setIsSettingsMenuOpen(false)}>
+      {/* Dynamic Atmospheric Blurred Background */}
+      <div className="live-ambient-blurred-bg" />
+      <div className="live-bg-board-watermark" />
 
       {/* ===== TOP SLIDE DROPDOWN NOTIFICATION BANNER ===== */}
       {turnDropdown && (
         <div
-          className="turn-dropdown-banner page-dropdown-slide"
+          className={`turn-dropdown-banner ${turnDropdown.isTimeout ? 'turn-dropdown-banner--timeout' : ''}`}
           onClick={() => setTurnDropdown(null)}
         >
-          <div className="dropdown-icon-disc">
-            <Crown size={16} color="#261509" />
+          <div className="dropdown-icon-pill">
+            {turnDropdown.isTimeout ? (
+              <TimerReset size={16} color="#E74C3C" />
+            ) : (
+              <Crown size={16} color="#D9A441" />
+            )}
           </div>
-          <div className="dropdown-banner-text">
-            <span className="dropdown-banner-tag">✦ Turn Changed</span>
-            <h4 className="dropdown-banner-title">
-              {turnDropdown.playerName}’s Move{' '}
-              {turnDropdown.heroTitle && <small>({turnDropdown.heroTitle})</small>}
+          <div className="dropdown-text-wrap">
+            <span className="dropdown-badge-label">
+              {turnDropdown.isTimeout ? "⏳ TIME'S UP! TURN PASSED" : "⚔️ CURRENT TURN"}
+            </span>
+            <h4 className="dropdown-player-turn">
+              {turnDropdown.playerName}’s Turn
+              {turnDropdown.heroTitle && (
+                <span className="dropdown-hero-sub"> · {turnDropdown.heroTitle}</span>
+              )}
             </h4>
           </div>
           <span className="dropdown-dismiss-hint">✕</span>
@@ -446,7 +526,7 @@ export const LiveCompanionPage = () => {
 
         {/* Chapter Title */}
         <div className="chapter-banner">
-          <span className="chapter-title">The Kurukshetra Trial 📜</span>
+          <span className="chapter-title">Chapter 1: The Young Heir 📜</span>
         </div>
 
         {/* Right Settings & Survey Dropdown Menu */}
@@ -531,34 +611,165 @@ export const LiveCompanionPage = () => {
         </div>
       </header>
 
-      {/* ===== MAIN ARENA: 4 PLAYER CARDS GRID ===== */}
+      {/* ===== MAIN PLAY AREA: 2 COLUMNS OF PLAYERS + CENTER RIDDLE CARD ===== */}
       <main className="live-main-arena">
-        <div className={`players-arena-grid players-arena-grid--${players.length}`}>
-          {players.map((player, idx) => {
-            const isActive = idx === activePlayerIndex;
+        {/* LEFT COLUMN: Player 1 & Player 3 */}
+        <div className="players-column players-column--left">
+          {players.filter((_, idx) => idx % 2 === 0).map((player, filteredIdx) => {
+            const originalIndex = filteredIdx * 2;
+            const isActive = originalIndex === activePlayerIndex;
 
             return (
-              <div key={player.id} className="arena-card-slot">
-                <PlayerRiddleFlipCard
-                  player={player}
-                  isActiveTurn={isActive}
-                  isStageFlipped={false}
-                  onTapCard={(p) => {
-                    setActivePlayerIndex(idx);
-                    setFlippedPlayer(p);
+              <div
+                key={player.id}
+                className={`player-side-card ${isActive ? 'player-side-card--active' : ''}`}
+                onClick={() => handlePlayerTap(originalIndex)}
+                title="Tap to make active turn"
+              >
+                {/* Info (i) Button */}
+                <button
+                  type="button"
+                  className="player-info-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedInfoPlayer(player);
                   }}
-                  themeKey={themeKey}
-                  onInfoClick={(p) => setSelectedInfoPlayer(p)}
-                />
+                  title={`View ${player.name}'s hero advantages`}
+                  aria-label="Player advantages info"
+                >
+                  <Info size={12} />
+                </button>
+
+                {/* Number Badge */}
+                <div className="player-num-pill">{player.num}</div>
+
+                {/* Avatar */}
+                <div className="player-avatar-circle">
+                  <span className="player-emoji-avatar">{player.avatar}</span>
+                </div>
+
+                {/* Player Name */}
+                <h3 className="player-side-name">{player.name}</h3>
+
+                {/* Hero Secondary Title */}
+                <div className="player-hero-title-tag">
+                  <span>{player.heroSecondaryTitle}</span>
+                </div>
+
+                <span className="player-side-uid">UID: {player.uid} · Age {player.ageGroup || '8-12'}</span>
+
+                {/* Points / Mudras */}
+                <div className="player-side-points">
+                  <Coins size={12} className="points-coin-icon" />
+                  <span>{player.points}</span>
+                </div>
+                <span className="points-label">Mudras</span>
+
+                {/* Advantage Status Tag */}
+                <div
+                  className={`player-hero-status-pill ${player.isHeroAdvantageUsed ? 'player-hero-status-pill--used' : 'player-hero-status-pill--ready'}`}
+                  title={player.isHeroAdvantageUsed ? 'Hero advantage already used' : 'Hero advantage available'}
+                >
+                  <Zap size={9} />
+                  <span>{player.isHeroAdvantageUsed ? 'Adv Used' : 'Adv Ready'}</span>
+                </div>
+
+                {/* Shield / Pawn Icon */}
+                <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
+                  <Shield size={16} fill="currentColor" fillOpacity={0.25} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CENTER COLUMN: 3D Flip Riddle Card (1 Riddle Per Move Limit) */}
+        <div className="arena-center-card">
+          <RiddleCard
+            activePlayer={activePlayer}
+            themeKey={themeKey}
+            hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
+            onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
+            onPointsDeducted={handlePointsDeducted}
+            onSolveSuccess={handleSolveSuccess}
+            onSolveFail={handleSolveFail}
+          />
+        </div>
+
+        {/* RIGHT COLUMN: Player 2 & Player 4 */}
+        <div className="players-column players-column--right">
+          {players.filter((_, idx) => idx % 2 !== 0).map((player, filteredIdx) => {
+            const originalIndex = filteredIdx * 2 + 1;
+            const isActive = originalIndex === activePlayerIndex;
+
+            return (
+              <div
+                key={player.id}
+                className={`player-side-card ${isActive ? 'player-side-card--active' : ''}`}
+                onClick={() => handlePlayerTap(originalIndex)}
+                title="Tap to make active turn"
+              >
+                {/* Info (i) Button */}
+                <button
+                  type="button"
+                  className="player-info-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedInfoPlayer(player);
+                  }}
+                  title={`View ${player.name}'s hero advantages`}
+                  aria-label="Player advantages info"
+                >
+                  <Info size={12} />
+                </button>
+
+                {/* Number Badge */}
+                <div className="player-num-pill">{player.num}</div>
+
+                {/* Avatar */}
+                <div className="player-avatar-circle">
+                  <span className="player-emoji-avatar">{player.avatar}</span>
+                </div>
+
+                {/* Player Name */}
+                <h3 className="player-side-name">{player.name}</h3>
+
+                {/* Hero Secondary Title */}
+                <div className="player-hero-title-tag">
+                  <span>{player.heroSecondaryTitle}</span>
+                </div>
+
+                <span className="player-side-uid">UID: {player.uid} · Age {player.ageGroup || '8-12'}</span>
+
+                {/* Points / Mudras */}
+                <div className="player-side-points">
+                  <Coins size={12} className="points-coin-icon" />
+                  <span>{player.points}</span>
+                </div>
+                <span className="points-label">Mudras</span>
+
+                {/* Advantage Status Tag */}
+                <div
+                  className={`player-hero-status-pill ${player.isHeroAdvantageUsed ? 'player-hero-status-pill--used' : 'player-hero-status-pill--ready'}`}
+                  title={player.isHeroAdvantageUsed ? 'Hero advantage already used' : 'Hero advantage available'}
+                >
+                  <Zap size={9} />
+                  <span>{player.isHeroAdvantageUsed ? 'Adv Used' : 'Adv Ready'}</span>
+                </div>
+
+                {/* Shield / Pawn Icon */}
+                <div className="player-shield-wrap" style={{ color: player.shieldColor }}>
+                  <Shield size={16} fill="currentColor" fillOpacity={0.25} />
+                </div>
               </div>
             );
           })}
         </div>
       </main>
 
-      {/* ===== BOTTOM COMPANION CONTROLS (CLEAN CURRENT TURN BANNER, NO TIMER) ===== */}
+      {/* ===== BOTTOM COMPANION CONTROLS ===== */}
       <footer className="live-bottom-panel">
-        {/* 1. CURRENT TURN BANNER */}
+        {/* 1. CURRENT TURN BANNER WITH 1-MINUTE CHESS TIMER */}
         <div
           className="current-turn-banner"
           onClick={handleNextTurn}
@@ -566,23 +777,48 @@ export const LiveCompanionPage = () => {
         >
           <div className="turn-banner-header">
             <div className="turn-header-left">
-              <Crown size={16} color="#D9A441" />
+              <Crown size={17} color="#D9A441" />
               <span className="turn-label">CURRENT TURN</span>
             </div>
-            <div className="turn-pass-action-pill">
-              <span>Pass Turn ➔</span>
+
+            {/* CHESS-STYLE 1-MINUTE TIMER WIDGET */}
+            <div
+              className={`turn-chess-timer ${timeLeft <= 10 ? 'turn-chess-timer--warning' : ''}`}
+              onClick={(e) => e.stopPropagation()}
+              title="1-Minute Turn Timer (Auto-passes on timeout)"
+            >
+              <Clock size={13} className={timeLeft <= 10 ? 'timer-pulse-icon' : ''} />
+              <span className="timer-countdown-digits">{formatTime(timeLeft)}</span>
+              
+              <button
+                type="button"
+                className="timer-pause-toggle-btn"
+                onClick={handleTogglePause}
+                title={isTimerPaused ? "Resume Timer" : "Pause Timer"}
+                aria-label="Pause or Resume Timer"
+              >
+                {isTimerPaused ? <Play size={11} fill="currentColor" /> : <Pause size={11} fill="currentColor" />}
+              </button>
             </div>
           </div>
 
+          {/* Timer Progress Track Bar */}
+          <div className="turn-timer-progress-track">
+            <div
+              className={`turn-timer-progress-fill ${timeLeft <= 10 ? 'progress-fill--warning' : ''}`}
+              style={{ width: `${(timeLeft / 60) * 100}%` }}
+            />
+          </div>
+
           <h2 className="active-turn-player-name">
-            {activePlayer.name}’s Move
+            {activePlayer.name}’s Turn
             {activePlayer.heroSecondaryTitle && (
               <span className="turn-hero-title"> · {activePlayer.heroSecondaryTitle}</span>
             )}
           </h2>
 
           <p className="turn-sub-instruction">
-            ✦ Tap card to flip & answer riddle · Tap banner to pass move ➔
+            ⏳ 1 min per turn · Tap banner to pass turn early ➔
           </p>
         </div>
 
@@ -644,74 +880,77 @@ export const LiveCompanionPage = () => {
               </div>
               <div className="info-header-titles">
                 <h3 className="info-player-name">{selectedInfoPlayer.name}</h3>
-                <span className="info-player-hero">
-                  Hero: <strong>{selectedInfoPlayer.heroName}</strong> ({selectedInfoPlayer.heroSecondaryTitle})
-                </span>
-                <span className="info-player-age">
-                  Age Range: <strong>{selectedInfoPlayer.ageGroup || '8-12'}</strong>
+                <span className="info-hero-badge">
+                  {selectedInfoPlayer.heroName} · {selectedInfoPlayer.heroSecondaryTitle}
                 </span>
               </div>
             </div>
 
-            <div className="info-divider" />
-
-            <div className="info-section">
-              <h4 className="info-sec-title">
-                <Zap size={14} color="#D9A441" /> Assigned Hero Advantage
-              </h4>
-              <div className="info-hero-adv-box">
-                <strong className="info-hero-adv-name">{selectedInfoPlayer.heroSecondaryTitle}</strong>
-                <p className="info-hero-adv-desc">{selectedInfoPlayer.heroAdvantage}</p>
-                <span className="info-hero-status">
-                  Status: <strong>{selectedInfoPlayer.isHeroAdvantageUsed ? 'Used' : 'Ready to activate'}</strong>
-                </span>
+            <div className="info-advantage-section">
+              <div className="info-section-title">
+                <Zap size={15} color="#D9A441" />
+                <span>HERO ADVANTAGE</span>
+              </div>
+              <div className="info-advantage-card">
+                <h4 className="info-adv-name">{selectedInfoPlayer.heroSecondaryTitle}</h4>
+                <p className="info-adv-text">{selectedInfoPlayer.heroAdvantage}</p>
+                <div className="info-adv-status">
+                  {selectedInfoPlayer.isHeroAdvantageUsed ? (
+                    <span className="status-badge status-badge--used">
+                      <CheckCircle2 size={13} /> Already Used in This Game
+                    </span>
+                  ) : (
+                    <span className="status-badge status-badge--ready">
+                      <Sparkles size={13} /> Available to Use (1 Time)
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="info-section" style={{ marginTop: '12px' }}>
-              <h4 className="info-sec-title">
-                <Sparkles size={14} color="#2ECC71" /> Earned Riddle Advantages ({selectedInfoPlayer.advantages?.length || 0})
-              </h4>
-              {selectedInfoPlayer.advantages && selectedInfoPlayer.advantages.length > 0 ? (
-                <div className="info-earned-adv-list">
-                  {selectedInfoPlayer.advantages.map((adv, aIdx) => (
-                    <div key={aIdx} className="earned-adv-item">
-                      <span className="earned-adv-dot">✦</span>
-                      <div className="earned-adv-text">
-                        <strong>{adv.name}</strong>
-                        <small>{adv.description}</small>
-                      </div>
+            {selectedInfoPlayer.advantages && selectedInfoPlayer.advantages.length > 0 && (
+              <div className="info-riddle-advantages">
+                <div className="info-section-title">
+                  <Sparkles size={14} color="#2ECC71" />
+                  <span>EARNED RIDDLE ADVANTAGES ({selectedInfoPlayer.advantages.length})</span>
+                </div>
+                <div className="info-riddle-list">
+                  {selectedInfoPlayer.advantages.map((adv, i) => (
+                    <div key={i} className="riddle-adv-item">
+                      <strong>{typeof adv === 'object' ? adv.name : adv}</strong>
+                      {typeof adv === 'object' && adv.description && (
+                        <p>{adv.description}</p>
+                      )}
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="no-adv-text">No riddle advantages earned yet. Solve riddles during your turn to win advantages!</p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* ===== MODAL 2: CONFIRM HERO ADVANTAGE ACTIVATION ===== */}
+      {/* ===== MODAL 2: CONFIRM USE ADVANTAGE ===== */}
       {advantageToConfirm && (
         <div className="live-modal-overlay">
           <div className="live-confirm-modal-card">
-            <div className="confirm-modal-icon-badge">
-              <Zap size={26} color="#D9A441" />
+            <div className="confirm-icon-disc">
+              <Zap size={24} color="#D9A441" />
             </div>
 
-            <h3 className="confirm-modal-title">Activate Hero Advantage?</h3>
-            <p className="confirm-hero-name">
-              {advantageToConfirm.heroName} · <strong>{advantageToConfirm.heroSecondaryTitle}</strong>
-            </p>
-
-            <div className="confirm-adv-desc-box">
-              <p>{advantageToConfirm.heroAdvantage}</p>
+            <h3 className="confirm-title">Use Hero Advantage?</h3>
+            <div className="confirm-hero-chip">
+              {advantageToConfirm.name} ({advantageToConfirm.heroSecondaryTitle})
             </div>
 
-            <p className="confirm-warning-text">
-              ⚠️ Note: This hero power is <strong>single-use</strong> per game session!
-            </p>
+            <div className="confirm-effect-box">
+              <p className="confirm-effect-text">{advantageToConfirm.heroAdvantage}</p>
+            </div>
+
+            <div className="confirm-warning-note">
+              <AlertCircle size={14} color="#E74C3C" />
+              <span>This hero advantage can only be used <strong>once</strong> per entire match!</span>
+            </div>
 
             <div className="confirm-actions-row">
               <button
@@ -719,7 +958,7 @@ export const LiveCompanionPage = () => {
                 className="confirm-activate-btn"
                 onClick={handleConfirmUseAdvantage}
               >
-                <Sparkles size={15} /> Activate Power Now
+                <Sparkles size={15} /> Confirm & Activate
               </button>
               <button
                 type="button"
@@ -733,199 +972,144 @@ export const LiveCompanionPage = () => {
         </div>
       )}
 
-      {/* ===== MODAL 3: ACTIVE REWARD ANNOUNCEMENT ===== */}
-      {activeRewardNotification && (
-        <div className="live-modal-overlay" onClick={() => setActiveRewardNotification(null)}>
-          <div className="live-reward-announcement-card" onClick={(e) => e.stopPropagation()}>
-            <div className="reward-glow-badge">
-              <Sparkles size={30} color="#FAF5EA" />
-            </div>
-            <h2 className="reward-headline">DIVINE POWER UNLEASHED!</h2>
-            <h3 className="reward-power-title">{activeRewardNotification.title}</h3>
-            <p className="reward-power-desc">{activeRewardNotification.description}</p>
-            <button
-              type="button"
-              className="reward-dismiss-btn"
-              onClick={() => setActiveRewardNotification(null)}
-            >
-              Execute on Physical Board ➔
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ===== MODAL 4: SURVEY TELEMETRY & GOOGLE SHEETS POPUP ===== */}
+      {/* ===== MODAL 3: SURVEY TELEMETRY - PLAYER BY PLAYER WITH RECORDING DATE ===== */}
       {isSurveyModalOpen && (
         <div className="live-modal-overlay" onClick={() => setIsSurveyModalOpen(false)}>
-          <div className="survey-modal-card page-dropdown-slide" onClick={(e) => e.stopPropagation()}>
-            <div className="survey-modal-header">
-              <div className="survey-header-title-group">
-                <div className="survey-icon-disc">
-                  <FileSpreadsheet size={20} color="#2ECC71" />
-                </div>
-                <div>
-                  <h3 className="survey-modal-title">Survey Move Telemetry</h3>
-                  <p className="survey-modal-subtitle">Time taken per player & timestamps</p>
-                </div>
+          <div className="survey-modal-card" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="modal-close-icon-btn"
+              onClick={() => setIsSurveyModalOpen(false)}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Modal Title */}
+            <div className="survey-modal-title-row">
+              <FileSpreadsheet size={22} color="#2ECC71" />
+              <div>
+                <h3 className="survey-modal-title">Move Timestamps Survey</h3>
+                <span className="survey-modal-sub">
+                  Organized by player with timestamps & total time
+                </span>
               </div>
+            </div>
+
+            {/* Quick Action Export Bar */}
+            <div className="survey-actions-panel">
               <button
                 type="button"
-                className="modal-close-icon-btn"
-                onClick={() => setIsSurveyModalOpen(false)}
-                aria-label="Close"
+                className="survey-export-btn survey-export-btn--csv"
+                onClick={() => downloadSurveyCSV(playersRef.current)}
+                title="Download CSV formatted by Player"
               >
-                <X size={18} />
+                <Download size={14} />
+                <span>Download CSV (Sheets)</span>
+              </button>
+
+              <button
+                type="button"
+                className="survey-export-btn survey-export-btn--copy"
+                onClick={handleCopySummary}
+                title="Copy all player timestamps to clipboard"
+              >
+                {copiedText ? <Check size={14} color="#2ECC71" /> : <Copy size={14} />}
+                <span>{copiedText ? 'Copied!' : 'Copy Text'}</span>
+              </button>
+
+              <button
+                type="button"
+                className="survey-export-btn survey-export-btn--sheets"
+                onClick={openGoogleSheets}
+                title="Open Google Sheets"
+              >
+                <ExternalLink size={14} />
+                <span>Open Sheets</span>
               </button>
             </div>
 
-            <div className="survey-modal-body">
-              {/* Quick 1-Click Action Bar */}
-              <div className="survey-action-bar">
-                <button
-                  type="button"
-                  className="survey-action-btn survey-action-btn--csv"
-                  onClick={() => downloadSurveyCSV(players)}
-                >
-                  <Download size={14} /> Download CSV (Sheets)
-                </button>
-                <button
-                  type="button"
-                  className={`survey-action-btn survey-action-btn--copy ${copiedText ? 'btn-copied' : ''}`}
-                  onClick={handleCopySurveyText}
-                >
-                  {copiedText ? <Check size={14} /> : <Copy size={14} />}
-                  {copiedText ? 'Copied to Clipboard!' : 'Copy Text Summary'}
-                </button>
-                <button
-                  type="button"
-                  className="survey-action-btn survey-action-btn--open"
-                  onClick={openGoogleSheets}
-                >
-                  <ExternalLink size={14} /> Open Google Sheets
-                </button>
-              </div>
-
-              {/* Player-by-Player Clean Grouped Breakdown */}
-              <div className="survey-players-container">
-                {groupedSurveyData && groupedSurveyData.length > 0 ? (
-                  groupedSurveyData.map((pData, pIdx) => (
-                    <div key={pIdx} className="survey-player-card">
-                      <div className="survey-player-header">
-                        <div className="survey-player-name-row">
-                          <span className="survey-player-num-tag">Player {pData.playerIndex + 1}</span>
-                          <h4 className="survey-player-fullname">
-                            {pData.playerName} <small>({pData.heroTitle || pData.heroName})</small>
-                          </h4>
-                        </div>
-                        <div className="survey-player-total-pill">
-                          <span>Total: <strong>{pData.totalDurationFormatted}</strong> ({pData.totalMoves} moves)</span>
-                        </div>
-                      </div>
-
-                      <div className="survey-moves-table-wrap">
-                        <table className="survey-moves-table">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Start ➔ End</th>
-                              <th>Duration</th>
-                              <th>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {pData.moves.map((m, mIdx) => (
-                              <tr key={mIdx}>
-                                <td>{m.moveNumber}</td>
-                                <td className="timestamp-cell">{m.startFormatted} ➔ {m.endFormatted}</td>
-                                <td className="duration-cell"><strong>{m.durationSeconds}s</strong></td>
-                                <td className="action-cell">{m.actionType}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+            {/* PLAYER-BY-PLAYER TIMESTAMPS & TOTAL TIME SECTION */}
+            <div className="survey-players-grouped-container">
+              {groupedSurveyData.map((player) => (
+                <div key={player.name} className="survey-player-group-card">
+                  {/* Player Header */}
+                  <div className="group-card-header">
+                    <div className="group-header-left">
+                      <span className="group-num-pill">Player {player.playerIndex}</span>
+                      <strong className="group-player-name">{player.name}</strong>
+                      <span className="group-hero-tag">{player.heroTitle || 'HERO'}</span>
                     </div>
-                  ))
-                ) : (
-                  <div className="survey-empty-state">
-                    <Clock size={28} color="#D9A441" />
-                    <p>No moves recorded yet. Play moves in the game to generate telemetry!</p>
+                    <div className="group-header-right">
+                      <span className="group-total-time-badge">
+                        ⏱️ Total: <strong>{player.totalSeconds}s</strong>
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
 
-              {/* End of Recording Date Banner */}
-              <div className="survey-recording-date-banner">
+                  {/* Moves Timestamps List */}
+                  <div className="group-moves-list">
+                    {player.moves.length === 0 ? (
+                      <div className="group-empty-hint">No moves played yet in this session</div>
+                    ) : (
+                      player.moves.map((m, idx) => (
+                        <div key={m.id || idx} className="group-move-row">
+                          <span className="move-number-badge">Move #{idx + 1}</span>
+                          <span className="move-timestamps-text">
+                            {m.startFormatted} → {m.endFormatted}
+                          </span>
+                          <strong className="move-duration-highlight">{m.durationSeconds}s</strong>
+                          <span className="move-action-type-tag">{m.actionType}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Player Footer Summary */}
+                  <div className="group-card-footer">
+                    <span>Total Moves: <strong>{player.totalMoves}</strong></span>
+                    <span>Average per Move: <strong>{player.averageSeconds}s</strong></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* DATE OF RECORDING AT THE END */}
+            <div className="survey-recording-date-footer">
+              <div className="date-banner-content">
                 <Calendar size={15} color="#D9A441" />
                 <span>
-                  <strong>Date of Recording:</strong> {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  Date of Recording: <strong>{new Date().toLocaleString()}</strong>
                 </span>
               </div>
 
-              {/* Optional Webhook URL Input for Direct Automation */}
-              <form className="survey-webhook-form" onSubmit={handleSaveWebhook}>
-                <label className="webhook-label">
-                  🔗 Optional Google Apps Script / Webhook Endpoint:
-                </label>
-                <div className="webhook-input-row">
-                  <input
-                    type="url"
-                    className="webhook-text-input"
-                    placeholder="https://script.google.com/macros/s/.../exec"
-                    value={webhookUrlInput}
-                    onChange={(e) => setWebhookUrlInput(e.target.value)}
-                  />
-                  <button type="submit" className="webhook-save-btn">
-                    {webhookSaved ? 'Saved!' : 'Save'}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            <div className="survey-modal-footer">
-              <button
-                type="button"
-                className="survey-clear-btn"
-                onClick={handleClearSurveyData}
-              >
-                <Trash2 size={14} /> Clear Telemetry
-              </button>
-              <button
-                type="button"
-                className="survey-close-btn"
-                onClick={() => setIsSurveyModalOpen(false)}
-              >
-                Done
-              </button>
+              {groupedSurveyData.some((p) => p.moves.length > 0) && (
+                <button
+                  type="button"
+                  className="survey-clear-btn"
+                  onClick={handleClearSurveyData}
+                  title="Clear all recorded moves"
+                >
+                  <Trash2 size={12} />
+                  <span>Clear</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* ===== FULLSCREEN 3D TWO-SIDED RIDDLE STAGE (DEAD CENTER) ===== */}
-      {flippedPlayer && (
-        <div
-          className="riddle-flip-stage-overlay"
-          onClick={() => setFlippedPlayer(null)}
-        >
-          <div
-            className="riddle-flip-stage-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <PlayerRiddleFlipCard
-              player={flippedPlayer}
-              isActiveTurn={flippedPlayer.id === activePlayer.id}
-              isStageFlipped={true}
-              onFlipBack={() => setFlippedPlayer(null)}
-              hasAnsweredRiddleThisTurn={hasAnsweredRiddleThisTurn}
-              onRiddleAnswered={() => setHasAnsweredRiddleThisTurn(true)}
-              onPointsDeducted={handlePointsDeducted}
-              onSolveSuccess={handleSolveSuccess}
-              onSolveFail={handleSolveFail}
-              themeKey={themeKey}
-              onInfoClick={(p) => setSelectedInfoPlayer(p)}
-            />
+      {/* ===== REWARD NOTIFICATION TOAST ===== */}
+      {activeRewardNotification && (
+        <div className="reward-toast-banner" onClick={() => setActiveRewardNotification(null)}>
+          <div className="reward-toast-icon">
+            <Sparkles size={18} color="#D9A441" />
           </div>
+          <div className="reward-toast-text">
+            <strong>Advantage Activated for {activeRewardNotification.playerName}!</strong>
+            <p>{activeRewardNotification.heroTitle}: {activeRewardNotification.advantage}</p>
+          </div>
+          <button type="button" className="toast-dismiss-btn">✕</button>
         </div>
       )}
     </div>
