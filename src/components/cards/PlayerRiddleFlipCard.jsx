@@ -23,7 +23,7 @@ import './PlayerRiddleFlipCard.css';
 export const PlayerRiddleFlipCard = ({
   player,
   isActiveTurn,
-  isFlipped,
+  isStageFlipped = false,
   onTapCard,
   onFlipBack,
   hasAnsweredRiddleThisTurn,
@@ -42,6 +42,7 @@ export const PlayerRiddleFlipCard = ({
   const [outcome, setOutcome] = useState(null); // 'correct' | 'wrong' | null
   const [awardedAdvantage, setAwardedAdvantage] = useState(null);
   const [riddleTimer, setRiddleTimer] = useState(60);
+  const [isFlippingBack, setIsFlippingBack] = useState(false);
 
   // Load riddle when player age, theme, or difficulty changes
   useEffect(() => {
@@ -52,11 +53,12 @@ export const PlayerRiddleFlipCard = ({
     setOutcome(null);
     setAwardedAdvantage(null);
     setRiddleTimer(60);
-  }, [themeKey, difficulty, player.id, player.ageGroup]);
+    setIsFlippingBack(false);
+  }, [themeKey, difficulty, player.id, player.ageGroup, isStageFlipped]);
 
-  // 1-Minute Riddle Countdown Timer when flipped
+  // 1-Minute Riddle Countdown Timer when flipped on stage
   useEffect(() => {
-    if (!isFlipped) {
+    if (!isStageFlipped) {
       setRiddleTimer(60);
       return;
     }
@@ -64,8 +66,7 @@ export const PlayerRiddleFlipCard = ({
     const interval = setInterval(() => {
       setRiddleTimer((prev) => {
         if (prev <= 1) {
-          // Time expired -> Flip back to player front face
-          onFlipBack?.();
+          handleTriggerFlipBack();
           return 60;
         }
         return prev - 1;
@@ -73,7 +74,7 @@ export const PlayerRiddleFlipCard = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isFlipped]);
+  }, [isStageFlipped]);
 
   const handleDifficultyChange = (e, newDiff) => {
     e.stopPropagation();
@@ -142,25 +143,32 @@ export const PlayerRiddleFlipCard = ({
     }
   };
 
+  const handleTriggerFlipBack = (e) => {
+    e?.stopPropagation();
+    if (isFlippingBack) return;
+    setIsFlippingBack(true);
+    setTimeout(() => {
+      onFlipBack?.();
+    }, 450);
+  };
+
   const formatTimer = (secs) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  return (
-    <div
-      className={`player-flipper-container ${isFlipped ? 'player-flipper-container--flipped' : ''}`}
-      onClick={() => {
-        if (!isFlipped) onTapCard?.();
-      }}
-    >
-      <div className="player-3d-flipper-card">
-        {/* =========================================================
-            FRONT FACE: THE PLAYER HERO & GAME STATUS CARD
-            ========================================================= */}
+  // If rendering inside the grid (Normal Player Card)
+  if (!isStageFlipped) {
+    return (
+      <div
+        className="player-grid-card"
+        onClick={() => onTapCard?.(player)}
+        role="button"
+        tabIndex={0}
+      >
         <div className={`player-card-face card-face--front ${isActiveTurn ? 'card-face--active-turn' : ''}`}>
-          {/* Top Control Bar: Active Badge, Player Num & Info */}
+          {/* Top Control Bar: Player Num, Active Badge & Info */}
           <div className="card-top-control-bar">
             <div className="card-num-badge">P{player.num}</div>
 
@@ -231,9 +239,65 @@ export const PlayerRiddleFlipCard = ({
             </div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // If rendering inside the 3D Stage Overlay (Two-Sided 3D Flipped Card)
+  return (
+    <div className="player-stage-3d-wrapper">
+      <div className={`player-3d-flipper-card ${isFlippingBack ? 'player-3d-flipper-card--flipping-back' : 'player-3d-flipper-card--flipped'}`}>
+        {/* =========================================================
+            FRONT FACE (Spins away into depth)
+            ========================================================= */}
+        <div className={`player-card-face card-face--front ${isActiveTurn ? 'card-face--active-turn' : ''}`}>
+          <div className="card-top-control-bar">
+            <div className="card-num-badge">P{player.num}</div>
+            {isActiveTurn && (
+              <div className="card-active-crown-badge">
+                <Crown size={11} />
+                <span>ACTIVE TURN</span>
+              </div>
+            )}
+            <div className="card-info-btn">
+              <Info size={13} />
+            </div>
+          </div>
+
+          <div className="card-identity-block">
+            <div className="card-avatar-circle" style={{ borderColor: player.shieldColor }}>
+              <span className="card-emoji-avatar">{player.avatar}</span>
+            </div>
+            <div className="card-name-column">
+              <h3 className="card-player-fullname">{player.name}</h3>
+              <div className="card-meta-chips">
+                <span className="meta-chip-uid">UID: {player.uid}</span>
+                <span className="meta-chip-age">Age {player.ageGroup || '8-12'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="card-hero-title-badge">
+            <span className="hero-badge-name">{player.heroName}</span>
+            <span className="hero-badge-divider">·</span>
+            <span className="hero-badge-title">{player.heroSecondaryTitle}</span>
+          </div>
+
+          <div className="card-stats-footer-row">
+            <div className="card-mudras-counter">
+              <Coins size={14} className="points-coin-icon" />
+              <strong>{player.points}</strong>
+              <small>Mudras</small>
+            </div>
+            <div className="card-skill-status-pill skill-pill--ready">
+              <Zap size={11} />
+              <span>Skill Ready</span>
+            </div>
+          </div>
+        </div>
 
         {/* =========================================================
-            BACK FACE: THE PHYSICAL 3D RIDDLE CHALLENGE FOR THIS PLAYER
+            BACK FACE: THE PHYSICAL RIDDLE TRIAL FOR THIS PLAYER
             ========================================================= */}
         <div className="player-card-face card-face--back">
           {/* Top Bar: Player identity, 1-min timer & Flip Back button */}
@@ -256,10 +320,7 @@ export const PlayerRiddleFlipCard = ({
             <button
               type="button"
               className="back-close-flip-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onFlipBack?.();
-              }}
+              onClick={handleTriggerFlipBack}
               title="Flip back to board"
               aria-label="Flip back to board"
             >
@@ -408,10 +469,7 @@ export const PlayerRiddleFlipCard = ({
           <button
             type="button"
             className="back-flip-return-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onFlipBack?.();
-            }}
+            onClick={handleTriggerFlipBack}
           >
             <RotateCw size={13} />
             <span>Return to Board</span>
