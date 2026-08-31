@@ -5,12 +5,13 @@
 .player-flipper-container {
   width: 100%;
   height: 100%;
-  min-height: 160px;
-  perspective: 1400px;
+  min-height: 195px;
+  perspective: 1600px;
   user-select: none;
   cursor: pointer;
   box-sizing: border-box;
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
 }
 
 .player-flipper-container:hover:not(.player-flipper-container--flipped) {
@@ -36,11 +37,11 @@
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
-  width: 355px !important;
+  width: 360px !important;
   max-width: 92vw !important;
-  height: 540px !important;
+  height: 550px !important;
   max-height: 88vh !important;
-  z-index: 1050 !important;
+  z-index: 1100 !important;
   margin: 0 !important;
   cursor: default !important;
 }
@@ -65,6 +66,7 @@
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
+  box-shadow: 0 8px 22px rgba(45, 26, 14, 0.15);
 }
 
 /* =========================================================
@@ -73,9 +75,9 @@
 .card-face--front {
   background: linear-gradient(180deg, #FFFDF8 0%, #F5ECDD 100%);
   border: 1.8px solid #A87A2C;
-  padding: 10px 10px 8px;
-  box-shadow: 0 6px 16px rgba(74, 46, 27, 0.12);
+  padding: 10px 12px 10px;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transform: rotateY(0deg);
 }
 
 .card-face--active-turn {
@@ -83,15 +85,31 @@
   border: 2px solid #D9A441;
   box-shadow: 
     0 10px 28px rgba(217, 164, 65, 0.35),
-    0 0 18px rgba(217, 164, 65, 0.3);
+    0 0 16px rgba(217, 164, 65, 0.3);
 }
 
-/* Top Active Crown Banner */
+/* Top Control Bar: Active Badge, Player Num & Info */
+.card-top-control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.card-num-badge {
+  background: linear-gradient(135deg, #DDB15D 0%, #9C6E20 100%);
+  color: #2D1A0E;
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid #FFF;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .card-active-crown-badge {
-  position: absolute;
-  top: -9px;
-  left: 50%;
-  transform: translateX(-50%);
   background: linear-gradient(135deg, #D9A441 0%, #8C642A 100%);
   color: #1A0F08;
   font-family: var(--font-heading);
@@ -104,44 +122,18 @@
   align-items: center;
   gap: 3px;
   border: 1px solid #FAF5EA;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  z-index: 5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   animation: pulseCrown 1.8s infinite;
 }
 
 @keyframes pulseCrown {
-  0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 8px rgba(217, 164, 65, 0.5); }
-  50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 14px rgba(217, 164, 65, 0.85); }
+  0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(217, 164, 65, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(217, 164, 65, 0.8); }
 }
 
-/* Number Pill */
-.card-num-pill {
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #DDB15D 0%, #9C6E20 100%);
-  color: #2D1A0E;
-  font-family: var(--font-heading);
-  font-size: 0.68rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #FFF;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-  z-index: 5;
-}
-
-/* Info (i) Button */
 .card-info-btn {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: linear-gradient(135deg, #2D1A0E 0%, #150C07 100%);
   border: 1px solid #D9A441;
@@ -150,8 +142,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  z-index: 5;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
   transition: transform 0.15s ease;
 }
 
@@ -161,8 +152,8 @@
   color: #1A0F08;
 }
 
-/* Identity Row: Avatar + Name */
-.card-header-identity-row {
+/* Card Avatar & Identity Row */
+.card-identity-block {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -170,8 +161,8 @@
 }
 
 .card-avatar-circle {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #FFF;
   border: 2px solid #8C642A;
@@ -183,7 +174,7 @@
 }
 
 .card-emoji-avatar {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
 }
 
 .card-name-column {
@@ -195,38 +186,54 @@
 
 .card-player-fullname {
   font-family: var(--font-heading);
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: #2E1A0E;
   line-height: 1.1;
   margin: 0;
 }
 
-.card-player-meta {
+.card-meta-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.meta-chip-uid {
   font-family: var(--font-body);
-  font-size: 0.56rem;
+  font-size: 0.54rem;
   color: #7A6652;
   font-weight: 600;
-  margin-top: 1px;
+}
+
+.meta-chip-age {
+  font-family: var(--font-heading);
+  font-size: 0.54rem;
+  color: #8C642A;
+  background: rgba(217, 164, 65, 0.18);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
 }
 
 /* Hero Badge */
 .card-hero-title-badge {
   background: linear-gradient(135deg, #3D2616 0%, #1A0F08 100%);
   border: 1.2px solid #D9A441;
-  border-radius: 6px;
-  padding: 3px 8px;
+  border-radius: 8px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  margin: 4px 0;
+  margin: 2px 0;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
 .hero-badge-name {
   font-family: var(--font-heading);
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 800;
   color: #F9D77E;
   letter-spacing: 0.04em;
@@ -234,12 +241,12 @@
 
 .hero-badge-divider {
   color: #D9A441;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
 }
 
 .hero-badge-title {
   font-family: var(--font-heading);
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: #FAF5E8;
   letter-spacing: 0.04em;
@@ -251,16 +258,20 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 2px;
+  margin: 2px 0;
 }
 
 .card-mudras-counter {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-family: var(--font-body);
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   color: #8C642A;
+}
+
+.points-coin-icon {
+  color: #D9A441;
 }
 
 .card-mudras-counter strong {
@@ -269,7 +280,7 @@
 }
 
 .card-mudras-counter small {
-  font-size: 0.52rem;
+  font-size: 0.54rem;
   color: #7A6652;
 }
 
@@ -278,10 +289,10 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 12px;
   font-family: var(--font-heading);
-  font-size: 0.52rem;
+  font-size: 0.54rem;
   font-weight: 800;
 }
 
@@ -300,16 +311,16 @@
 /* Tap to Flip Prompt */
 .card-tap-flip-ribbon {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .flip-prompt-pill {
   background: rgba(140, 100, 42, 0.1);
-  border: 1px dashed rgba(140, 100, 42, 0.4);
+  border: 1px dashed rgba(140, 100, 42, 0.45);
   border-radius: 8px;
   padding: 4px 6px;
   font-family: var(--font-heading);
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #6B4F3A;
   text-align: center;
@@ -331,33 +342,15 @@
    BACK FACE: THE PHYSICAL RIDDLE PAGE
    ========================================================= */
 .card-face--back {
-  background: radial-gradient(circle at 50% 10%, #14281C 0%, #0C1B13 75%, #06100B 100%);
+  background: radial-gradient(circle at 50% 10%, #162B1E 0%, #0E1C13 75%, #070E0A 100%);
   border: 2px solid #2ECC71;
-  padding: 10px 12px;
+  padding: 12px 14px;
   box-shadow: 
     0 16px 40px rgba(0, 0, 0, 0.85),
     0 0 24px rgba(46, 204, 113, 0.4);
   transform: rotateY(180deg);
   color: #FAF5E8;
-  gap: 6px;
-}
-
-/* Top Floating Medallion */
-.back-top-medallion {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #1E3B29 0%, #0F241A 100%);
-  border: 1.5px solid #2ECC71;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
-  z-index: 5;
+  gap: 8px;
 }
 
 /* Top Bar */
@@ -366,50 +359,67 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 4px;
 }
 
 .back-player-tag {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(46, 204, 113, 0.4);
-  border-radius: 14px;
-  padding: 2px 8px;
-  font-family: var(--font-heading);
-  font-size: 0.64rem;
+  border-radius: 16px;
+  padding: 3px 8px;
 }
 
-.back-player-tag small {
+.back-player-avatar {
+  font-size: 1.1rem;
+}
+
+.back-player-info-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.1;
+}
+
+.back-player-info-text strong {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  color: #FAF5E8;
+}
+
+.back-player-info-text small {
+  font-family: var(--font-body);
+  font-size: 0.54rem;
   color: #58D68D;
-  font-size: 0.52rem;
 }
 
 /* 1-Minute Timer Pill */
 .back-riddle-timer-pill {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: rgba(46, 204, 113, 0.2);
-  border: 1px solid #2ECC71;
+  border: 1.2px solid #2ECC71;
   color: #58D68D;
-  border-radius: 12px;
-  padding: 2px 8px;
+  border-radius: 14px;
+  padding: 3px 9px;
   font-family: var(--font-heading);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .timer-pill--danger {
   background: rgba(231, 76, 60, 0.25) !important;
   border-color: #E74C3C !important;
   color: #F1948A !important;
+  animation: pulseCrown 0.8s infinite;
 }
 
 .back-close-flip-btn {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(46, 204, 113, 0.4);
@@ -418,11 +428,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .back-close-flip-btn:hover {
   background: #E74C3C;
   border-color: #E74C3C;
+  transform: scale(1.1);
 }
 
 /* Timer Track */
@@ -447,20 +459,21 @@
 /* Difficulty Switcher */
 .back-diff-switcher {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(46, 204, 113, 0.3);
-  border-radius: 8px;
-  padding: 2px;
+  border-radius: 10px;
+  padding: 3px;
+  box-sizing: border-box;
 }
 
 .diff-pill-btn {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 3px 2px;
-  border-radius: 6px;
+  padding: 4px 2px;
+  border-radius: 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -471,15 +484,15 @@
 
 .diff-pill-btn span {
   font-family: var(--font-heading);
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 800;
   color: #A3C7B0;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .diff-pill-btn small {
   font-family: var(--font-body);
-  font-size: 0.48rem;
+  font-size: 0.52rem;
   color: #729E81;
 }
 
@@ -512,6 +525,7 @@
   justify-content: space-between;
   width: 100%;
   overflow-y: auto;
+  min-height: 220px;
 }
 
 /* Locked Pane */
@@ -522,58 +536,88 @@
   justify-content: space-between;
   height: 100%;
   text-align: center;
+  gap: 8px;
+}
+
+.back-lore-header-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.lore-book-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(217, 164, 65, 0.15);
+  border: 1px solid rgba(217, 164, 65, 0.4);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-family: var(--font-heading);
+  font-size: 0.54rem;
+  font-weight: 800;
+  color: #F9D77E;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
 }
 
 .back-riddle-title {
   font-family: var(--font-heading);
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   color: #FAF5E8;
-  margin: 4px 0 2px;
+  margin: 2px 0 4px;
 }
 
 .back-lore-paragraph {
   font-family: var(--font-body);
-  font-size: 0.66rem;
+  font-size: 0.68rem;
   color: #D2E8D9;
-  line-height: 1.35;
-  margin: 0 0 6px;
+  line-height: 1.38;
+  margin: 0;
+  max-height: 80px;
+  overflow-y: auto;
 }
 
 .back-unlock-teaser {
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px dashed rgba(217, 164, 65, 0.45);
-  border-radius: 8px;
-  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px dashed rgba(217, 164, 65, 0.5);
+  border-radius: 10px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: var(--font-body);
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   color: #F9D77E;
   text-align: left;
-  line-height: 1.25;
+  line-height: 1.3;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .back-unlock-action-btn {
   width: 100%;
-  background: linear-gradient(180deg, #A87522 0%, #7A4E12 100%);
+  background: linear-gradient(180deg, #C28B2F 0%, #8C5C18 100%);
   border: 1px solid #F5D37E;
   color: #FFFDF8;
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 9px 14px;
   font-family: var(--font-heading);
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  transition: all 0.2s ease;
 }
 
 .back-unlock-action-btn:hover {
-  background: linear-gradient(180deg, #C28B2F 0%, #915F19 100%);
+  background: linear-gradient(180deg, #D9A441 0%, #A87522 100%);
+  transform: translateY(-1px);
 }
 
 .back-limit-box {
@@ -582,31 +626,33 @@
   border-radius: 8px;
   padding: 6px;
   font-family: var(--font-body);
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   color: #F9D77E;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Unlocked Pane */
 .back-unlocked-pane {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   height: 100%;
 }
 
 .back-question-box {
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(46, 204, 113, 0.4);
-  border-radius: 8px;
-  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1.5px solid rgba(46, 204, 113, 0.45);
+  border-radius: 10px;
+  padding: 8px 10px;
 }
 
 .back-question-text {
   font-family: var(--font-body);
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   color: #EBF7EE;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.35;
   margin: 0;
   text-align: left;
 }
@@ -614,17 +660,17 @@
 .back-options-grid {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .back-opt-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.07);
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
   border: 1.2px solid rgba(46, 204, 113, 0.35);
-  border-radius: 8px;
-  padding: 4px 8px;
+  border-radius: 10px;
+  padding: 6px 10px;
   color: #FAF5E8;
   text-align: left;
   cursor: pointer;
@@ -638,13 +684,13 @@
 }
 
 .opt-badge {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #2ECC71;
   color: #071C0F;
   font-weight: 800;
-  font-size: 0.54rem;
+  font-size: 0.58rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -654,14 +700,14 @@
 
 .opt-txt {
   font-family: var(--font-body);
-  font-size: 0.58rem;
+  font-size: 0.64rem;
   color: #FAF5E8;
   flex: 1;
 }
 
 .opt--correct,
 .opt--show-correct {
-  background: rgba(46, 204, 113, 0.25) !important;
+  background: rgba(46, 204, 113, 0.28) !important;
   border-color: #2ECC71 !important;
 }
 
@@ -672,7 +718,7 @@
 }
 
 .opt--wrong {
-  background: rgba(231, 76, 60, 0.25) !important;
+  background: rgba(231, 76, 60, 0.28) !important;
   border-color: #E74C3C !important;
 }
 
@@ -687,30 +733,30 @@
 
 /* Outcome Banner */
 .back-outcome-banner {
-  border-radius: 8px;
-  padding: 4px 8px;
+  border-radius: 10px;
+  padding: 6px 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 2px;
+  gap: 3px;
 }
 
 .outcome--correct {
   background: rgba(46, 204, 113, 0.2);
-  border: 1px solid #2ECC71;
+  border: 1.2px solid #2ECC71;
   color: #58D68D;
 }
 
 .outcome--wrong {
   background: rgba(231, 76, 60, 0.2);
-  border: 1px solid #E74C3C;
+  border: 1.2px solid #E74C3C;
   color: #F1948A;
 }
 
 .outcome-headline {
   font-family: var(--font-heading);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 800;
 }
 
@@ -722,35 +768,38 @@
 
 .won-advantage-detail strong {
   font-family: var(--font-heading);
-  font-size: 0.64rem;
+  font-size: 0.68rem;
   color: #FFF;
 }
 
 .won-advantage-detail small {
   font-family: var(--font-body);
-  font-size: 0.54rem;
+  font-size: 0.58rem;
   color: #EBF7EE;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 /* Bottom Flip Return Button */
 .back-flip-return-btn {
   background: #D9A441;
   border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
+  border-radius: 10px;
+  padding: 8px 14px;
   color: #1A0F08;
   font-family: var(--font-heading);
-  font-size: 0.66rem;
+  font-size: 0.72rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   cursor: pointer;
   width: 100%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
 }
 
 .back-flip-return-btn:hover {
   background: #F5D37E;
+  transform: translateY(-1px);
 }
