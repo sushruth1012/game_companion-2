@@ -128,10 +128,10 @@ export const LiveCompanionPage = () => {
   // 1 Riddle Per Move Rule State
   const [hasAnsweredRiddleThisTurn, setHasAnsweredRiddleThisTurn] = useState(false);
 
-  // Fullscreen Riddle Experience & 3D Flip State
+  // Fullscreen Riddle Experience & 3D Center Flip State
   const [isRiddleFullscreenOpen, setIsRiddleFullscreenOpen] = useState(false);
   const [riddleModalPlayer, setRiddleModalPlayer] = useState(null);
-  const [flippingCardIndex, setFlippingCardIndex] = useState(null);
+  const [activeAnimatingCardIndex, setActiveAnimatingCardIndex] = useState(null);
   const [riddleTimeLeft, setRiddleTimeLeft] = useState(60);
   const [isRiddleTimerPaused, setIsRiddleTimerPaused] = useState(false);
 
@@ -303,17 +303,20 @@ export const LiveCompanionPage = () => {
     });
   };
 
-  // Open Fullscreen Riddle with 3D zoom & flip backwards animation
-  const handleOpenRiddleFullscreen = (player, index) => {
-    setActivePlayerIndex(index);
-    setRiddleModalPlayer(player);
-    setFlippingCardIndex(index);
+  // Open Fullscreen Riddle: Tapped card moves to center, other cards vanish, card scales up & flips backwards 180°
+  const handlePlayerTap = (index) => {
+    if (activeAnimatingCardIndex !== null) return;
 
+    setActivePlayerIndex(index);
+    setRiddleModalPlayer(players[index]);
+    setActiveAnimatingCardIndex(index);
+
+    // After the center move, scale up, and 180° flip animation completes:
     setTimeout(() => {
       setRiddleTimeLeft(60);
       setIsRiddleFullscreenOpen(true);
-      setFlippingCardIndex(null);
-    }, 320);
+      setActiveAnimatingCardIndex(null);
+    }, 580);
   };
 
   // Manual Turn Advancement
@@ -332,11 +335,6 @@ export const LiveCompanionPage = () => {
     setHasAnsweredRiddleThisTurn(false);
     setIsRiddleFullscreenOpen(false);
     showTurnDropdown(nextPlayer);
-  };
-
-  // Tap Player Card to Trigger Cinematic Flip into Riddle
-  const handlePlayerTap = (index) => {
-    handleOpenRiddleFullscreen(players[index], index);
   };
 
   // Format seconds to mm:ss
@@ -590,12 +588,18 @@ export const LiveCompanionPage = () => {
         <div className={`players-arena-grid players-arena-grid--${players.length}`}>
           {players.map((player, idx) => {
             const isActive = idx === activePlayerIndex;
-            const isFlipping = flippingCardIndex === idx;
+            const isTargetCard = activeAnimatingCardIndex === idx;
+            const isOtherCardVanishing = activeAnimatingCardIndex !== null && activeAnimatingCardIndex !== idx;
+
+            let cardClasses = 'arena-player-card';
+            if (isActive) cardClasses += ' arena-player-card--active';
+            if (isTargetCard) cardClasses += ' arena-player-card--center-fly-flip';
+            if (isOtherCardVanishing) cardClasses += ' arena-player-card--vanished';
 
             return (
               <div
                 key={player.id}
-                className={`arena-player-card ${isActive ? 'arena-player-card--active' : ''} ${isFlipping ? 'arena-player-card--zooming-flip' : ''}`}
+                className={cardClasses}
                 onClick={() => handlePlayerTap(idx)}
                 role="button"
                 tabIndex={0}
